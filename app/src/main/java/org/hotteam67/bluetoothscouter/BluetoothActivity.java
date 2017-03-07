@@ -49,7 +49,7 @@ public class BluetoothActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // setContentView(R.layout.activity_connection);
+        // setContentView(R.layout.activity_scout);
         m_handler = new Handler() {
             @Override
             public void handleMessage(Message msg)
