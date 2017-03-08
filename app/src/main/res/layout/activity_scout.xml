@@ -10,11 +10,17 @@
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:orientation="vertical" >
-        <Button
+        android:orientation="vertical"
+        tools:layout_editor_absoluteY="85dp"
+        tools:layout_editor_absoluteX="0dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+            <Button
             android:id="@+id/connectButton"
             android:layout_width="wrap_content"
-            android:layout_gravity="center_horizontal"
+            android:layout_gravity="left"
             android:layout_height="100dp"
             android:text="Connect"
             app:layout_constraintRight_toRightOf="parent"
@@ -22,30 +28,31 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toTopOf="parent" /> <!-- Test Connect Button -->
-        <Button
-            android:id="@+id/sendButton"
-            android:layout_width="wrap_content"
-            android:layout_height="100dp"
-            android:layout_gravity="center_horizontal"
-            android:text="Send"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintRight_toLeftOf="@+id/connectButton"
-            app:layout_constraintLeft_toLeftOf="parent" /> <!-- Test Send Button -->
+            <Button
+                android:id="@+id/sendButton"
+                android:layout_width="wrap_content"
+                android:layout_height="100dp"
+                android:layout_gravity="right"
+                android:text="Send"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintRight_toLeftOf="@+id/connectButton"
+                app:layout_constraintLeft_toLeftOf="parent" /> <!-- Test Send Button -->
+        </LinearLayout>
 
-        <LinearLayout
+
+        <ScrollView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <TextView
+            android:layout_gravity="center">
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hello!"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Hi!" />
-        </LinearLayout>
+                android:orientation="vertical"
+                android:layout_gravity="center"
+                android:id="@+id/scoutLayout">
+            </LinearLayout>
+        </ScrollView>
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
