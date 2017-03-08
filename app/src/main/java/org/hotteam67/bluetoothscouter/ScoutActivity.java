@@ -4,11 +4,19 @@ import android.os.Bundle;
 import android.widget.*;
 import android.view.*;
 import android.os.Message;
+import java.sql.Struct;
+import java.util.*;
+import android.support.v7.app.AppCompatActivity;
+import android.widget.*;
+import android.content.*;
 
 
-public class ScoutActivity extends BluetoothActivity {
+public class ScoutActivity extends AppCompatActivity {
     Button sendButton;
     Button connectButton;
+
+    Button dynamicButton;
+    LinearLayout scoutLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,9 +28,10 @@ public class ScoutActivity extends BluetoothActivity {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Write("SENT!");
+                sendButtonClick();
             }
         });
+        /*
         connectButton = (Button) findViewById(R.id.connectButton);
         connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -30,6 +39,13 @@ public class ScoutActivity extends BluetoothActivity {
                 Connect();
             }
         });
+        */
+
+
+        scoutLayout = (LinearLayout) findViewById(R.id.scoutLayout);
+        dynamicButton = new Button(this);
+        dynamicButton.setText("Hello!");
+        addView(dynamicButton);
     }
     private void handleInput(String s)
     {
@@ -37,6 +53,22 @@ public class ScoutActivity extends BluetoothActivity {
     }
 
 
+    private void sendButtonClick()
+    {
+        // Write("SENT!");
+    }
+
+
+    private void addView(View v)
+    {
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.weight = 1.0f;
+        params.gravity = Gravity.CENTER;
+        v.setLayoutParams(params);
+        scoutLayout.addView(v);
+    }
+
+    /*
 
     @Override
     protected synchronized void handle(Message msg)
@@ -59,4 +91,5 @@ public class ScoutActivity extends BluetoothActivity {
                 break;
         }
     }
+    */
 }
