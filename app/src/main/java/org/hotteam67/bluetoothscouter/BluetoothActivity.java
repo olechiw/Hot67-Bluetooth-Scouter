@@ -29,7 +29,7 @@ public class BluetoothActivity extends AppCompatActivity {
         Log.d(TAG, s);
     }
 
-    private final String TAG = "BLUETOOTH_SCOUTER_DEBUG";
+    public static final String TAG = "BLUETOOTH_SCOUTER_DEBUG";
     private final int numberOfDevices = 1;
     //private final List<UUID> uuid = new ArrayList<UUID>();
 

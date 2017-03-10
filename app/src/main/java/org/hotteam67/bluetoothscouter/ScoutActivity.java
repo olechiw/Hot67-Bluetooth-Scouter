@@ -11,17 +11,18 @@ import android.widget.*;
 import android.content.*;
 
 
-public class ScoutActivity extends AppCompatActivity {
+public class ScoutActivity extends BluetoothActivity {
     Button sendButton;
     Button connectButton;
 
     Button dynamicButton;
-    LinearLayout scoutLayout;
+    GridView scoutLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scout);
+
 
 
         sendButton = (Button) findViewById(R.id.sendButton);
@@ -31,7 +32,7 @@ public class ScoutActivity extends AppCompatActivity {
                 sendButtonClick();
             }
         });
-        /*
+
         connectButton = (Button) findViewById(R.id.connectButton);
         connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -39,13 +40,34 @@ public class ScoutActivity extends AppCompatActivity {
                 Connect();
             }
         });
-        */
 
 
-        scoutLayout = (LinearLayout) findViewById(R.id.scoutLayout);
+
+
+        scoutLayout = (GridView)findViewById(R.id.scoutLayout);
         dynamicButton = new Button(this);
         dynamicButton.setText("Hello!");
-        addView(dynamicButton);
+        // addView(dynamicButton);
+
+        LinkedHashMap<String, Integer> values = new LinkedHashMap<>();
+
+        values.put("First Boolean", 1);
+        values.put("Second Boolean", 1);
+        values.put("String", 2);
+        values.put("Second String", 2);
+        values.put("First Int", 3);
+        values.put("Second Int", 3);
+
+        /*
+        ScoutDataSection.Build(values, scoutLayout);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+                */
+        l("Adding ScoutDataSection View");
+        ScoutDataSection sec = new ScoutDataSection(this);
+        sec.Build(values);
+        scoutLayout.setAdapter(sec);
     }
     private void handleInput(String s)
     {
@@ -68,7 +90,7 @@ public class ScoutActivity extends AppCompatActivity {
         scoutLayout.addView(v);
     }
 
-    /*
+
 
     @Override
     protected synchronized void handle(Message msg)
@@ -91,5 +113,5 @@ public class ScoutActivity extends AppCompatActivity {
                 break;
         }
     }
-    */
+
 }

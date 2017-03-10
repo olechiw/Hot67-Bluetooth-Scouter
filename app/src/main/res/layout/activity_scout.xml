@@ -38,21 +38,64 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintRight_toLeftOf="@+id/connectButton"
                 app:layout_constraintLeft_toLeftOf="parent" /> <!-- Test Send Button -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Team Number:"
+                android:layout_gravity="center_vertical"/>
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:id="@+id/teamNumber"/>
         </LinearLayout>
 
 
+        <!--
         <ScrollView
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center">
-            <LinearLayout
+            android:layout_height="fill_parent"
+            android:layout_gravity="center"
+            android:padding="2dp"
+            android:id="@+id/scoutLayout">
+
+            <TableLayout
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_gravity="center"
-                android:id="@+id/scoutLayout">
-            </LinearLayout>
+                android:stretchColumns="0">
+            <TableRow>
+                <CheckBox
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:text="HI"/>
+            </TableRow>
+            </TableLayout>
+
         </ScrollView>
+        -->
+
+        <!--
+        <org.hotteam67.bluetoothscouter.ScoutDataSection
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/gridView">
+
+        </org.hotteam67.bluetoothscouter.ScoutDataSection>
+        -->
+
+
+        <GridView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:numColumns="auto_fit"
+            android:id="@+id/scoutLayout"
+            android:layout_gravity="center"
+            android:gravity="center">
+        </GridView>
+
+
     </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>
