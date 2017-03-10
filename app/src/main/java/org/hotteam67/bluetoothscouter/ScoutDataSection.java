@@ -33,15 +33,74 @@ public class ScoutDataSection extends BaseAdapter {
 
     public View getView(int position, View convertView, ViewGroup parent)
     {
-        View v = null;
+        View v = convertView;
+
 
         if (position < variables.size())
         {
-            v = variables.get(position);
-            v.setPadding(40, 10, 40, 10);
+            return variables.get(position);
+            /*
+            int rowsLeft = (variables.size() % columns);
+
+
+            // Before last row
+            if (position < variables.size() - rowsLeft)
+                v = variables.get(position);
+
+            // Last row, but perfectly lined up anyway
+            else if (rowsLeft == 0)
+                v = variables.get(position);
+
+            // Last row, less than optimal, so we fill from the bottom in
+            else
+            {
+                int median = (columns % 2 == 0) ? (columns / 2) : (columns / 2) + 1;
+
+                if (position == variables.size() - rowsLeft) {}
+
+            }
+            */
+                // TODO: FIGURE OUT HOW TO DO THIS ALGORITHM.
+                // {1, 2, 3, 4, 5} << columns
+
+                // {1, 2} << leftover
+                // 1->3, 2->2 or 2->4 ?
+                // 1->2, 2->3 ?
+
+                // {1, 2, 3} << leftover
+                // 1->2,2->3, 3->4
+
+                // {1} << leftover
+                // 1->3
         }
 
+        GridView gv = (GridView) parent;
+        gv.setNumColumns(columns);
+        gv.setColumnWidth(columnWidth);
+
         return v;
+    }
+
+    public int measureCellWidth( Context context, View cell )
+    {
+
+        // We need a fake parent
+        FrameLayout buffer = new FrameLayout( context );
+        android.widget.AbsListView.LayoutParams layoutParams
+                = new  android.widget.AbsListView.LayoutParams(
+                android.widget.AbsListView.LayoutParams.WRAP_CONTENT,
+                android.widget.AbsListView.LayoutParams.WRAP_CONTENT);
+
+        buffer.addView( cell, layoutParams);
+
+        cell.forceLayout();
+        cell.measure(1000, 1000);
+
+        int width = cell.getMeasuredWidth();
+
+        buffer.removeAllViews();
+
+        return width;
     }
 
     public Object getItem(int position)
@@ -76,6 +135,7 @@ public class ScoutDataSection extends BaseAdapter {
                 label.setText(" ");
             layout.addView(label, params);
 
+            layout.setTag(String.valueOf(d.getValue()));
 
             switch (d.getValue())
             {
@@ -99,7 +159,33 @@ public class ScoutDataSection extends BaseAdapter {
 
             variables.add(layout);
         }
-    }
+
+        int width = 0;
+        for (View v : variables)
+        {
+            int id = Integer.valueOf((String)v.getTag());
+
+            if (id == TYPE_INTEGER)
+                v.setPadding(130, 20, 130, 20);
+            else
+                v.setPadding(20, 20, 20, 20);
+
+            int measure = measureCellWidth(context, v);
+            width = (width > measure ) ? width : measure;
+        }
+
+        DisplayMetrics metrics = new DisplayMetrics();
+        ((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        int screenWidth = metrics.widthPixels;
+
+        l("Columns Measured at Width: " + width);
+        l("Screen Measured at Width: " + screenWidth);
+
+        columns = (screenWidth/width);
+        columnWidth = width;
+        l("Columns Calculated: " + columns);
+    } int columns = 2;
+    int columnWidth = 0;
 
 
     public ScoutDataSection(Context c) {
@@ -285,11 +371,11 @@ public class ScoutDataSection extends BaseAdapter {
 
         return params;
     }
-
+*/
     private static void l(String s)
     {
         Log.d(BluetoothActivity.TAG, s);
     }
 
-    */
+
 }
