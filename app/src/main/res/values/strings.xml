@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">BluetoothScouter</string>
+    <string name="value_name">5</string>
+    <string name="value_type">10</string>
 </resources>

@@ -153,6 +153,11 @@ public class BluetoothActivity extends AppCompatActivity {
                 {
                     connectSocket(conn);
                 }
+
+                if (Thread.currentThread().isInterrupted())
+                {
+                    break;
+                }
             }
         }
 
@@ -278,6 +283,11 @@ public class BluetoothActivity extends AppCompatActivity {
                         connectedSockets.remove(index);
                     }
                 }
+
+                if (Thread.currentThread().isInterrupted())
+                {
+                    break;
+                }
             }
         }
 
@@ -289,7 +299,9 @@ public class BluetoothActivity extends AppCompatActivity {
             {
                 numBytes = stream.read(buffer);
 
-                m_handler.obtainMessage(MESSAGE_INPUT, numBytes, -1, buffer).sendToTarget();
+                l("Reading Bytes of Length:" + numBytes);
+
+                m_handler.obtainMessage(MESSAGE_INPUT, numBytes, -1, new String(buffer, "UTF-8")).sendToTarget();
 
             }
             catch (java.io.IOException e)
@@ -304,6 +316,8 @@ public class BluetoothActivity extends AppCompatActivity {
 
         public void write(byte[] bytes)
         {
+            l("Writing: " + new String(bytes));
+            l("Bytes Length: " + bytes.length);
             List<OutputStream> outputStreams = new ArrayList<OutputStream>();
 
             for (BluetoothSocket socket : connectedSockets)
@@ -409,7 +423,13 @@ public class BluetoothActivity extends AppCompatActivity {
     protected synchronized void Write(String text)
     {
         l("EVENT: send() " + text);
-        connectedThread.write(text.getBytes());
+        try {
+            connectedThread.write(text.getBytes("UTF-8"));
+        }
+        catch (Exception e)
+        {
+            l("Failed to write: Exception: " + e.getMessage());
+        }
     }
 
 
@@ -446,6 +466,26 @@ public class BluetoothActivity extends AppCompatActivity {
                 //toast("DISCONNECTED FROM DEVICE");
                 disconnectEvent.call("");
                 break;
+        }
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        try {
+            acceptThread.interrupt();
+        }
+        catch (Exception e)
+        {
+            l("Failed to stop thread: Accept\n" + e.getMessage());
+        }
+        try {
+            connectedThread.interrupt();
+        }
+        catch (Exception e)
+        {
+            l("Failed to stop thread: Connected\n" + e.getMessage());
         }
     }
 }

@@ -4,19 +4,19 @@ import android.os.Bundle;
 import android.widget.*;
 import android.view.*;
 import android.os.Message;
-import java.sql.Struct;
+
 import java.util.*;
-import android.support.v7.app.AppCompatActivity;
-import android.widget.*;
-import android.content.*;
 
 
 public class ScoutActivity extends BluetoothActivity {
     Button sendButton;
     Button connectButton;
 
-    Button dynamicButton;
+    EditText teamNumber;
+    NumberPicker matchNumber;
+
     GridView scoutLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,33 +41,30 @@ public class ScoutActivity extends BluetoothActivity {
             }
         });
 
+        teamNumber = (EditText) findViewById(R.id.teamNumber);
 
-
+        matchNumber = (NumberPicker) findViewById(R.id.matchNumber);
+        matchNumber.setMinValue(0);
+        matchNumber.setMaxValue(150);
 
         scoutLayout = (GridView)findViewById(R.id.scoutLayout);
-        dynamicButton = new Button(this);
-        dynamicButton.setText("Hello!");
-        // addView(dynamicButton);
+
+
 
         LinkedHashMap<String, Integer> values = new LinkedHashMap<>();
 
-        values.put("First Boolean", 1);
-        values.put("Second Boolean", 1);
-        values.put("String", 2);
-        values.put("Second String", 2);
-        values.put("First Int", 3);
-        values.put("Second Int", 3);
+        values.put("First Boolean", ScoutInputAdapter.TYPE_BOOL);
+        values.put("Second Boolean", ScoutInputAdapter.TYPE_BOOL);
+        values.put("First String", ScoutInputAdapter.TYPE_STRING);
+        values.put("Second String", ScoutInputAdapter.TYPE_STRING);
+        values.put("First Int", ScoutInputAdapter.TYPE_INTEGER);
+        values.put("Second Int", ScoutInputAdapter.TYPE_INTEGER);
 
-        /*
-        ScoutDataSection.Build(values, scoutLayout);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT);
-                */
-        l("Adding ScoutDataSection View");
-        ScoutDataSection sec = new ScoutDataSection(this);
+        l("Adding ScoutInputAdapter View");
+        ScoutInputAdapter sec = new ScoutInputAdapter(this);
         sec.Build(values);
         scoutLayout.setAdapter(sec);
+        sec.notifyDataSetChanged();
     }
     private void handleInput(String s)
     {
@@ -77,17 +74,8 @@ public class ScoutActivity extends BluetoothActivity {
 
     private void sendButtonClick()
     {
-        // Write("SENT!");
-    }
-
-
-    private void addView(View v)
-    {
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        params.weight = 1.0f;
-        params.gravity = Gravity.CENTER;
-        v.setLayoutParams(params);
-        scoutLayout.addView(v);
+        l("Sending value:\n" + "67,1");
+        Write("67,1");
     }
 
 
@@ -98,9 +86,21 @@ public class ScoutActivity extends BluetoothActivity {
         switch (msg.what)
         {
             case MESSAGE_INPUT:
+                /*
+                l("Getting full info");
                 byte[] info = (byte[]) msg.obj;
-                String message = new String(info);
-                handleInput(message);
+                l("Translating with new statement");
+                byte[] translatedInfo = new byte[msg.arg1];
+
+                l("Filling new array at length: " + msg.arg1);
+                for (int i = 0; i < msg.arg1; ++i)
+                {
+                    translatedInfo[i] = info[i];
+                }
+                l("Converting to string");
+                String message = new String(translatedInfo);
+                */
+                handleInput((String)msg.obj);
                 break;
             case MESSAGE_TOAST:
                 l(new String((byte[])msg.obj));

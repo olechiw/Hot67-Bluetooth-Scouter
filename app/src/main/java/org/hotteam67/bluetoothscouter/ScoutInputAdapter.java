@@ -16,14 +16,15 @@ import android.util.Log;
  * Created by Jakob on 3/7/2017.
  */
 
-public class ScoutDataSection extends BaseAdapter {
+public class ScoutInputAdapter extends BaseAdapter {
 
     public static final int TYPE_BOOL = 1;
     public static final int TYPE_STRING = 2;
     public static final int TYPE_INTEGER = 3;
 
     private Context context;
-    private static List<LinearLayout> variables = new ArrayList<>();
+    // private static List<LinearLayout> variables = new ArrayList<>();
+    private static List<View> variables = new ArrayList<>();
     private static LinkedHashMap<String, Integer> variableInfo = new LinkedHashMap<>();
 
     public int getCount()
@@ -41,37 +42,31 @@ public class ScoutDataSection extends BaseAdapter {
             return variables.get(position);
             /*
             int rowsLeft = (variables.size() % columns);
-
-
             // Before last row
             if (position < variables.size() - rowsLeft)
                 v = variables.get(position);
-
             // Last row, but perfectly lined up anyway
             else if (rowsLeft == 0)
                 v = variables.get(position);
-
             // Last row, less than optimal, so we fill from the bottom in
             else
             {
                 int median = (columns % 2 == 0) ? (columns / 2) : (columns / 2) + 1;
-
                 if (position == variables.size() - rowsLeft) {}
-
             }
             */
-                // TODO: FIGURE OUT HOW TO DO THIS ALGORITHM.
-                // {1, 2, 3, 4, 5} << columns
+            // TODO: FIGURE OUT HOW TO DO THIS ALGORITHM.
+            // {1, 2, 3, 4, 5} << columns
 
-                // {1, 2} << leftover
-                // 1->3, 2->2 or 2->4 ?
-                // 1->2, 2->3 ?
+            // {1, 2} << leftover
+            // 1->3, 2->2 or 2->4 ?
+            // 1->2, 2->3 ?
 
-                // {1, 2, 3} << leftover
-                // 1->2,2->3, 3->4
+            // {1, 2, 3} << leftover
+            // 1->2,2->3, 3->4
 
-                // {1} << leftover
-                // 1->3
+            // {1} << leftover
+            // 1->3
         }
 
         GridView gv = (GridView) parent;
@@ -124,6 +119,7 @@ public class ScoutDataSection extends BaseAdapter {
 
         for (Map.Entry<String, Integer> d : data.entrySet())
         {
+            /*
             LinearLayout layout = new LinearLayout(context);
             layout.setOrientation(LinearLayout.VERTICAL);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -134,28 +130,56 @@ public class ScoutDataSection extends BaseAdapter {
             if (d.getValue() == TYPE_BOOL)
                 label.setText(" ");
             layout.addView(label, params);
+            */
+            View layout;
 
-            layout.setTag(String.valueOf(d.getValue()));
+            // layout.setTag(String.valueOf(d.getValue()));
 
             switch (d.getValue())
             {
                 case TYPE_BOOL:
+
                     CheckBox bool = new CheckBox(context);
                     bool.setText(d.getKey());
-                    layout.addView(bool, params);
+
+                    // layout.addView(bool, params);
+
+                    layout = bool;
+                    l("Creating a boolean: " + d.getKey());
                     break;
                 case TYPE_STRING:
+                    /*
                     EditText string = new EditText(context);
                     layout.addView(string, params);
+                    */
+                    l("Creating a string: " + d.getKey());
+                    layout = ((Activity)context).getLayoutInflater().inflate(R.layout.layout_edittext, null);
+                    ((TextView)layout.findViewById(R.id.textLabel)).setText(d.getKey());
                     break;
                 case TYPE_INTEGER:
+                    /*
                     NumberPicker integer=  new NumberPicker(context);
                     integer.setMinValue(0);
                     integer.setMaxValue(100);
 
                     layout.addView(integer);
+                    */
+                    l("Creating an integer: " + d.getKey());
+                    layout = ((Activity)context).getLayoutInflater().inflate(R.layout.layout_numberpicker, null);
+                    ((TextView)layout.findViewById(R.id.numberLabel)).setText(d.getKey());
+
+                    ((NumberPicker)layout.findViewById(R.id.numberPicker)).setMinValue(0);
+                    ((NumberPicker)layout.findViewById(R.id.numberPicker)).setMaxValue(0);
+
                     break;
+                default:
+                    l("Invalid ID Given!:" + d.getValue());
+                    layout = null;
+                    continue;
             }
+
+            layout.setTag(R.string.value_name, d.getKey());
+            layout.setTag(R.string.value_type, d.getValue());
 
             variables.add(layout);
         }
@@ -163,7 +187,7 @@ public class ScoutDataSection extends BaseAdapter {
         int width = 0;
         for (View v : variables)
         {
-            int id = Integer.valueOf((String)v.getTag());
+            int id = (int)v.getTag(R.string.value_type);
 
             if (id == TYPE_INTEGER)
                 v.setPadding(130, 20, 130, 20);
@@ -188,7 +212,7 @@ public class ScoutDataSection extends BaseAdapter {
     int columnWidth = 0;
 
 
-    public ScoutDataSection(Context c) {
+    public ScoutInputAdapter(Context c) {
         context = c;
     }
 
@@ -197,15 +221,11 @@ public class ScoutDataSection extends BaseAdapter {
     public static void Build(LinkedHashMap<String, Integer> data, android.widget.GridView gridView)
     {
         l("Contructing Scout Data Section");
-
         DisplayMetrics displayMetrics = new DisplayMetrics();
-
         ((Activity) gridView.getContext()).getWindowManager()
                 .getDefaultDisplay()
                 .getMetrics(displayMetrics);
-
         int width = displayMetrics.widthPixels;
-
         int i = 0;
         for (Map.Entry<String, Integer> d : data.entrySet()) {
             View v;
@@ -224,7 +244,6 @@ public class ScoutDataSection extends BaseAdapter {
                     break;
                 case TYPE_INTEGER:
                     v = new NumberPicker(gridView.getContext());
-
                     vLabel = new TextView(gridView.getContext());
                     ((TextView) vLabel).setText(d.getKey());
                     break;
@@ -237,10 +256,7 @@ public class ScoutDataSection extends BaseAdapter {
             variables.add(v);
             i += 2;
         }
-
         int padding = 10;
-
-
         i = 0;
         l(String.valueOf(i));
         while (i < variables.size())
@@ -255,7 +271,6 @@ public class ScoutDataSection extends BaseAdapter {
 /*
             List<View> firstRowViews = new ArrayList<>();
             List<View> secondRowViews = new ArrayList<>();
-
             int tmp = width;
             */
             /*
@@ -264,7 +279,6 @@ public class ScoutDataSection extends BaseAdapter {
                 View v1 = variables.get(i);
                 View v2 = variables.get(i + 1);
                 tmp -= padding * 2;
-
                 int greater = (v1.getWidth() > v2.getWidth()) ? v1.getWidth() : v2.getWidth();
                 tmp -= greater;
                 if (tmp >= 0)
@@ -272,7 +286,6 @@ public class ScoutDataSection extends BaseAdapter {
                     firstRowViews.add(v1);
                     secondRowViews.add(v2);
                 }
-
                 i += 2;
             } while (tmp >= 0 && i < variables.size());
             */
@@ -281,7 +294,6 @@ public class ScoutDataSection extends BaseAdapter {
             View v2 = variables.get(i + 1);
             float weight = 1.0f;
             tmp = (v1.getWidth() > v2.getWidth()) ? v1.getWidth() : v2.getWidth();
-
             firstRowViews.add(v1);
             secondRowViews.add(v2);
             if (i + 2 < variables.size())
@@ -289,7 +301,6 @@ public class ScoutDataSection extends BaseAdapter {
                 View v3 = variables.get(i + 2);
                 View v4 = variables.get(i + 3);
                 tmp -= (v3.getWidth() > v4.getWidth()) ? v3.getWidth() : v4.getWidth();
-
                 /*
                 if (tmp >= padding * 2)
                 {
@@ -300,7 +311,7 @@ public class ScoutDataSection extends BaseAdapter {
                 }
                 */
                 /**/
-                // weight = 0.5f;
+    // weight = 0.5f;
                 /*
                 firstRowViews.add(v3);
                 secondRowViews.add(v4);
@@ -314,35 +325,25 @@ public class ScoutDataSection extends BaseAdapter {
             }
             else
                 i += 2;
-
             for (View v : firstRowViews)
             {
                 GridView.LayoutParams params = centeredParams();
                 //params.weight = weight;
                 v.setLayoutParams(params);
-
                 l("Loaded a view");
-
                 GridView.LayoutParams params2 = centeredParams();
                 //params2.weight = weight;
-
                 View vContent = secondRowViews.get(firstRowViews.indexOf(v));
                 vContent.setLayoutParams(params);
-
                 l("Loaded a view");
-
                 LinearLayout layout = new LinearLayout(gridView.getContext());
                 layout.setOrientation(LinearLayout.VERTICAL);
                 layout.addView(v);
                 layout.addView(vContent);
-
                 layout.setLayoutParams(centeredParams());
                 gridView.addView(layout);
-
-
                 l("Added a view");
             }
-
             /*
             for (View v : secondRowViews)
             {
@@ -353,7 +354,6 @@ public class ScoutDataSection extends BaseAdapter {
                 secondRow.addView(v);
                 l("Added a view");
             }
-
             l("Adding First Row : Index :" + String.valueOf(i));
             l(String.valueOf(i));
             this.addView(row);
@@ -368,7 +368,6 @@ public class ScoutDataSection extends BaseAdapter {
     private static GridView.LayoutParams centeredParams()
     {
         GridView.LayoutParams params = new GridView.LayoutParams(GridView.LayoutParams.MATCH_PARENT, GridView.LayoutParams.MATCH_PARENT);
-
         return params;
     }
 */

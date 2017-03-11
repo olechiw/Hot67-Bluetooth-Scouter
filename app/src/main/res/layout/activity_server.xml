@@ -6,4 +6,70 @@
     android:layout_height="match_parent"
     tools:context="org.hotteam67.bluetoothscouter.ServerActivity">
 
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:text="Devices Connected: 0"
+                android:paddingRight="60dp"
+                android:id="@+id/connectedDevices"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_gravity="right">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Latest Game #:"
+                    android:layout_gravity="top"
+                    android:paddingTop="10dp"
+                    android:id="@+id/latestMatch"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Teams Received:"
+                    android:id="@+id/teamsReceived"
+                    android:layout_gravity="bottom"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TableLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_gravity="center"
+                    android:id="@+id/outputView">
+
+                </TableLayout>
+
+            </HorizontalScrollView>
+
+        </ScrollView>
+
+    </LinearLayout>
 </android.support.constraint.ConstraintLayout>
