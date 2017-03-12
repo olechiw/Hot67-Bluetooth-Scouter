@@ -57,15 +57,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <TableLayout
+                <Button
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:layout_gravity="center"
-                    android:id="@+id/outputView">
-
-                </TableLayout>
+                    android:text="Send Configuration"
+                    android:id="@+id/sendButton"/>
 
             </HorizontalScrollView>
 

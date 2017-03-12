@@ -85,7 +85,9 @@
             android:numColumns="auto_fit"
             android:id="@+id/scoutLayout"
             android:layout_gravity="center_horizontal"
-            android:gravity="center_horizontal">
+            android:gravity="center_horizontal"
+            android:stretchMode="columnWidth"
+            android:background="#fff">
         </GridView>
 
     </LinearLayout>

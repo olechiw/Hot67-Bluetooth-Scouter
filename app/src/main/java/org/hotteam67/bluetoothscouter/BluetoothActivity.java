@@ -93,19 +93,23 @@ public class BluetoothActivity extends AppCompatActivity {
 
     protected void toast(String text)
     {
-        AlertDialog.Builder dlg = new AlertDialog.Builder(this);
-        dlg.setTitle("");
-        dlg.setMessage(text);
-        dlg.setPositiveButton("Ok", new DialogInterface.OnClickListener()
+        try {
+            AlertDialog.Builder dlg = new AlertDialog.Builder(this);
+            dlg.setTitle("");
+            dlg.setMessage(text);
+            dlg.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            dlg.setCancelable(true);
+            dlg.create();
+            dlg.show();
+        }
+        catch (Exception e)
         {
-            public void onClick(DialogInterface dialog, int which)
-            {
-                dialog.dismiss();
-            }
-        });
-        dlg.setCancelable(true);
-        dlg.create();
-        dlg.show();
+            l("Failed to create dialog: " + e.getMessage());
+        }
     }
 
 

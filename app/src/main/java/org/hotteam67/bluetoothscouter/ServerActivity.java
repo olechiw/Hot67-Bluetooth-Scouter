@@ -8,21 +8,33 @@ import java.io.*;
 import java.security.cert.TrustAnchor;
 import java.util.*;
 import java.text.Normalizer;
+import android.support.v4.app.ActivityCompat;
+import android.os.Environment;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.support.v4.content.ContextCompat;
 
 
 public class ServerActivity extends BluetoothActivity {
 
 
     public static final String FILE_NAME = "database.csv";
+    public static final String FILE_DIRECTORY =
+            Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
+
+    public static final int REQUEST_PERM_EXTERNAL = 1;
 
     public static final int MATCH_NUMBER = 1;
 
     FileWriter databaseFile = null;
     String content = "";
+    String header = "";
 
     TextView connectedDevicesText;
     TextView teamsReceivedText;
     TextView latestMatchText;
+
+    Button sendButton;
 
     /*
     TableLayout outputView;
@@ -40,6 +52,16 @@ public class ServerActivity extends BluetoothActivity {
         teamsReceivedText = (TextView)findViewById(R.id.teamsReceived);
         latestMatchText = (TextView)findViewById(R.id.latestMatch);
 
+        sendButton = (Button)findViewById(R.id.sendButton);
+        sendButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if (!header.trim().isEmpty())
+                    Write(header);
+            }
+        });
         /*
         outputView = (TableLayout)findViewById(R.id.outputView);
 
@@ -78,14 +100,16 @@ public class ServerActivity extends BluetoothActivity {
 
         try
         {
+            l("Writing to database file: " + msg);
             if (databaseFile != null)
-                databaseFile.write(msg);
-
+                databaseFile.append(msg);
+            databaseFile.flush();
             content += msg;
         }
         catch (IOException e)
         {
             l("Failed to write to file on receive: " + e.getMessage());
+            e.printStackTrace();
         }
 
         List<String> vars = new ArrayList<>(Arrays.asList(msg.split(",")));
@@ -98,15 +122,6 @@ public class ServerActivity extends BluetoothActivity {
         teamsReceived++;
         teamsReceivedText.setText("Teams Received: " + teamsReceived);
         latestMatchText.setText("Latest Game #: " + matchNumber);
-
-
-
-        /*
-        ServerOutputAdapter.Build(
-                this,
-                new ArrayList<>(Arrays.asList(content.split("\n"))),
-                outputView);
-                */
     }
 
     private int connectedDevices = 0;
@@ -126,7 +141,7 @@ public class ServerActivity extends BluetoothActivity {
             case MESSAGE_CONNECTED:
                 connectedDevices++;
                 connectedDevicesText.setText("Devices Connected: " + connectedDevices);
-                toast("CONNECTED!");
+                // toast("CONNECTED!");
                 break;
             case MESSAGE_DISCONNECTED:
                 connectedDevices--;
@@ -136,43 +151,102 @@ public class ServerActivity extends BluetoothActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_PERM_EXTERNAL: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    setupIO();
+                }
+            }
+        }
+    }
+
     private void setupIO()
+    {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            l("Needs External Storage Permissions. Requesting");
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_PERM_EXTERNAL);
+            return;
+        }
+
+
+        if(!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+            l("No Access to SD Card!!");
+        }
+
+        loadExistingContent();
+
+        loadWriter();
+    }
+
+    private void loadExistingContent()
     {
         try
         {
-            BufferedReader reader = new BufferedReader(new FileReader(getFilesDir().getAbsolutePath() + FILE_NAME));
+            BufferedReader reader = new BufferedReader(new FileReader(FILE_DIRECTORY + FILE_NAME));
             StringBuilder builder = new StringBuilder();
+
             String line = reader.readLine();
+            if (line != null)
+            {
+                l("Found Header: " + line);
+                builder.append(line);
+                builder.append("\n");
+                header = line;
+                line = reader.readLine();
+            }
             while (line != null)
             {
                 builder.append(line);
                 builder.append("\n");
                 line = reader.readLine();
             }
-
             reader.close();
+            l("File Found: " + FILE_DIRECTORY + FILE_NAME);
             content = builder.toString();
+            l("Read content: " + content);
         }
         catch (FileNotFoundException e)
         {
             l("Unable to detect database file, skipping load");
+
+
+            File dir = new File(FILE_DIRECTORY);
+
+            l("Creating files directory: " + dir.getAbsolutePath());
+            dir.mkdirs();
         }
         catch (IOException e)
         {
-            l("Unable to write to file: " + e.getMessage());
+            l("Unable to read from file: " + e.getMessage());
         }
+    }
 
+    private void loadWriter()
+    {
         try
         {
-            File f = new File(getFilesDir().getAbsolutePath() + FILE_NAME);
-            if (!f.exists())
+            l("Loading file for writing");
+            File f = new File(FILE_DIRECTORY + FILE_NAME);
+            if (!f.exists()) {
+                l("File does not exist. Creating: " + f.getAbsolutePath());
                 f.createNewFile();
+            }
 
-            databaseFile = new FileWriter(f.getAbsoluteFile(), true);
+            databaseFile = new FileWriter(f.getAbsolutePath(), true);
         }
         catch (IOException e)
         {
             l("Failed to open filewriter: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

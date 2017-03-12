@@ -64,9 +64,6 @@ public class ServerOutputAdapter {
     {
         TextView v = new TextView(context);
         v.setText(createText);
-        TextViewCompat.setTextAppearance(
-                v,
-                android.R.style.TextAppearance_DeviceDefault_Medium);
         return v;
     }
 

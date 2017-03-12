@@ -4,6 +4,8 @@
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -20,7 +22,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ScoutActivity" />
-        <activity android:name=".ServerActivity"></activity>
+        <activity android:name=".ServerActivity" />
     </application>
 
 </manifest>

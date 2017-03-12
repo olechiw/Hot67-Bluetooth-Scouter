@@ -6,6 +6,7 @@ import android.view.*;
 import android.os.Message;
 
 import java.util.*;
+import java.io.*;
 
 
 public class ScoutActivity extends BluetoothActivity {
@@ -16,7 +17,7 @@ public class ScoutActivity extends BluetoothActivity {
     NumberPicker matchNumber;
 
     GridView scoutLayout;
-
+    ScoutInputAdapter scoutInputAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +39,7 @@ public class ScoutActivity extends BluetoothActivity {
             @Override
             public void onClick(View v) {
                 Connect();
+                l("Attempting Connect!");
             }
         });
 
@@ -49,33 +51,41 @@ public class ScoutActivity extends BluetoothActivity {
 
         scoutLayout = (GridView)findViewById(R.id.scoutLayout);
 
+        scoutInputAdapter = new ScoutInputAdapter(this);
+        scoutLayout.setAdapter(scoutInputAdapter);
 
-
-        LinkedHashMap<String, Integer> values = new LinkedHashMap<>();
-
-        values.put("First Boolean", ScoutInputAdapter.TYPE_BOOL);
-        values.put("Second Boolean", ScoutInputAdapter.TYPE_BOOL);
-        values.put("First String", ScoutInputAdapter.TYPE_STRING);
-        values.put("Second String", ScoutInputAdapter.TYPE_STRING);
-        values.put("First Int", ScoutInputAdapter.TYPE_INTEGER);
-        values.put("Second Int", ScoutInputAdapter.TYPE_INTEGER);
-
-        l("Adding ScoutInputAdapter View");
-        ScoutInputAdapter sec = new ScoutInputAdapter(this);
-        sec.Build(values);
-        scoutLayout.setAdapter(sec);
-        sec.notifyDataSetChanged();
-    }
-    private void handleInput(String s)
-    {
-        this.sendButton.setText(s);
+        if (!Build())
+            l("Build failed, no values loaded");
     }
 
 
     private void sendButtonClick()
     {
-        l("Sending value:\n" + "67,1");
-        Write("67,1");
+        /*
+        l("Sending values:\n" + "67,1");
+        */
+        String values = "";
+        String div = ",";
+
+        if (teamNumber.getText().toString().trim().isEmpty())
+            values += "0" + div;
+        else
+            values += teamNumber.getText().toString() + div;
+
+        values += Integer.toString(matchNumber.getValue()) + div;
+
+        List<String> currentValues = ((ScoutInputAdapter)scoutLayout.getAdapter()).GetCurrentValues();
+        for (int i = 0; i < currentValues.size(); ++i)
+        {
+            String s = currentValues.get(i);
+            l("Appending to output: '" + s + "'");
+            values += s;
+            if (i + 1 != currentValues.size())
+                values += div;
+        }
+        values += "\n";
+
+        Write(values);
     }
 
 
@@ -86,21 +96,11 @@ public class ScoutActivity extends BluetoothActivity {
         switch (msg.what)
         {
             case MESSAGE_INPUT:
-                /*
-                l("Getting full info");
-                byte[] info = (byte[]) msg.obj;
-                l("Translating with new statement");
-                byte[] translatedInfo = new byte[msg.arg1];
-
-                l("Filling new array at length: " + msg.arg1);
-                for (int i = 0; i < msg.arg1; ++i)
+                if (!Build((String)msg.obj, true))
                 {
-                    translatedInfo[i] = info[i];
+                    toast("Failed to Build Values on Receive!");
+                    l("Input Failed: " + (String)msg.obj);
                 }
-                l("Converting to string");
-                String message = new String(translatedInfo);
-                */
-                handleInput((String)msg.obj);
                 break;
             case MESSAGE_TOAST:
                 l(new String((byte[])msg.obj));
@@ -114,4 +114,94 @@ public class ScoutActivity extends BluetoothActivity {
         }
     }
 
+
+    private boolean Build()
+    {
+        File targetFile = new File(ServerActivity.FILE_DIRECTORY + ServerActivity.FILE_NAME);
+
+        // No data present on device
+        if (!targetFile.exists())
+            return false;
+
+        try
+        {
+            BufferedReader reader = new BufferedReader(new FileReader(ServerActivity.FILE_DIRECTORY + ServerActivity.FILE_NAME));
+            StringBuilder builder = new StringBuilder();
+            String line = reader.readLine();
+            if (line != null)
+                return Build(line, false);
+        }
+        catch (IOException e)
+        {
+            l("Failed to find file even after checking. Something went wrong");
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // Get just the last char
+    private String getLast(String s)
+    {
+        return s.substring(s.length()-1);
+    }
+    // Get all values up to the last char
+    private String getBefore(String s)
+    {
+        return s.substring(0, s.length()-1);
+    }
+
+    private boolean Build(String s, boolean write)
+    {
+        if (write)
+        {
+            try
+            {
+                File dir = new File(ServerActivity.FILE_DIRECTORY);
+                dir.mkdirs();
+                File file = new File(ServerActivity.FILE_DIRECTORY + ServerActivity.FILE_NAME);
+                if (!file.exists())
+                    file.createNewFile();
+
+                FileWriter f = new FileWriter(file.getAbsolutePath(), false);
+                f.write(s);
+                f.close();
+            }
+            catch (Exception e)
+            {
+                l("Failed to create and/or write to file: " + e.getMessage());
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        try
+        {
+
+            LinkedHashMap<String, Integer> values = new LinkedHashMap<>();
+            for (String str : s.split(","))
+            {
+                try
+                {
+                    int number = Integer.valueOf(getLast(str));
+                    values.put(getBefore(str), number);
+                } catch (Exception e)
+                {
+                    l("Failed to load type from input");
+                    e.printStackTrace();
+                }
+            }
+
+            scoutInputAdapter.Build(values);
+            scoutInputAdapter.notifyDataSetChanged();
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            l("Failed to load");
+            return false;
+        }
+
+        return true;
+    }
 }
