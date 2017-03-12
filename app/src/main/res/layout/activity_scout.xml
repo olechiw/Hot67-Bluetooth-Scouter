@@ -79,6 +79,7 @@
         </HorizontalScrollView>
 
 
+        <!--
         <GridView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -89,6 +90,16 @@
             android:stretchMode="columnWidth"
             android:background="#fff">
         </GridView>
+        -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <org.hotteam67.bluetoothscouter.ScoutGridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/scoutLayout"/>
+        </ScrollView>
+
 
     </LinearLayout>
 

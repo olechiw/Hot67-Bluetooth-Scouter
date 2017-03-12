@@ -102,7 +102,7 @@ public class ServerActivity extends BluetoothActivity {
         {
             l("Writing to database file: " + msg);
             if (databaseFile != null)
-                databaseFile.append(msg);
+                databaseFile.append(msg + "\n");
             databaseFile.flush();
             content += msg;
         }
@@ -133,7 +133,7 @@ public class ServerActivity extends BluetoothActivity {
         {
             case MESSAGE_INPUT:
                 String message = (String)msg.obj;
-                handleInput(message.substring(0,msg.arg1));
+                handleInput(message);
                 break;
             case MESSAGE_TOAST:
                 l(new String((byte[])msg.obj));

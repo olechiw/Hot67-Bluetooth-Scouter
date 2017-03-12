@@ -120,7 +120,7 @@ public class BluetoothActivity extends AppCompatActivity {
      */
     AcceptThread acceptThread;
     private class AcceptThread extends Thread {
-        private final BluetoothServerSocket connectionSocket;
+        public final BluetoothServerSocket connectionSocket;
         public AcceptThread()
         {
             BluetoothServerSocket tmp = null;
@@ -141,7 +141,7 @@ public class BluetoothActivity extends AppCompatActivity {
         {
             BluetoothSocket s = null;
 
-            while (true)
+            while (!Destroyed())
             {
                 BluetoothSocket conn = null;
                 try
@@ -162,7 +162,9 @@ public class BluetoothActivity extends AppCompatActivity {
                 {
                     break;
                 }
+
             }
+            l("Accept Thread Ended!!");
         }
 
         public void cancel()
@@ -261,11 +263,9 @@ public class BluetoothActivity extends AppCompatActivity {
 
         public void run()
         {
-            while (true)
+            while (!Destroyed())
             {
-                List<InputStream> inputStreams = new ArrayList<InputStream>();
-
-
+                List<InputStream> inputStreams = new ArrayList<>();
 
                 for (BluetoothSocket socket : connectedSockets)
                 {
@@ -283,8 +283,8 @@ public class BluetoothActivity extends AppCompatActivity {
                 {
                     if (!read(stream))
                     {
-                        int index = inputStreams.indexOf(stream);
-                        connectedSockets.remove(index);
+                        int i = inputStreams.indexOf(stream);
+                        connectedSockets.remove(i);
                     }
                 }
 
@@ -293,6 +293,7 @@ public class BluetoothActivity extends AppCompatActivity {
                     break;
                 }
             }
+            l("Connected Thread Ended!!!");
         }
 
         private boolean read(InputStream stream)
@@ -305,8 +306,8 @@ public class BluetoothActivity extends AppCompatActivity {
 
                 l("Reading Bytes of Length:" + numBytes);
 
-                m_handler.obtainMessage(MESSAGE_INPUT, numBytes, -1, new String(buffer, "UTF-8")).sendToTarget();
-
+                m_handler.obtainMessage(MESSAGE_INPUT, numBytes, -1, new String(buffer, "UTF-8").substring(0, numBytes)).sendToTarget();
+                return true;
             }
             catch (java.io.IOException e)
             {
@@ -314,7 +315,6 @@ public class BluetoothActivity extends AppCompatActivity {
                 MSG(MESSAGE_DISCONNECTED);
                 return false;
             }
-            return true;
         }
 
 
@@ -413,10 +413,13 @@ public class BluetoothActivity extends AppCompatActivity {
 
     private synchronized void connectSocket(BluetoothSocket socket)
     {
-        l("Storing socket in connected devices");
-        connectedDevices.add(socket);
-        msgToast("CONNECTED!");
-        MSG(MESSAGE_CONNECTED);
+        if (!Destroyed())
+        {
+            l("Storing socket in connected devices");
+            connectedDevices.add(socket);
+            msgToast("CONNECTED!");
+            MSG(MESSAGE_CONNECTED);
+        }
     }
 
     private synchronized void msgToast(String msg)
@@ -473,23 +476,24 @@ public class BluetoothActivity extends AppCompatActivity {
         }
     }
 
+    protected boolean ISDESTROYED = false;
+    protected synchronized boolean Destroyed() { return ISDESTROYED; }
+    protected synchronized void Destroyed(boolean value) { ISDESTROYED = value; }
+
     @Override
     public void onDestroy()
     {
         super.onDestroy();
-        try {
-            acceptThread.interrupt();
-        }
-        catch (Exception e)
-        {
-            l("Failed to stop thread: Accept\n" + e.getMessage());
-        }
-        try {
-            connectedThread.interrupt();
-        }
-        catch (Exception e)
-        {
-            l("Failed to stop thread: Connected\n" + e.getMessage());
-        }
+        l("Destroying application threads");
+        Destroyed(true);
+        if (acceptThread.connectionSocket != null)
+            try
+            {
+                acceptThread.connectionSocket.close();
+            }
+            catch (java.io.IOException e)
+            {
+                l("Connection socket closing failed: " + e.getMessage());
+            }
     }
 }

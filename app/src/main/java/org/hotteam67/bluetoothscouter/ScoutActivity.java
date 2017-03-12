@@ -16,8 +16,11 @@ public class ScoutActivity extends BluetoothActivity {
     EditText teamNumber;
     NumberPicker matchNumber;
 
+    /*
     GridView scoutLayout;
     ScoutInputAdapter scoutInputAdapter;
+    */
+    ScoutGridLayout scoutGridLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,10 +52,13 @@ public class ScoutActivity extends BluetoothActivity {
         matchNumber.setMinValue(0);
         matchNumber.setMaxValue(150);
 
+        /*
         scoutLayout = (GridView)findViewById(R.id.scoutLayout);
 
         scoutInputAdapter = new ScoutInputAdapter(this);
         scoutLayout.setAdapter(scoutInputAdapter);
+        */
+        scoutGridLayout = (ScoutGridLayout)findViewById(R.id.scoutLayout);
 
         if (!Build())
             l("Build failed, no values loaded");
@@ -74,7 +80,7 @@ public class ScoutActivity extends BluetoothActivity {
 
         values += Integer.toString(matchNumber.getValue()) + div;
 
-        List<String> currentValues = ((ScoutInputAdapter)scoutLayout.getAdapter()).GetCurrentValues();
+        List<String> currentValues = getVariables();
         for (int i = 0; i < currentValues.size(); ++i)
         {
             String s = currentValues.get(i);
@@ -106,10 +112,10 @@ public class ScoutActivity extends BluetoothActivity {
                 l(new String((byte[])msg.obj));
                 break;
             case MESSAGE_CONNECTED:
-                toast("CONNECTED!");
+                toast("Connected!");
                 break;
             case MESSAGE_DISCONNECTED:
-                toast("Device Disconnected!");
+                l("Device connection lost");
                 break;
         }
     }
@@ -152,6 +158,7 @@ public class ScoutActivity extends BluetoothActivity {
 
     private boolean Build(String s, boolean write)
     {
+        l("Building UI From String: " + s);
         if (write)
         {
             try
@@ -191,9 +198,8 @@ public class ScoutActivity extends BluetoothActivity {
                 }
             }
 
-            scoutInputAdapter.Build(values);
-            scoutInputAdapter.notifyDataSetChanged();
 
+            updateVariables(values);
         }
         catch (Exception e)
         {
@@ -203,5 +209,19 @@ public class ScoutActivity extends BluetoothActivity {
         }
 
         return true;
+    }
+
+    private void updateVariables(LinkedHashMap<String, Integer> values)
+    {
+
+        //scoutInputAdapter.Build(values);
+        //scoutInputAdapter.notifyDataSetChanged();
+        scoutGridLayout.Build(values);
+    }
+
+    private List<String> getVariables()
+    {
+        // return scoutInputAdapter.GetCurrentValues();
+        return scoutGridLayout.GetCurrentValues();
     }
 }

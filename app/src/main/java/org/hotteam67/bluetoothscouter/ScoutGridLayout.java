@@ -16,6 +16,7 @@ import android.view.Gravity;
 import java.util.*;
 import android.util.Log;
 import android.util.DisplayMetrics;
+import android.util.AttributeSet;
 
 
 /**
@@ -36,11 +37,22 @@ public class ScoutGridLayout extends GridLayout
         super(context);
     }
 
+    public ScoutGridLayout(Context context, AttributeSet set)
+    {
+        super(context, set);
+    }
+
+    public ScoutGridLayout(Context context, AttributeSet set, int defStyle)
+    {
+        super(context, set, defStyle);
+    }
+
     public void Build(LinkedHashMap<String, Integer> data)
     {
         views = new ArrayList<>();
         for (Map.Entry<String, Integer> d : data.entrySet())
         {
+            l("Initializing view: " + d.getKey());
             View v = initializeView(d.getKey(), d.getValue());
             if (v != null)
                 views.add(v);
@@ -64,26 +76,31 @@ public class ScoutGridLayout extends GridLayout
 
             w -= measureCellWidth(getContext(), views.get(i));
             rowViews.add(views.get(i));
+            l("View added: " + views.get(i).getTag(R.string.value_name));
+            l("View measured width: " + measureCellWidth(getContext(), views.get(i)));
+            l("Remaining width: " + w);
 
             h = (measureCellHeight(getContext(), views.get(i)) > h) ?
                     measureCellHeight(getContext(), views.get(i)) : h;
 
-
-            while (i < views.size() && w >= 0)
+            ++i;
+            while (i < views.size() && w >= 0 && (int)views.get(i).getTag(R.string.value_type) != TYPE_HEADER)
             {
-                ++i;
                 w -= measureCellWidth(getContext(), views.get(i));
                 if (w >= 0)
                 {
                     rowViews.add(views.get(i));
                     h = (measureCellHeight(getContext(), views.get(i)) > h) ?
                             measureCellHeight(getContext(), views.get(i)) : h;
+                    l("View added: " + views.get(i).getTag(R.string.value_name));
+                    l("View measured width: " + measureCellWidth(getContext(), views.get(i)));
+                    l("Remaining width: " + w);
+                    ++i;
                 }
             }
 
             AddRow(rows, h, rowViews);
 
-            ++i;
             ++rows;
         }
     }
@@ -145,6 +162,36 @@ public class ScoutGridLayout extends GridLayout
         }
 
         return v;
+    }
+
+    public List<String> GetCurrentValues()
+    {
+        List<String> values = new ArrayList<>();
+        for (View v : views)
+        {
+            switch ((int)v.getTag(R.string.value_type))
+            {
+                case TYPE_BOOLEAN:
+                    values.add(
+                            String.valueOf(
+                                    ((CheckBox)v).isChecked()
+                            ));
+                    break;
+                case TYPE_STRING:
+                    String s = ((EditText)v.findViewById(R.id.editText))
+                            .getText().toString();
+                    if (s.trim().isEmpty())
+                        s = " ";
+                    values.add(s);
+                    break;
+                case TYPE_INTEGER:
+                    values.add(String.valueOf(
+                            ((NumberPicker)v.findViewById(R.id.numberPicker))
+                                    .getValue()));
+                    break;
+            }
+        }
+        return values;
     }
 
     private void l(String s)
