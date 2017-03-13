@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.support.v4.widget.TextViewCompat;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
-import android.widget.GridLayout;
 import android.content.Context;
 import android.view.View;
 import android.widget.NumberPicker;
@@ -13,6 +12,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.view.Gravity;
+import android.support.v7.widget.GridLayout;
 import java.util.*;
 import android.util.Log;
 import android.util.DisplayMetrics;
@@ -76,15 +76,15 @@ public class ScoutGridLayout extends GridLayout
 
             w -= measureCellWidth(getContext(), views.get(i));
             rowViews.add(views.get(i));
-            l("View added: " + views.get(i).getTag(R.string.value_name));
-            l("View measured width: " + measureCellWidth(getContext(), views.get(i)));
-            l("Remaining width: " + w);
 
             h = (measureCellHeight(getContext(), views.get(i)) > h) ?
                     measureCellHeight(getContext(), views.get(i)) : h;
 
             ++i;
-            while (i < views.size() && w >= 0 && (int)views.get(i).getTag(R.string.value_type) != TYPE_HEADER)
+            while (i < views.size()
+                    && w >= 0
+                    && (int)views.get(i).getTag(R.string.value_type) != TYPE_HEADER
+                    && (int)views.get(i - 1).getTag(R.string.value_type) != TYPE_HEADER)
             {
                 w -= measureCellWidth(getContext(), views.get(i));
                 if (w >= 0)
@@ -92,16 +92,40 @@ public class ScoutGridLayout extends GridLayout
                     rowViews.add(views.get(i));
                     h = (measureCellHeight(getContext(), views.get(i)) > h) ?
                             measureCellHeight(getContext(), views.get(i)) : h;
-                    l("View added: " + views.get(i).getTag(R.string.value_name));
-                    l("View measured width: " + measureCellWidth(getContext(), views.get(i)));
-                    l("Remaining width: " + w);
                     ++i;
                 }
             }
 
+            l("Adding a new row!");
             AddRow(rows, h, rowViews);
 
             ++rows;
+        }
+        l("Initialization finished with "
+                + getColumnCount() + " columns and "
+                + getRowCount() + " rows");
+
+
+        for (View v : views)
+        {
+            if ((int)v.getTag(R.string.value_type) == TYPE_HEADER)
+            {
+                /*
+                // l("Getting layout params for header");
+                LayoutParams params = (LayoutParams)v.getLayoutParams();
+                // l("Setting ColumnSpec");
+                params.columnSpec = spec(0, getColumnCount());
+                // l("Updating layoutparams");
+                v.setLayoutParams(params);
+                */
+                /*
+                View space = new View(getContext());
+                LayoutParams params = (LayoutParams)v.getLayoutParams();
+                params.columnSpec = spec(1);
+                space.setLayoutParams(params);
+                addView(space);
+                */
+            }
         }
     }
 
@@ -110,16 +134,22 @@ public class ScoutGridLayout extends GridLayout
         int i = 0;
         for (View v : views)
         {
-            Spec column = spec(i);
+            Spec column = spec(i, 1f);
+            if ((int)v.getTag(R.string.value_type) == TYPE_HEADER)
+                column = spec(0, 4);
             Spec row = spec(rowNumber);
             LayoutParams params = new LayoutParams(row, column);
-            params.height = rowHeight;
-            params.width = measureCellWidth(getContext(), v);
+
+            params.height = LayoutParams.WRAP_CONTENT;
+            params.width = LayoutParams.WRAP_CONTENT;
+
             params.setGravity(Gravity.CENTER);
+
             v.setLayoutParams(params);
             addView(v);
             ++i;
         }
+        i = 0;
     }
 
     private View initializeView(String tag, Integer type)
@@ -153,6 +183,7 @@ public class ScoutGridLayout extends GridLayout
                 break;
             case TYPE_HEADER:
                 v = getInflater().inflate(R.layout.layout_header, null);
+                ((TextView)v).setText(tag);
         }
 
         if (v != null)
@@ -224,7 +255,7 @@ public class ScoutGridLayout extends GridLayout
 
         buffer.removeAllViews();
 
-        return width;
+        return width + 30;
     }
     private int measureCellHeight( Context context, View cell )
     {
