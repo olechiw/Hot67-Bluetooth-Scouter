@@ -11,6 +11,7 @@ import android.util.*;
 import android.app.*;
 import android.content.*;
 import android.os.Handler;
+import android.content.pm.ActivityInfo;
 import android.os.Message;
 
 public class BluetoothActivity extends AppCompatActivity {
@@ -59,6 +60,7 @@ public class BluetoothActivity extends AppCompatActivity {
         };
 
         l("Setting up bluetooth");
+        // setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setupBluetooth();
     }
 

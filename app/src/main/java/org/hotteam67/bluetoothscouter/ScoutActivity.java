@@ -30,9 +30,10 @@ public class ScoutActivity extends BluetoothActivity {
 
     /*
     GridView scoutLayout;
-    ScoutInputAdapter scoutInputAdapter;
+    org.hotteam67.bluetoothscouter.ScoutInputAdapter scoutInputAdapter;
     */
-    ScoutGridLayout scoutGridLayout;
+    //ScoutGridLayout scoutGridLayout;
+    SectionedView scoutGridLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +44,7 @@ public class ScoutActivity extends BluetoothActivity {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /*
                 new AlertDialog.Builder(getApplicationContext())
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setTitle("Sending")
@@ -55,6 +57,8 @@ public class ScoutActivity extends BluetoothActivity {
                             }
 
                         });
+                        */
+                sendButtonClick();
             }
         });
 
@@ -77,10 +81,10 @@ public class ScoutActivity extends BluetoothActivity {
         /*
         scoutLayout = (GridView)findViewById(R.id.scoutLayout);
 
-        scoutInputAdapter = new ScoutInputAdapter(this);
+        scoutInputAdapter = new org.hotteam67.bluetoothscouter.ScoutInputAdapter(this);
         scoutLayout.setAdapter(scoutInputAdapter);
         */
-        scoutGridLayout = (ScoutGridLayout)findViewById(R.id.scoutLayout);
+        scoutGridLayout = (SectionedView) findViewById(R.id.scoutLayout);
 
         if (!Build())
             l("Build failed, no values loaded");

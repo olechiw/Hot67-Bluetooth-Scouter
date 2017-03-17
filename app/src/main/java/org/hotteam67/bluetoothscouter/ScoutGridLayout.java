@@ -13,6 +13,7 @@ import android.view.Gravity;
 import android.support.v7.widget.GridLayout;
 import java.util.*;
 import android.util.Log;
+import android.widget.LinearLayout;
 import android.util.DisplayMetrics;
 import android.util.AttributeSet;
 
@@ -182,8 +183,16 @@ public class ScoutGridLayout extends GridLayout
         switch (type)
         {
             case TYPE_BOOLEAN:
+                /*
                 v = new CheckBox(getContext());
                 ((CheckBox) v).setText(tag);
+                */
+                v = getInflater().inflate(R.layout.layout_boolean, null);
+                LinearLayout l = (LinearLayout)v;
+                CheckBox c = ((CheckBox)l.findViewById(R.id.checkBox1));
+                c.setEnabled(true);
+                c.setText(tag);
+                c.setVisibility(View.VISIBLE);
                 break;
             case TYPE_INTEGER:
                 v = getInflater().inflate(R.layout.layout_numberpicker, null);
@@ -225,7 +234,7 @@ public class ScoutGridLayout extends GridLayout
 
                     values.add(
                             String.valueOf(
-                                    ((CheckBox)v).isChecked()
+                                    ((CheckBox)v.findViewById(R.id.checkBox1)).isChecked()
                             ));
                     ((CheckBox)v).setChecked(false);
 
@@ -268,6 +277,9 @@ public class ScoutGridLayout extends GridLayout
 
         buffer.addView( cell, layoutParams);
 
+        DisplayMetrics metrics = new DisplayMetrics();
+        ((Activity)getContext()).getWindowManager().getDefaultDisplay();
+
         cell.forceLayout();
         cell.measure(1000, 1000);
 
@@ -275,8 +287,13 @@ public class ScoutGridLayout extends GridLayout
 
         buffer.removeAllViews();
 
-        return width + 100;
+        if (width < 650)
+        {
 
+            return width + 60;
+        }
+        else
+            return width + 150;
     }
 
 
