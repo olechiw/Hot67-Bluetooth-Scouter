@@ -306,7 +306,7 @@ public class BluetoothActivity extends AppCompatActivity {
 
                 l("Reading Bytes of Length:" + numBytes);
 
-                m_handler.obtainMessage(MESSAGE_INPUT, numBytes, -1, new String(buffer, "UTF-8").substring(0, numBytes)).sendToTarget();
+                m_handler.obtainMessage(MESSAGE_INPUT, numBytes, -1, new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "")).sendToTarget();
                 return true;
             }
             catch (java.io.IOException e)
@@ -479,6 +479,7 @@ public class BluetoothActivity extends AppCompatActivity {
     protected boolean ISDESTROYED = false;
     protected synchronized boolean Destroyed() { return ISDESTROYED; }
     protected synchronized void Destroyed(boolean value) { ISDESTROYED = value; }
+
 
     @Override
     public void onDestroy()

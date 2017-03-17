@@ -4,17 +4,29 @@ import android.os.Bundle;
 import android.widget.*;
 import android.view.*;
 import android.os.Message;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.Environment;
 
 import java.util.*;
 import java.io.*;
 
 
 public class ScoutActivity extends BluetoothActivity {
+
+    public static final String FILE_NAME = "schema.csv";
+    public static final String FILE_DIRECTORY =
+            Environment.getExternalStorageDirectory() + "/BluetoothScouter/";
+
+    boolean isConnected = false;
+
     Button sendButton;
     Button connectButton;
 
     EditText teamNumber;
     NumberPicker matchNumber;
+
+    EditText notes;
 
     /*
     GridView scoutLayout;
@@ -27,13 +39,22 @@ public class ScoutActivity extends BluetoothActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scout);
 
-
-
         sendButton = (Button) findViewById(R.id.sendButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendButtonClick();
+                new AlertDialog.Builder(getApplicationContext())
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setTitle("Sending")
+                        .setMessage("Send?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                sendButtonClick();
+                            }
+
+                        });
             }
         });
 
@@ -47,6 +68,7 @@ public class ScoutActivity extends BluetoothActivity {
         });
 
         teamNumber = (EditText) findViewById(R.id.teamNumber);
+        notes = (EditText) findViewById(R.id.notes);
 
         matchNumber = (NumberPicker) findViewById(R.id.matchNumber);
         matchNumber.setMinValue(0);
@@ -67,7 +89,83 @@ public class ScoutActivity extends BluetoothActivity {
 
     private void sendButtonClick()
     {
-        /*
+        if (isConnected)
+            send();
+        else
+            write();
+    }
+
+    private String getDatabaseContent()
+    {
+        String content = "";
+        try
+        {
+            File f = new File(ServerActivity.FILE_DIRECTORY + ServerActivity.FILE_NAME);
+            if (f.exists())
+            {
+                BufferedReader reader = new BufferedReader(new FileReader(f));
+                String line = reader.readLine();
+                while (line != null)
+                {
+                    content += line + "\n";
+                    line = reader.readLine();
+                }
+            }
+            else
+            {
+                f.mkdirs();
+                f.createNewFile();
+            }
+        }
+        catch (IOException e)
+        {
+            l("IOException: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return content;
+    }
+
+    private void clearDatabase()
+    {
+        try
+        {
+            File f = new File(ServerActivity.FILE_DIRECTORY + ServerActivity.FILE_NAME);
+            if (f.exists())
+            {
+                FileWriter writer = new FileWriter(f.getAbsolutePath());
+                writer.write("");
+                writer.close();
+            }
+        }
+        catch (IOException e)
+        {
+            l("Failed to clear file: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void write()
+    {
+        try
+        {
+            File f = new File(ServerActivity.FILE_DIRECTORY + ServerActivity.FILE_NAME);
+            FileWriter writer = new FileWriter(f);
+
+            String content = getDatabaseContent() + "\n" + getValues();
+            writer.write(content);
+            writer.close();
+        }
+        catch (IOException e)
+        {
+            l("Failed to open database file: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private String getValues()
+    {
+                /*
         l("Sending values:\n" + "67,1");
         */
         String values = "";
@@ -80,18 +178,29 @@ public class ScoutActivity extends BluetoothActivity {
 
         values += Integer.toString(matchNumber.getValue()) + div;
 
-        List<String> currentValues = getVariables();
+        List<String> currentValues = scoutGridLayout.GetCurrentValues();
         for (int i = 0; i < currentValues.size(); ++i)
         {
             String s = currentValues.get(i);
             l("Appending to output: '" + s + "'");
             values += s;
-            if (i + 1 != currentValues.size())
-                values += div;
+            values += div;
         }
-        values += "\n";
 
-        Write(values);
+        String s = notes.getText().toString().replace("\n", " ");
+        if (!s.trim().isEmpty())
+            values += s;
+        else
+            values = values.substring(0, values.length() - 1);
+
+        return values;
+    }
+
+    private void send()
+    {
+        Write(getDatabaseContent());
+        clearDatabase();
+        Write(getValues());
     }
 
 
@@ -113,9 +222,14 @@ public class ScoutActivity extends BluetoothActivity {
                 break;
             case MESSAGE_CONNECTED:
                 toast("Connected!");
+                isConnected = true;
+                connectButton.setText("Connected!");
                 break;
             case MESSAGE_DISCONNECTED:
                 l("Device connection lost");
+                toast("Disconnected!");
+                isConnected = false;
+                connectButton.setText("Connect");
                 break;
         }
     }
@@ -123,7 +237,7 @@ public class ScoutActivity extends BluetoothActivity {
 
     private boolean Build()
     {
-        File targetFile = new File(ServerActivity.FILE_DIRECTORY + ServerActivity.FILE_NAME);
+        File targetFile = new File(FILE_DIRECTORY + FILE_NAME);
 
         // No data present on device
         if (!targetFile.exists())
@@ -131,7 +245,7 @@ public class ScoutActivity extends BluetoothActivity {
 
         try
         {
-            BufferedReader reader = new BufferedReader(new FileReader(ServerActivity.FILE_DIRECTORY + ServerActivity.FILE_NAME));
+            BufferedReader reader = new BufferedReader(new FileReader(FILE_DIRECTORY + FILE_NAME));
             StringBuilder builder = new StringBuilder();
             String line = reader.readLine();
             if (line != null)
@@ -145,17 +259,6 @@ public class ScoutActivity extends BluetoothActivity {
         return false;
     }
 
-    // Get just the last char
-    private String getLast(String s)
-    {
-        return s.substring(s.length()-1);
-    }
-    // Get all values up to the last char
-    private String getBefore(String s)
-    {
-        return s.substring(0, s.length()-1);
-    }
-
     private boolean Build(String s, boolean write)
     {
         l("Building UI From String: " + s);
@@ -163,9 +266,9 @@ public class ScoutActivity extends BluetoothActivity {
         {
             try
             {
-                File dir = new File(ServerActivity.FILE_DIRECTORY);
+                File dir = new File(FILE_DIRECTORY);
                 dir.mkdirs();
-                File file = new File(ServerActivity.FILE_DIRECTORY + ServerActivity.FILE_NAME);
+                File file = new File(FILE_DIRECTORY + FILE_NAME);
                 if (!file.exists())
                     file.createNewFile();
 
@@ -181,47 +284,6 @@ public class ScoutActivity extends BluetoothActivity {
             }
         }
 
-        try
-        {
-
-            LinkedHashMap<String, Integer> values = new LinkedHashMap<>();
-            for (String str : s.split(","))
-            {
-                try
-                {
-                    int number = Integer.valueOf(getLast(str));
-                    values.put(getBefore(str), number);
-                } catch (Exception e)
-                {
-                    l("Failed to load type from input");
-                    e.printStackTrace();
-                }
-            }
-
-
-            updateVariables(values);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            l("Failed to load");
-            return false;
-        }
-
-        return true;
-    }
-
-    private void updateVariables(LinkedHashMap<String, Integer> values)
-    {
-
-        //scoutInputAdapter.Build(values);
-        //scoutInputAdapter.notifyDataSetChanged();
-        scoutGridLayout.Build(values);
-    }
-
-    private List<String> getVariables()
-    {
-        // return scoutInputAdapter.GetCurrentValues();
-        return scoutGridLayout.GetCurrentValues();
+        return scoutGridLayout.Build(s);
     }
 }

@@ -28,7 +28,6 @@ public class ServerActivity extends BluetoothActivity {
 
     FileWriter databaseFile = null;
     String content = "";
-    String header = "";
 
     TextView connectedDevicesText;
     TextView teamsReceivedText;
@@ -58,8 +57,12 @@ public class ServerActivity extends BluetoothActivity {
             @Override
             public void onClick(View v)
             {
-                if (!header.trim().isEmpty())
-                    Write(header);
+                l("Sending configuration");
+                String s = loadSchema();
+                if (!s.trim().isEmpty())
+                    Write(s);
+                else
+                    l("No configuration found");
             }
         });
         /*
@@ -100,11 +103,14 @@ public class ServerActivity extends BluetoothActivity {
 
         try
         {
-            l("Writing to database file: " + msg);
             if (databaseFile != null)
-                databaseFile.append(msg + "\n");
-            databaseFile.flush();
-            content += msg;
+            {
+                l("Writing to database file: " + msg);
+                if (databaseFile != null)
+                    databaseFile.append(msg + "\n");
+                databaseFile.flush();
+                content += msg;
+            }
         }
         catch (IOException e)
         {
@@ -187,6 +193,29 @@ public class ServerActivity extends BluetoothActivity {
         loadWriter();
     }
 
+    private String loadSchema()
+    {
+        String line = "";
+        try
+        {
+            BufferedReader reader = new BufferedReader(
+                    new FileReader(ScoutActivity.FILE_DIRECTORY + ScoutActivity.FILE_NAME));
+            line = reader.readLine();
+            reader.close();
+            l("Read line from configuration file: " + line);
+        }
+        catch (FileNotFoundException e)
+        {
+            l("Unable to detect schema file, skipping send-config");
+        }
+        catch (IOException e)
+        {
+            l("Failed to read schema file : " + e.getMessage());
+            e.printStackTrace();
+        }
+        return line;
+    }
+
     private void loadExistingContent()
     {
         try
@@ -195,14 +224,6 @@ public class ServerActivity extends BluetoothActivity {
             StringBuilder builder = new StringBuilder();
 
             String line = reader.readLine();
-            if (line != null)
-            {
-                l("Found Header: " + line);
-                builder.append(line);
-                builder.append("\n");
-                header = line;
-                line = reader.readLine();
-            }
             while (line != null)
             {
                 builder.append(line);
@@ -230,6 +251,27 @@ public class ServerActivity extends BluetoothActivity {
         }
     }
 
+    private String getSchemaHeader(String schema)
+    {
+        ScoutGridLayout layout = new ScoutGridLayout(this);
+        layout.Build(schema);
+        List<ScoutGridLayout.Variable> vars = layout.GetVariables();
+        String s = "Team Number,Match Number,";
+        int i = 0;
+
+        for (ScoutGridLayout.Variable v : vars)
+        {
+            if (v.Type != ScoutGridLayout.TYPE_HEADER)
+            {
+                s += v.Tag;
+                if (i < vars.size() - 1)
+                    s += ',';
+            }
+            ++i;
+        }
+        return s;
+    }
+
     private void loadWriter()
     {
         try
@@ -241,12 +283,40 @@ public class ServerActivity extends BluetoothActivity {
                 f.createNewFile();
             }
 
-            databaseFile = new FileWriter(f.getAbsolutePath(), true);
+            databaseFile = new FileWriter(f.getAbsolutePath(), false);
         }
         catch (IOException e)
         {
             l("Failed to open filewriter: " + e.getMessage());
             e.printStackTrace();
+        }
+
+        // Update header with schema
+        String s = loadSchema();
+        if (!s.trim().isEmpty())
+        {
+            try
+            {
+                l("Loading databasefile for header write");
+                l("Writing new header line");
+                List<String> oldString = new ArrayList<>(Arrays.asList(content.split("\n")));
+                if (oldString.size() > 0)
+                    oldString.remove(0);
+                oldString.add(0, getSchemaHeader(s));
+                l("Old String size: " + oldString.size());
+                l("Building string again");
+                StringBuilder builder = new StringBuilder();
+                for (int i = 0; i < oldString.size(); ++i)
+                    builder.append(oldString.get(i) + "\n");
+                l("Writing: " + builder.toString());
+                databaseFile.write(builder.toString());
+                databaseFile.flush();
+            }
+            catch (IOException e)
+            {
+                l("Failed to open file for header writing. Something went wrong??");
+                e.printStackTrace();
+            }
         }
     }
 }
