@@ -5,9 +5,8 @@ import android.widget.*;
 import android.view.*;
 import android.os.Message;
 import java.io.*;
-import java.security.cert.TrustAnchor;
 import java.util.*;
-import java.text.Normalizer;
+
 import android.support.v4.app.ActivityCompat;
 import android.os.Environment;
 import android.Manifest;
@@ -22,6 +21,9 @@ public class ServerActivity extends BluetoothActivity {
     public static final String FILE_DIRECTORY =
             Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
 
+    public static final String TEAM_NUMBER_SCHEMA =
+            "Team 12,Team 22,Team 32,Team 42,Team 52,Team 62";
+
     public static final int REQUEST_PERM_EXTERNAL = 1;
 
     public static final int MATCH_NUMBER = 1;
@@ -33,7 +35,12 @@ public class ServerActivity extends BluetoothActivity {
     TextView teamsReceivedText;
     TextView latestMatchText;
 
-    Button sendButton;
+    Button sendConfigurationButton;
+    Button sendTeamsButton;
+
+    NumberPicker match;
+
+    InputTableLayout teamsLayout;
 
     /*
     TableLayout outputView;
@@ -45,14 +52,16 @@ public class ServerActivity extends BluetoothActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_server);
 
+        // setRequestedOrientation(getResources().getConfiguration().orientation);
+
         setupIO();
 
         connectedDevicesText = (TextView)findViewById(R.id.connectedDevices);
         teamsReceivedText = (TextView)findViewById(R.id.teamsReceived);
         latestMatchText = (TextView)findViewById(R.id.latestMatch);
 
-        sendButton = (Button)findViewById(R.id.sendButton);
-        sendButton.setOnClickListener(new View.OnClickListener()
+        sendConfigurationButton = (Button)findViewById(R.id.sendConfigurationButton);
+        sendConfigurationButton.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
@@ -65,6 +74,24 @@ public class ServerActivity extends BluetoothActivity {
                     l("No configuration found");
             }
         });
+        sendTeamsButton = (Button) findViewById(R.id.sendTeamsButton);
+        sendTeamsButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                SendTeams();
+            }
+        });
+
+        match = (NumberPicker) findViewById(R.id.matchNumber);
+        match.setMinValue(1);
+        match.setMaxValue(200);
+
+        teamsLayout = (InputTableLayout) findViewById(R.id.teamNumberLayout);
+        teamsLayout.Build(TEAM_NUMBER_SCHEMA);
+
+
         /*
         outputView = (TableLayout)findViewById(R.id.outputView);
 
@@ -77,7 +104,6 @@ public class ServerActivity extends BluetoothActivity {
         List<String> data = new ArrayList<>(Arrays.asList(content.split("\n")));
         ServerOutputAdapter.Build(this, data, outputView);
         */
-
     }
 
     @Override
@@ -120,14 +146,34 @@ public class ServerActivity extends BluetoothActivity {
 
         List<String> vars = new ArrayList<>(Arrays.asList(msg.split(",")));
 
-        int match = Integer.valueOf(vars.get(MATCH_NUMBER));
-        if (match != matchNumber)
-            teamsReceived = 0;
-        matchNumber = match;
+        try
+        {
+            int match = Integer.valueOf(vars.get(MATCH_NUMBER));
+            if (match != matchNumber)
+                teamsReceived = 0;
+            matchNumber = match;
+        }
+        catch (Exception e)
+        {
+            l("Invalid match #: " + vars.get(MATCH_NUMBER));
+            e.printStackTrace();
+        }
 
         teamsReceived++;
         teamsReceivedText.setText("Teams Received: " + teamsReceived);
         latestMatchText.setText("Latest Game #: " + matchNumber);
+    }
+
+    private void SendTeams()
+    {
+        List<String> teams = teamsLayout.GetCurrentValues();
+        String output = match.getValue() + ",";
+        match.setValue(match.getValue() + 1);
+        for (int i = 0; i < teams.size(); ++i)
+        {
+            if (i < connectedSockets.size())
+                Write(output + teams.get(i), i);
+        }
     }
 
     private int connectedDevices = 0;
@@ -152,6 +198,11 @@ public class ServerActivity extends BluetoothActivity {
             case MESSAGE_DISCONNECTED:
                 connectedDevices--;
                 connectedDevicesText.setText("Devices Connected: " + connectedDevices);
+                l(
+                        "Disconnect. Connected Devices: "
+                                + connectedDevices
+                                + " Socket Count: "
+                                + connectedSockets.size());
                 // toast("Device Disconnected!");
                 break;
         }
@@ -253,6 +304,7 @@ public class ServerActivity extends BluetoothActivity {
 
     private String getSchemaHeader(String schema)
     {
+        /*
         ScoutGridLayout layout = new ScoutGridLayout(this);
         layout.Build(schema);
         List<ScoutGridLayout.Variable> vars = layout.GetVariables();
@@ -269,6 +321,22 @@ public class ServerActivity extends BluetoothActivity {
             }
             ++i;
         }
+        */
+        InputTableLayout layout = new InputTableLayout(this);
+        layout.Build(schema);
+        String s = "Team Number,Match Number,";
+        int i = 0;
+
+        for (InputTableLayout.Variable v : layout.getVariables())
+        {
+            if (v.Type != InputTableLayout.TYPE_HEADER)
+            {
+                s += v.Tag;
+                s += ',';
+            }
+            ++i;
+        }
+        s = s.substring(0, s.length() - 1);
         return s;
     }
 

@@ -4,9 +4,11 @@ import android.os.Bundle;
 import android.widget.*;
 import android.view.*;
 import android.os.Message;
+import android.text.InputFilter;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Environment;
+import android.text.Spanned;
 
 import java.util.*;
 import java.io.*;
@@ -17,6 +19,8 @@ public class ScoutActivity extends BluetoothActivity {
     public static final String FILE_NAME = "schema.csv";
     public static final String FILE_DIRECTORY =
             Environment.getExternalStorageDirectory() + "/BluetoothScouter/";
+
+    public static final String DATABASE_FILE_NAME = "localdatabase.csv";
 
     boolean isConnected = false;
 
@@ -33,14 +37,17 @@ public class ScoutActivity extends BluetoothActivity {
     org.hotteam67.bluetoothscouter.ScoutInputAdapter scoutInputAdapter;
     */
     //ScoutGridLayout scoutGridLayout;
-    SectionedView scoutGridLayout;
+    // SectionedView scoutGridLayout;
+    InputTableLayout inputTable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scout);
 
-        sendButton = (Button) findViewById(R.id.sendButton);
+        // setRequestedOrientation(getResources().getConfiguration().orientation);
+
+        sendButton = (Button) findViewById(R.id.sendConfigurationButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -56,8 +63,8 @@ public class ScoutActivity extends BluetoothActivity {
                                 sendButtonClick();
                             }
 
-                        });
-                        */
+                        }).show();
+*/
                 sendButtonClick();
             }
         });
@@ -70,13 +77,30 @@ public class ScoutActivity extends BluetoothActivity {
                 l("Attempting Connect!");
             }
         });
+        if (connectedSockets.size() > 0)
+            connectButton.setText("Connected!");
 
         teamNumber = (EditText) findViewById(R.id.teamNumber);
+
+        InputFilter filter = new InputFilter() {
+
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+
+                if (source != null && ",".contains(("" + source))) {
+                    return "";
+                }
+                return null;
+            }
+        };
+
+
         notes = (EditText) findViewById(R.id.notes);
+        notes.setFilters(new InputFilter[] { filter });
 
         matchNumber = (NumberPicker) findViewById(R.id.matchNumber);
-        matchNumber.setMinValue(0);
-        matchNumber.setMaxValue(150);
+        matchNumber.setMinValue(1);
+        matchNumber.setMaxValue(200);
 
         /*
         scoutLayout = (GridView)findViewById(R.id.scoutLayout);
@@ -84,7 +108,7 @@ public class ScoutActivity extends BluetoothActivity {
         scoutInputAdapter = new org.hotteam67.bluetoothscouter.ScoutInputAdapter(this);
         scoutLayout.setAdapter(scoutInputAdapter);
         */
-        scoutGridLayout = (SectionedView) findViewById(R.id.scoutLayout);
+        inputTable = (InputTableLayout) findViewById(R.id.scoutLayout);
 
         if (!Build())
             l("Build failed, no values loaded");
@@ -104,7 +128,7 @@ public class ScoutActivity extends BluetoothActivity {
         String content = "";
         try
         {
-            File f = new File(ServerActivity.FILE_DIRECTORY + ServerActivity.FILE_NAME);
+            File f = new File(ServerActivity.FILE_DIRECTORY + DATABASE_FILE_NAME);
             if (f.exists())
             {
                 BufferedReader reader = new BufferedReader(new FileReader(f));
@@ -134,7 +158,7 @@ public class ScoutActivity extends BluetoothActivity {
     {
         try
         {
-            File f = new File(ServerActivity.FILE_DIRECTORY + ServerActivity.FILE_NAME);
+            File f = new File(ServerActivity.FILE_DIRECTORY + DATABASE_FILE_NAME);
             if (f.exists())
             {
                 FileWriter writer = new FileWriter(f.getAbsolutePath());
@@ -153,7 +177,7 @@ public class ScoutActivity extends BluetoothActivity {
     {
         try
         {
-            File f = new File(ServerActivity.FILE_DIRECTORY + ServerActivity.FILE_NAME);
+            File f = new File(ServerActivity.FILE_DIRECTORY + DATABASE_FILE_NAME);
             FileWriter writer = new FileWriter(f);
 
             String content = getDatabaseContent() + "\n" + getValues();
@@ -182,7 +206,7 @@ public class ScoutActivity extends BluetoothActivity {
 
         values += Integer.toString(matchNumber.getValue()) + div;
 
-        List<String> currentValues = scoutGridLayout.GetCurrentValues();
+        List<String> currentValues = inputTable.GetCurrentValues();
         for (int i = 0; i < currentValues.size(); ++i)
         {
             String s = currentValues.get(i);
@@ -202,12 +226,41 @@ public class ScoutActivity extends BluetoothActivity {
 
     private void send()
     {
-        Write(getDatabaseContent());
-        clearDatabase();
+        if (!getDatabaseContent().isEmpty())
+        {
+            Write(getDatabaseContent());
+            clearDatabase();
+        }
         Write(getValues());
+        // matchNumber.setValue(matchNumber.getValue() + 1);
+        teamNumber.setText("");
+        notes.setText("");
     }
 
 
+    private void HandleMatchTeam(String s)
+    {
+        List<String> values = new ArrayList<>(Arrays.asList(s.split(",")));
+        if (values.size() != 2)
+        {
+            l("Invalid team/match number size: " + values.size());
+            return;
+        }
+        else
+        {
+            teamNumber.setText(values.get(1));
+            toast("Received a new Team!: " + values.get(1));
+            try
+            {
+                matchNumber.setValue(Integer.valueOf(values.get(0)));
+            }
+            catch (Exception e)
+            {
+                l("Match number input failed: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
 
     @Override
     protected synchronized void handle(Message msg)
@@ -215,23 +268,33 @@ public class ScoutActivity extends BluetoothActivity {
         switch (msg.what)
         {
             case MESSAGE_INPUT:
-                if (!Build((String)msg.obj, true))
+                String s = (String)msg.obj;
+                if (s.split(",").length > 2)
                 {
-                    toast("Failed to Build Values on Receive!");
-                    l("Input Failed: " + (String)msg.obj);
+                    if (!Build((String) msg.obj, true))
+                    {
+                        toast("Failed to Build Values on Receive!");
+                        l("Input Failed: " + (String) msg.obj);
+                    }
                 }
+                else
+                {
+                    HandleMatchTeam(s);
+                }
+
                 break;
             case MESSAGE_TOAST:
                 l(new String((byte[])msg.obj));
                 break;
             case MESSAGE_CONNECTED:
-                toast("Connected!");
+                // toast("Connected!");
+                l("Device connection gained");
                 isConnected = true;
                 connectButton.setText("Connected!");
                 break;
             case MESSAGE_DISCONNECTED:
                 l("Device connection lost");
-                toast("Disconnected!");
+                // toast("Disconnected!");
                 isConnected = false;
                 connectButton.setText("Connect");
                 break;
@@ -288,6 +351,6 @@ public class ScoutActivity extends BluetoothActivity {
             }
         }
 
-        return scoutGridLayout.Build(s);
+        return inputTable.Build(s);
     }
 }

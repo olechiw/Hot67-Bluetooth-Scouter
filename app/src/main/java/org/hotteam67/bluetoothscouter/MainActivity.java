@@ -12,6 +12,8 @@ public class MainActivity extends AppCompatActivity {
     Button serverButton;
     Button scoutButton;
 
+    public static final String ORIENTATION = "orientation";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

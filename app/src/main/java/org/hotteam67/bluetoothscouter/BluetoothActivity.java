@@ -3,15 +3,15 @@ package org.hotteam67.bluetoothscouter;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.bluetooth.*;
-import android.widget.*;
-import android.view.*;
+
 import java.util.*;
 import java.io.*;
+import android.content.res.Configuration;
 import android.util.*;
 import android.app.*;
 import android.content.*;
-import android.os.Handler;
 import android.content.pm.ActivityInfo;
+import android.os.Handler;
 import android.os.Message;
 
 public class BluetoothActivity extends AppCompatActivity {
@@ -45,7 +45,7 @@ public class BluetoothActivity extends AppCompatActivity {
     */
 
 
-    private List<BluetoothSocket> connectedDevices = new ArrayList<BluetoothSocket>();
+    protected List<BluetoothSocket> connectedSockets = new ArrayList<BluetoothSocket>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +75,7 @@ public class BluetoothActivity extends AppCompatActivity {
         });
 
         l("Setting up Send Button");
-        m_sendButton = (Button) findViewById(R.id.sendButton);
+        m_sendButton = (Button) findViewById(R.id.sendConfigurationButton);
         m_sendButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 Write("SENT!");
@@ -89,7 +89,7 @@ public class BluetoothActivity extends AppCompatActivity {
         l("Running accept thread");
         acceptThread.start();
 
-        connectedThread = new ConnectedThread(connectedDevices);
+        connectedThread = new ConnectedThread(connectedSockets);
         connectedThread.start();
     }
 
@@ -352,6 +352,27 @@ public class BluetoothActivity extends AppCompatActivity {
             }
         }
 
+        public void write(byte[] bytes, int device)
+        {
+            l("Writing " + new String(bytes));
+            l("Bytes length: " + bytes.length);
+            OutputStream out = null;
+            try
+            {
+                out = connectedSockets.get(device).getOutputStream();
+                out.write(bytes);
+            }
+            catch (IndexOutOfBoundsException e)
+            {
+                l("Failed to write, device not found at index: " + device);
+            }
+            catch (IOException e)
+            {
+                l("Failed to write. IOException." + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+
         public void cancel()
         {
             for (BluetoothSocket socket : connectedSockets)
@@ -418,7 +439,7 @@ public class BluetoothActivity extends AppCompatActivity {
         if (!Destroyed())
         {
             l("Storing socket in connected devices");
-            connectedDevices.add(socket);
+            connectedSockets.add(socket);
             msgToast("CONNECTED!");
             MSG(MESSAGE_CONNECTED);
         }
@@ -437,6 +458,17 @@ public class BluetoothActivity extends AppCompatActivity {
         }
         catch (Exception e)
         {
+            l("Failed to write: Exception: " + e.getMessage());
+        }
+    }
+
+    protected synchronized void Write(String text, int device)
+    {
+        l("EVENT: send() " + text);
+        try {
+            connectedThread.write(text.getBytes("UTF-8"), device);
+        }
+        catch (IOException e) {
             l("Failed to write: Exception: " + e.getMessage());
         }
     }
@@ -493,10 +525,19 @@ public class BluetoothActivity extends AppCompatActivity {
             try
             {
                 acceptThread.connectionSocket.close();
-            }
-            catch (java.io.IOException e)
+            } catch (java.io.IOException e)
             {
                 l("Connection socket closing failed: " + e.getMessage());
             }
+        for (BluetoothSocket socket : connectedSockets)
+        {
+            try
+            {
+                socket.close();
+            } catch (IOException e)
+            {
+                l("Failed to close socket onDestroy() : " + e.getMessage());
+            }
+        }
     }
 }

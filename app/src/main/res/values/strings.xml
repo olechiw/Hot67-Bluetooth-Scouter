@@ -3,4 +3,5 @@
     <string name="variable_name">5</string>
     <string name="variable_type">10</string>
     <string name="variable_count">15</string>
+    <string name="orientation">20</string>
 </resources>
