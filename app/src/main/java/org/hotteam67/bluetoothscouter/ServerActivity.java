@@ -1,5 +1,6 @@
 package org.hotteam67.bluetoothscouter;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.widget.*;
 import android.view.*;
@@ -107,6 +108,12 @@ public class ServerActivity extends BluetoothActivity {
     }
 
     @Override
+    public void onConfigurationChanged(Configuration newConfig)
+    {
+        teamsLayout.ReBuild();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         try
@@ -208,33 +215,8 @@ public class ServerActivity extends BluetoothActivity {
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case REQUEST_PERM_EXTERNAL: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    setupIO();
-                }
-            }
-        }
-    }
-
     private void setupIO()
     {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            l("Needs External Storage Permissions. Requesting");
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    REQUEST_PERM_EXTERNAL);
-            return;
-        }
-
-
         if(!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
             l("No Access to SD Card!!");
         }

@@ -21,9 +21,12 @@ public class InputTableLayout extends TableLayout
     public static final int TYPE_STRING = 2;
     public static final int TYPE_INTEGER = 3;
     public static final int TYPE_HEADER = 4;
+    public static final int TYPE_CHOICE = 5;
 
-    List<View> views = new ArrayList<>();
-    List<Variable> variables = new ArrayList<>();
+    private List<View> views = new ArrayList<>();
+    private List<Variable> variables = new ArrayList<>();
+
+    private String schema = "";
 
     public InputTableLayout(Context context)
     {
@@ -38,6 +41,11 @@ public class InputTableLayout extends TableLayout
     public void l(String s)
     {
         Log.d("BLUETOOTH_SCOUTER_UI", s);
+    }
+
+    public void ReBuild()
+    {
+        Build(schema);
     }
 
     public void Build(List<View> _v)
@@ -111,12 +119,13 @@ public class InputTableLayout extends TableLayout
     }
 
 
-    public boolean Build(String variables)
+    public boolean Build(String _schema)
     {
+        schema = _schema;
         try
         {
             List<Variable> vars = new ArrayList<>();
-            List<String> vals = Arrays.asList(variables.split(","));
+            List<String> vals = Arrays.asList(_schema.split(","));
             for (int i = 0; i < vals.size(); ++i)
             {
                 String str = vals.get(i);
@@ -224,12 +233,18 @@ public class InputTableLayout extends TableLayout
     // Get just the last char
     private String getLast(String s)
     {
-        return s.substring(s.length()-1);
+        if (s.length() > 0)
+            return s.substring(s.length()-1);
+        else
+            return "";
     }
     // Get all values up to the last char
     private String getBefore(String s)
     {
-        return s.substring(0, s.length()-1);
+        if (s.length() > 0)
+            return s.substring(0, s.length()-1);
+        else
+            return "";
     }
 
     private LayoutInflater getInflater()

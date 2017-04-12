@@ -1,5 +1,6 @@
 package org.hotteam67.bluetoothscouter;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.widget.*;
 import android.view.*;
@@ -114,6 +115,12 @@ public class ScoutActivity extends BluetoothActivity {
             l("Build failed, no values loaded");
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig)
+    {
+        inputTable.ReBuild();
+    }
+
 
     private void sendButtonClick()
     {
@@ -219,7 +226,8 @@ public class ScoutActivity extends BluetoothActivity {
         if (!s.trim().isEmpty())
             values += s;
         else
-            values = values.substring(0, values.length() - 1);
+            if (values.length() > 0)
+                values = values.substring(0, values.length() - 1);
 
         return values;
     }
@@ -337,7 +345,10 @@ public class ScoutActivity extends BluetoothActivity {
                 dir.mkdirs();
                 File file = new File(FILE_DIRECTORY + FILE_NAME);
                 if (!file.exists())
+                {
+                    l("Writing to: " + file.getAbsolutePath());
                     file.createNewFile();
+                }
 
                 FileWriter f = new FileWriter(file.getAbsolutePath(), false);
                 f.write(s);

@@ -24,13 +24,15 @@
         </activity>
         <activity android:name=".ScoutActivity"
                   android:windowSoftInputMode="stateHidden"
+                  android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"/>
         <activity android:name=".ServerActivity"
                   android:windowSoftInputMode="stateHidden"
+                  android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"/>
         <activity android:name=".BluetoothActivity"
                   android:windowSoftInputMode="stateHidden"
-                  android:configChanges="orientation"
+                  android:configChanges="orientation|screenSize"
             android:screenOrientation="portrait"/>
     </application>
 

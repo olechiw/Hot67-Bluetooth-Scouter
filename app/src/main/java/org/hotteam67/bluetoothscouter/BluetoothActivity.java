@@ -64,6 +64,7 @@ public class BluetoothActivity extends AppCompatActivity {
         setupBluetooth();
     }
 
+
     private void setupUI() {
 /*
         l("Setting up Connect Button");
@@ -273,6 +274,7 @@ public class BluetoothActivity extends AppCompatActivity {
                 {
                     InputStream tmpIn = null;
                     try {
+                        l("Loading input stream");
                         tmpIn = socket.getInputStream();
                     } catch (IOException e) {
                         Log.e("[Bluetooth]", "Error occurred when creating input stream", e);
@@ -283,6 +285,7 @@ public class BluetoothActivity extends AppCompatActivity {
 
                 for (InputStream stream : inputStreams)
                 {
+                    l("Reading stream");
                     if (!read(stream))
                     {
                         int i = inputStreams.indexOf(stream);
