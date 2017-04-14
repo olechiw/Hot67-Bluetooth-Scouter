@@ -44,8 +44,7 @@ public class BluetoothActivity extends AppCompatActivity {
     private Button m_sendButton;
     */
 
-
-    protected List<BluetoothSocket> connectedSockets = new ArrayList<BluetoothSocket>();
+    protected List<ConnectedThread> connectedThreads = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,9 +88,6 @@ public class BluetoothActivity extends AppCompatActivity {
 
         l("Running accept thread");
         acceptThread.start();
-
-        connectedThread = new ConnectedThread(connectedSockets);
-        connectedThread.start();
     }
 
     protected void toast(String text)
@@ -253,44 +249,49 @@ public class BluetoothActivity extends AppCompatActivity {
     /*
     Connected Thread
      */
-    ConnectedThread connectedThread;
     private class ConnectedThread extends Thread
     {
-        private List<BluetoothSocket> connectedSockets;
+        private BluetoothSocket connectedSocket;
         private byte[] buffer;
+        private int id;
 
-        public ConnectedThread(List<BluetoothSocket> sockets)
+        private void setId(int i ) { id = i; }
+
+        public ConnectedThread(BluetoothSocket sockets)
         {
-            connectedSockets = sockets;
+            connectedSocket = sockets;
         }
 
+        public void close()
+        {
+            try
+            {
+                connectedSocket.close();
+            }
+            catch (Exception e)
+            {
+                l("Error: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
         public void run()
         {
             while (!Destroyed())
             {
-                List<InputStream> inputStreams = new ArrayList<>();
-
-                for (BluetoothSocket socket : connectedSockets)
-                {
-                    InputStream tmpIn = null;
-                    try {
-                        l("Loading input stream");
-                        tmpIn = socket.getInputStream();
-                    } catch (IOException e) {
-                        Log.e("[Bluetooth]", "Error occurred when creating input stream", e);
-                    }
-
-                    inputStreams.add(tmpIn);
+                InputStream stream;
+                InputStream tmpIn = null;
+                try {
+                    l("Loading input stream");
+                    tmpIn = connectedSocket.getInputStream();
+                } catch (IOException e) {
+                    Log.e("[Bluetooth]", "Error occurred when creating input stream", e);
                 }
+                stream = tmpIn;
 
-                for (InputStream stream : inputStreams)
+                l("Reading stream");
+                if (!read(stream))
                 {
-                    l("Reading stream");
-                    if (!read(stream))
-                    {
-                        int i = inputStreams.indexOf(stream);
-                        connectedSockets.remove(i);
-                    }
+                    break;
                 }
 
                 if (Thread.currentThread().isInterrupted())
@@ -299,6 +300,7 @@ public class BluetoothActivity extends AppCompatActivity {
                 }
             }
             l("Connected Thread Ended!!!");
+            disconnect(id);
         }
 
         private boolean read(InputStream stream)
@@ -327,34 +329,29 @@ public class BluetoothActivity extends AppCompatActivity {
         {
             l("Writing: " + new String(bytes));
             l("Bytes Length: " + bytes.length);
-            List<OutputStream> outputStreams = new ArrayList<OutputStream>();
+            OutputStream stream;
 
-            for (BluetoothSocket socket : connectedSockets)
-            {
-                OutputStream tmpOut = null;
-                try {
-                    tmpOut = socket.getOutputStream();
-                } catch (IOException e) {
-                    Log.e("[Bluetooth]", "Error occurred when creating output stream", e);
-                }
-                outputStreams.add(tmpOut);
+            OutputStream tmpOut = null;
+            try {
+                tmpOut = connectedSocket.getOutputStream();
+            } catch (IOException e) {
+                Log.e("[Bluetooth]", "Error occurred when creating output stream", e);
             }
+            stream = tmpOut;
 
-
-            for (OutputStream stream : outputStreams)
+            try
             {
-                try
-                {
-                    l("Writing bytes to outstream");
-                    stream.write(bytes);
-                }
-                catch (java.io.IOException e)
-                {
-                    Log.e("[Bluetooth]", "Failed to send data", e);
-                }
+                l("Writing bytes to outstream");
+                stream.write(bytes);
+            }
+            catch (Exception e)
+            {
+                Log.e("[Bluetooth]", "Failed to send data", e);
+                disconnect(id);
             }
         }
 
+        /*
         public void write(byte[] bytes, int device)
         {
             l("Writing " + new String(bytes));
@@ -375,19 +372,17 @@ public class BluetoothActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+        */
 
         public void cancel()
         {
-            for (BluetoothSocket socket : connectedSockets)
+            try
             {
-                try
-                {
-                    socket.close();
-                }
-                catch (java.io.IOException e)
-                {
-                    Log.e("[Bluetooth]", "Failed to close socket", e);
-                }
+                connectedSocket.close();
+            }
+            catch (java.io.IOException e)
+            {
+                Log.e("[Bluetooth]", "Failed to close socket", e);
             }
         }
     }
@@ -442,7 +437,10 @@ public class BluetoothActivity extends AppCompatActivity {
         if (!Destroyed())
         {
             l("Storing socket in connected devices");
-            connectedSockets.add(socket);
+            ConnectedThread thread = new ConnectedThread(socket);
+            thread.start();
+            connectedThreads.add(thread);
+            thread.setId(connectedThreads.size());
             msgToast("CONNECTED!");
             MSG(MESSAGE_CONNECTED);
         }
@@ -457,7 +455,8 @@ public class BluetoothActivity extends AppCompatActivity {
     {
         l("EVENT: send() " + text);
         try {
-            connectedThread.write(text.getBytes("UTF-8"));
+            for (ConnectedThread c : connectedThreads)
+                c.write(text.getBytes());
         }
         catch (Exception e)
         {
@@ -469,9 +468,9 @@ public class BluetoothActivity extends AppCompatActivity {
     {
         l("EVENT: send() " + text);
         try {
-            connectedThread.write(text.getBytes("UTF-8"), device);
+            connectedThreads.get(device).write(text.getBytes());
         }
-        catch (IOException e) {
+        catch (Exception e) {
             l("Failed to write: Exception: " + e.getMessage());
         }
     }
@@ -532,15 +531,31 @@ public class BluetoothActivity extends AppCompatActivity {
             {
                 l("Connection socket closing failed: " + e.getMessage());
             }
-        for (BluetoothSocket socket : connectedSockets)
+        for (int i = 0; i < connectedThreads.size(); ++i)
         {
-            try
+            connectedThreads.get(i).close();
+            connectedThreads.get(i).interrupt();
+            connectedThreads.remove(i);
+        }
+    }
+
+    private void disconnect(int id)
+    {
+        try
+        {
+            connectedThreads.get(id-1).close();
+            connectedThreads.get(id-1).interrupt();
+            connectedThreads.remove(id-1);
+
+            for (int i = 0; i < connectedThreads.size(); ++i)
             {
-                socket.close();
-            } catch (IOException e)
-            {
-                l("Failed to close socket onDestroy() : " + e.getMessage());
+                connectedThreads.get(i).setId(i + 1);
             }
+        }
+        catch (Exception e)
+        {
+            l("Failed to disconnect id: " + id + " is the connection already closed? " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

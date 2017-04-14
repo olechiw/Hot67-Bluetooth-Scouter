@@ -8,11 +8,7 @@ import android.os.Message;
 import java.io.*;
 import java.util.*;
 
-import android.support.v4.app.ActivityCompat;
 import android.os.Environment;
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.support.v4.content.ContextCompat;
 
 
 public class ServerActivity extends BluetoothActivity {
@@ -20,6 +16,10 @@ public class ServerActivity extends BluetoothActivity {
 
     public static final String FILE_NAME = "database.csv";
     public static final String FILE_DIRECTORY =
+            Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
+
+    public static final String TEAMS_FILE_NAME = "matches.csv";
+    public static final String TEAMS_FILE_DIRECTORY =
             Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
 
     public static final String TEAM_NUMBER_SCHEMA =
@@ -42,6 +42,9 @@ public class ServerActivity extends BluetoothActivity {
     NumberPicker match;
 
     InputTableLayout teamsLayout;
+
+    List<List<String>> matches = new ArrayList<>();
+    CheckBox autoSendTeams;
 
     /*
     TableLayout outputView;
@@ -85,9 +88,19 @@ public class ServerActivity extends BluetoothActivity {
             }
         });
 
+        autoSendTeams = (CheckBox) findViewById(R.id.autoSendBox);
+
         match = (NumberPicker) findViewById(R.id.matchNumber);
         match.setMinValue(1);
         match.setMaxValue(200);
+        match.setOnValueChangedListener(new NumberPicker.OnValueChangeListener()
+        {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal)
+            {
+                LoadTeams();
+            }
+        });
 
         teamsLayout = (InputTableLayout) findViewById(R.id.teamNumberLayout);
         teamsLayout.Build(TEAM_NUMBER_SCHEMA);
@@ -105,6 +118,8 @@ public class ServerActivity extends BluetoothActivity {
         List<String> data = new ArrayList<>(Arrays.asList(content.split("\n")));
         ServerOutputAdapter.Build(this, data, outputView);
         */
+
+        LoadTeams();
     }
 
     @Override
@@ -169,6 +184,24 @@ public class ServerActivity extends BluetoothActivity {
         teamsReceived++;
         teamsReceivedText.setText("Teams Received: " + teamsReceived);
         latestMatchText.setText("Latest Game #: " + matchNumber);
+
+        if (teamsReceived >= 6 && autoSendTeams.isChecked())
+        {
+            SendTeams();
+        }
+    }
+
+    private void LoadTeams()
+    {
+        try
+                        {
+            List<String> teams = matches.get(match.getValue() - 1);
+            teamsLayout.Set(teams);
+        }
+        catch (Exception e)
+        {
+            l("Failed to load next match from arraylist.");
+        }
     }
 
     private void SendTeams()
@@ -178,9 +211,10 @@ public class ServerActivity extends BluetoothActivity {
         match.setValue(match.getValue() + 1);
         for (int i = 0; i < teams.size(); ++i)
         {
-            if (i < connectedSockets.size())
+            if (i < connectedThreads.size())
                 Write(output + teams.get(i), i);
         }
+        LoadTeams();
     }
 
     private int connectedDevices = 0;
@@ -209,7 +243,7 @@ public class ServerActivity extends BluetoothActivity {
                         "Disconnect. Connected Devices: "
                                 + connectedDevices
                                 + " Socket Count: "
-                                + connectedSockets.size());
+                                + connectedThreads.size());
                 // toast("Device Disconnected!");
                 break;
         }
@@ -281,6 +315,33 @@ public class ServerActivity extends BluetoothActivity {
         catch (IOException e)
         {
             l("Unable to read from file: " + e.getMessage());
+        }
+
+        try
+        {
+            BufferedReader reader = new BufferedReader(new FileReader(TEAMS_FILE_DIRECTORY + TEAMS_FILE_NAME));
+            String line = reader.readLine();
+            while (line != null)
+            {
+                if (line.split(",").length==6)
+                {
+                    matches.add(Arrays.asList(line.split(",")));
+                }
+                line = reader.readLine();
+            }
+        }
+        catch (FileNotFoundException e)
+        {
+            l("Unable to detect teams file, skipping load");
+
+            File dir = new File(FILE_DIRECTORY);
+            l("Creating files directory: " + dir.getAbsolutePath());
+            dir.mkdirs();
+        }
+        catch (Exception e)
+        {
+            l("Load teams failed: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

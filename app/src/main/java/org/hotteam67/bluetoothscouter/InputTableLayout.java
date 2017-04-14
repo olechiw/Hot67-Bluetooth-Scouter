@@ -48,6 +48,22 @@ public class InputTableLayout extends TableLayout
         Build(schema);
     }
 
+    public void Set(List<String> values)
+    {
+        try
+        {
+            for (int i = 0; i < values.size(); ++i)
+            {
+                ((EditText)views.get(i).findViewById(R.id.editText)).setText(values.get(i));
+            }
+        }
+        catch (Exception e)
+        {
+            l("Failed to load value when calling Set(): " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     public void Build(List<View> _v)
     {
         views = _v;

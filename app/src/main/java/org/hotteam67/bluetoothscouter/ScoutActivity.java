@@ -78,7 +78,7 @@ public class ScoutActivity extends BluetoothActivity {
                 l("Attempting Connect!");
             }
         });
-        if (connectedSockets.size() > 0)
+        if (connectedThreads.size() > 0)
             connectButton.setText("Connected!");
 
         teamNumber = (EditText) findViewById(R.id.teamNumber);
@@ -124,6 +124,28 @@ public class ScoutActivity extends BluetoothActivity {
 
     private void sendButtonClick()
     {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Confirm");
+        builder.setMessage("Are you sure you want to send?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dlg, int id)
+            {
+                dlg.dismiss();
+                DoSend();
+            }
+        });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dlg, int id)
+            {
+                dlg.dismiss();
+            }
+        });
+        AlertDialog dlg = builder.create();
+        dlg.show();
+    }
+
+    private void DoSend()
+    {
         if (isConnected)
             send();
         else
@@ -148,7 +170,8 @@ public class ScoutActivity extends BluetoothActivity {
             }
             else
             {
-                f.mkdirs();
+                File dir = new File(FILE_DIRECTORY);
+                dir.mkdirs();
                 f.createNewFile();
             }
         }

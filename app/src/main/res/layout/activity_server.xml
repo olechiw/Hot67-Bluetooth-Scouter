@@ -81,6 +81,12 @@
                     android:layout_height="wrap_content"
                     android:id="@+id/matchNumber"
                     android:layout_gravity="center"/>
+                <CheckBox
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AutoSend"
+                    android:layout_gravity="center_horizontal"
+                    android:id="@+id/autoSendBox"/>
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
