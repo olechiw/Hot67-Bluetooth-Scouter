@@ -12,20 +12,8 @@ import android.os.Environment;
 
 
 public class ServerActivity extends BluetoothActivity {
-
-
-    public static final String FILE_NAME = "database.csv";
-    public static final String FILE_DIRECTORY =
-            Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
-
-    public static final String TEAMS_FILE_NAME = "matches.csv";
-    public static final String TEAMS_FILE_DIRECTORY =
-            Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
-
     public static final String TEAM_NUMBER_SCHEMA =
             "Team 12,Team 22,Team 32,Team 42,Team 52,Team 62";
-
-    public static final int REQUEST_PERM_EXTERNAL = 1;
 
     public static final int MATCH_NUMBER = 1;
 
@@ -58,8 +46,10 @@ public class ServerActivity extends BluetoothActivity {
 
         // setRequestedOrientation(getResources().getConfiguration().orientation);
 
+        l("Setting up io");
         setupIO();
 
+        l("Setting up ui");
         connectedDevicesText = (TextView)findViewById(R.id.connectedDevices);
         teamsReceivedText = (TextView)findViewById(R.id.teamsReceived);
         latestMatchText = (TextView)findViewById(R.id.latestMatch);
@@ -266,24 +256,7 @@ public class ServerActivity extends BluetoothActivity {
 
     private String loadSchema()
     {
-        String line = "";
-        try
-        {
-            BufferedReader reader = new BufferedReader(
-                    new FileReader(ScoutActivity.FILE_DIRECTORY + ScoutActivity.FILE_NAME));
-            line = reader.readLine();
-            reader.close();
-            l("Read line from configuration file: " + line);
-        }
-        catch (FileNotFoundException e)
-        {
-            l("Unable to detect schema file, skipping send-config");
-        }
-        catch (IOException e)
-        {
-            l("Failed to read schema file : " + e.getMessage());
-            e.printStackTrace();
-        }
+        String line = FileHandler.LoadContents(FileHandler.SCOUTER);
         return line;
     }
 
@@ -291,39 +264,16 @@ public class ServerActivity extends BluetoothActivity {
     {
         try
         {
-            BufferedReader reader = new BufferedReader(new FileReader(FILE_DIRECTORY + FILE_NAME));
-            StringBuilder builder = new StringBuilder();
-
-            String line = reader.readLine();
-            while (line != null)
-            {
-                builder.append(line);
-                builder.append("\n");
-                line = reader.readLine();
-            }
-            reader.close();
-            l("File Found: " + FILE_DIRECTORY + FILE_NAME);
-            content = builder.toString();
-            l("Read content: " + content);
+            content = FileHandler.LoadContents(FileHandler.SERVER);
         }
-        catch (FileNotFoundException e)
-        {
-            l("Unable to detect database file, skipping load");
-
-
-            File dir = new File(FILE_DIRECTORY);
-
-            l("Creating files directory: " + dir.getAbsolutePath());
-            dir.mkdirs();
-        }
-        catch (IOException e)
+        catch (Exception e)
         {
             l("Unable to read from file: " + e.getMessage());
         }
 
         try
         {
-            BufferedReader reader = new BufferedReader(new FileReader(TEAMS_FILE_DIRECTORY + TEAMS_FILE_NAME));
+            BufferedReader reader = FileHandler.GetReader(FileHandler.MATCHES);
             String line = reader.readLine();
             while (line != null)
             {
@@ -333,14 +283,6 @@ public class ServerActivity extends BluetoothActivity {
                 }
                 line = reader.readLine();
             }
-        }
-        catch (FileNotFoundException e)
-        {
-            l("Unable to detect teams file, skipping load");
-
-            File dir = new File(FILE_DIRECTORY);
-            l("Creating files directory: " + dir.getAbsolutePath());
-            dir.mkdirs();
         }
         catch (Exception e)
         {
@@ -389,22 +331,7 @@ public class ServerActivity extends BluetoothActivity {
 
     private void loadWriter()
     {
-        try
-        {
-            l("Loading file for writing");
-            File f = new File(FILE_DIRECTORY + FILE_NAME);
-            if (!f.exists()) {
-                l("File does not exist. Creating: " + f.getAbsolutePath());
-                f.createNewFile();
-            }
-
-            databaseFile = new FileWriter(f.getAbsolutePath(), false);
-        }
-        catch (IOException e)
-        {
-            l("Failed to open filewriter: " + e.getMessage());
-            e.printStackTrace();
-        }
+        databaseFile = FileHandler.GetWriter(FileHandler.SERVER);
 
         // Update header with schema
         String s = loadSchema();

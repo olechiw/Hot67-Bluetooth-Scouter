@@ -13,19 +13,21 @@ import android.util.Log;
 
 public final class FileHandler
 {
-    public static final String SERVER_FILE = "database.csv";
-    public static final String SCOUTER_FILE = "schema.csv";
-    public static final String MATCHES_FILE = "matches.csv";
-    public static final String DIRECTORY =
+    private static final String SERVER_FILE = "database.csv";
+    private static final String SCHEMA_FILE = "schema.csv";
+    private static final String SCOUTER_FILE = "localdatabase.csv";
+    private static final String MATCHES_FILE = "matches.csv";
+    private static final String DIRECTORY =
             Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
 
 
     public static final int SERVER = 1;
-    public static final int SCOUTER = 2;
-    public static final int MATCHES = 3;
+    public static final int SCHEMA = 2;
+    public static final int SCOUTER = 3;
+    public static final int MATCHES = 4;
 
 
-    private static  String file(int FILE)
+    private static String file(int FILE)
     {
         String f = DIRECTORY;
         switch (FILE)
@@ -33,8 +35,8 @@ public final class FileHandler
             case SERVER:
                 f += SERVER_FILE;
                 break;
-            case SCOUTER:
-                f += SCOUTER_FILE;
+            case SCHEMA:
+                f += SCHEMA_FILE;
                 break;
             case MATCHES:
                 f += MATCHES_FILE;
@@ -45,7 +47,7 @@ public final class FileHandler
         return f;
     }
 
-    private static final BufferedReader GetReader(int FILE)
+    public static final BufferedReader GetReader(int FILE)
     {
         String f = file(FILE);
 
@@ -77,13 +79,13 @@ public final class FileHandler
         return null;
     }
 
-    private static final BufferedWriter GetWriter(int FILE)
+    public static final FileWriter GetWriter(int FILE)
     {
         String f = file(FILE);
 
         try
         {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(f));
+            FileWriter writer = new FileWriter(new File(f).getAbsolutePath(), false);
             return writer;
         }
         catch (FileNotFoundException e)
@@ -94,7 +96,7 @@ public final class FileHandler
             try
             {
                 new File(f).createNewFile();
-                return new BufferedWriter(new FileWriter(f));
+                return new FileWriter(new File(f).getAbsolutePath(), false);
             }
             catch (Exception ex)
             {
@@ -109,7 +111,7 @@ public final class FileHandler
         return null;
     }
 
-    private static final String LoadContents(int file)
+    public static final String LoadContents(int file)
     {
         String content = "";
         BufferedReader r = GetReader(file);
@@ -119,6 +121,7 @@ public final class FileHandler
             while (line != null)
             {
                 content += line + "\n";
+                line = r.readLine();
             }
         }
         catch (Exception e)
@@ -134,7 +137,7 @@ public final class FileHandler
     {
         try
         {
-            BufferedWriter w = GetWriter(FILE);
+            FileWriter w = GetWriter(FILE);
             w.write(s);
             w.close();
         }

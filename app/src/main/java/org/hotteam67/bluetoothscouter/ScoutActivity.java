@@ -16,13 +16,6 @@ import java.io.*;
 
 
 public class ScoutActivity extends BluetoothActivity {
-
-    public static final String FILE_NAME = "schema.csv";
-    public static final String FILE_DIRECTORY =
-            Environment.getExternalStorageDirectory() + "/BluetoothScouter/";
-
-    public static final String DATABASE_FILE_NAME = "localdatabase.csv";
-
     boolean isConnected = false;
 
     Button sendButton;
@@ -154,49 +147,18 @@ public class ScoutActivity extends BluetoothActivity {
 
     private String getDatabaseContent()
     {
-        String content = "";
-        try
-        {
-            File f = new File(ServerActivity.FILE_DIRECTORY + DATABASE_FILE_NAME);
-            if (f.exists())
-            {
-                BufferedReader reader = new BufferedReader(new FileReader(f));
-                String line = reader.readLine();
-                while (line != null)
-                {
-                    content += line + "\n";
-                    line = reader.readLine();
-                }
-            }
-            else
-            {
-                File dir = new File(FILE_DIRECTORY);
-                dir.mkdirs();
-                f.createNewFile();
-            }
-        }
-        catch (IOException e)
-        {
-            l("IOException: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return content;
+        return FileHandler.LoadContents(FileHandler.SCOUTER);
     }
 
     private void clearDatabase()
     {
         try
         {
-            File f = new File(ServerActivity.FILE_DIRECTORY + DATABASE_FILE_NAME);
-            if (f.exists())
-            {
-                FileWriter writer = new FileWriter(f.getAbsolutePath());
-                writer.write("");
-                writer.close();
-            }
+            FileWriter writer = FileHandler.GetWriter(FileHandler.SCOUTER);
+            writer.write("");
+            writer.close();
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             l("Failed to clear file: " + e.getMessage());
             e.printStackTrace();
@@ -207,16 +169,12 @@ public class ScoutActivity extends BluetoothActivity {
     {
         try
         {
-            File f = new File(ServerActivity.FILE_DIRECTORY + DATABASE_FILE_NAME);
-            FileWriter writer = new FileWriter(f);
-
             String content = getDatabaseContent() + "\n" + getValues();
-            writer.write(content);
-            writer.close();
+            FileHandler.Write(FileHandler.SCOUTER, content);
             teamNumber.setText("");
             notes.setText("");
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             l("Failed to open database file: " + e.getMessage());
             e.printStackTrace();
@@ -341,15 +299,9 @@ public class ScoutActivity extends BluetoothActivity {
 
     private boolean Build()
     {
-        File targetFile = new File(FILE_DIRECTORY + FILE_NAME);
-
-        // No data present on device
-        if (!targetFile.exists())
-            return false;
-
         try
         {
-            BufferedReader reader = new BufferedReader(new FileReader(FILE_DIRECTORY + FILE_NAME));
+            BufferedReader reader = FileHandler.GetReader(FileHandler.SCHEMA);
             StringBuilder builder = new StringBuilder();
             String line = reader.readLine();
             if (line != null)
@@ -368,27 +320,7 @@ public class ScoutActivity extends BluetoothActivity {
         l("Building UI From String: " + s);
         if (write)
         {
-            try
-            {
-                File dir = new File(FILE_DIRECTORY);
-                dir.mkdirs();
-                File file = new File(FILE_DIRECTORY + FILE_NAME);
-                if (!file.exists())
-                {
-                    l("Writing to: " + file.getAbsolutePath());
-                    file.createNewFile();
-                }
-
-                FileWriter f = new FileWriter(file.getAbsolutePath(), false);
-                f.write(s);
-                f.close();
-            }
-            catch (Exception e)
-            {
-                l("Failed to create and/or write to file: " + e.getMessage());
-                e.printStackTrace();
-                return false;
-            }
+            FileHandler.Write(FileHandler.SCOUTER, s);
         }
 
         return inputTable.Build(s);
