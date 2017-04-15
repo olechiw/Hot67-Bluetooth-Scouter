@@ -86,14 +86,6 @@
                             android:layout_marginRight="15dp"
                             android:layout_toRightOf="@id/matchNumberView"/>
 
-                        <Button
-                            android:id="@+id/sendConfigurationButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="100dp"
-                            android:layout_centerVertical="true"
-                            android:layout_toRightOf="@id/matchNumber"
-                            android:padding="15dp"
-                            android:text="Send"/>
 
                     </RelativeLayout>
 
@@ -129,6 +121,14 @@
                         android:layout_height="wrap_content"
                         android:layout_below="@id/notesLabel"
                         android:layout_centerHorizontal="true"/>
+                    <Button
+                        android:id="@+id/sendConfigurationButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_below="@id/notes"
+                        android:padding="15dp"
+                        android:text="Send"/>
                 </RelativeLayout>
             </LinearLayout>
         </ScrollView>

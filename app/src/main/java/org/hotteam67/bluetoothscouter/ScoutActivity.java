@@ -213,6 +213,8 @@ public class ScoutActivity extends BluetoothActivity {
             String content = getDatabaseContent() + "\n" + getValues();
             writer.write(content);
             writer.close();
+            teamNumber.setText("");
+            notes.setText("");
         }
         catch (IOException e)
         {
@@ -245,7 +247,7 @@ public class ScoutActivity extends BluetoothActivity {
             values += div;
         }
 
-        String s = notes.getText().toString().replace("\n", " ");
+        String s = notes.getText().toString().replace("\n", " ").replace(",", " ");
         if (!s.trim().isEmpty())
             values += s;
         else
@@ -257,6 +259,10 @@ public class ScoutActivity extends BluetoothActivity {
 
     private void send()
     {
+        if (teamNumber.getText().toString().trim().isEmpty())
+            return;
+
+
         if (!getDatabaseContent().isEmpty())
         {
             Write(getDatabaseContent());

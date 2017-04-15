@@ -159,6 +159,10 @@ public class ServerActivity extends BluetoothActivity {
                 databaseFile.flush();
                 content += msg;
             }
+            else
+            {
+                l("Tried to write, database file was null!");
+            }
         }
         catch (IOException e)
         {
