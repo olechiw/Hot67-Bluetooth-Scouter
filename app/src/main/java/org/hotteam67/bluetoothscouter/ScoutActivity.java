@@ -218,7 +218,10 @@ public class ScoutActivity extends BluetoothActivity {
     private void send()
     {
         if (teamNumber.getText().toString().trim().isEmpty())
+        {
+            toast("No team number!");
             return;
+        }
 
 
         if (!getDatabaseContent().isEmpty())

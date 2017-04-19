@@ -58,8 +58,7 @@
             android:layout_height="wrap_content"
             android:text="Send Configuration"
             android:id="@+id/sendConfigurationButton"
-            android:layout_gravity="center_horizontal"
-            android:background="#e5e5e5"/>
+            android:layout_gravity="center_horizontal"/>
         <org.hotteam67.bluetoothscouter.InputTableLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
