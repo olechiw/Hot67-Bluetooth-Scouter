@@ -8,132 +8,143 @@
     tools:layout_editor_absoluteY="81dp"
     tools:layout_editor_absoluteX="0dp">
 
-    <LinearLayout
+    <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        app:popupTheme="@style/Theme.AppCompat"
+        android:id="@+id/toolBar"/>
+    <android.support.design.widget.CoordinatorLayout
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical"
-        tools:layout_editor_absoluteX="38dp"
-        tools:layout_editor_absoluteY="-27dp">
-
-
-        <ScrollView
+        android:layout_height="fill_parent">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:scrollbarAlwaysDrawHorizontalTrack="true"
+        android:fadeScrollbars="false"
+        android:id="@+id/scrollView">
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbarAlwaysDrawVerticalTrack="true"
-            android:scrollbarAlwaysDrawHorizontalTrack="true"
-            android:fadeScrollbars="false">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <HorizontalScrollView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <HorizontalScrollView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:scrollbarAlwaysDrawHorizontalTrack="true"
-                    android:scrollbarAlwaysDrawVerticalTrack="true"
-                    android:fadeScrollbars="false">
-
-                    <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
-
-                        <Button
-                            android:id="@+id/connectButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="100dp"
-                            android:layout_alignParentLeft="true"
-                            android:layout_centerVertical="true"
-                            android:padding="15dp"
-                            android:text="Connect"/>
-
-                        <TextView
-                            android:id="@+id/teamNumberView"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            android:layout_toRightOf="@id/connectButton"
-                            android:padding="15dp"
-                            android:text="Team Number:"/>
-
-                        <EditText
-                            android:id="@+id/teamNumber"
-                            android:layout_width="100dp"
-                            android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            android:layout_toRightOf="@id/teamNumberView"
-                            android:inputType="number"
-                            android:maxLength="5"
-                            android:padding="15dp"/>
-
-                        <TextView
-                            android:id="@+id/matchNumberView"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            android:layout_gravity="center_vertical"
-                            android:layout_toRightOf="@id/teamNumber"
-                            android:padding="15dp"
-                            android:text="Match #"/>
-
-                        <NumberPicker
-                            android:id="@+id/matchNumber"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="15dp"
-                            android:layout_marginRight="15dp"
-                            android:layout_toRightOf="@id/matchNumberView"/>
-
-
-                    </RelativeLayout>
-
-                </HorizontalScrollView>
-                <!--
-                <org.hotteam67.bluetoothscouter.ScoutGridLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/scoutLayout"/>
-                -->
-                <org.hotteam67.bluetoothscouter.InputTableLayout
-                    android:id="@+id/scoutLayout"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:stretchColumns="*"/>
+                android:layout_gravity="center_horizontal"
+                android:scrollbarAlwaysDrawHorizontalTrack="true"
+                android:scrollbarAlwaysDrawVerticalTrack="true"
+                android:fadeScrollbars="false">
 
                 <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <Button
+                        android:id="@+id/connectButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="100dp"
+                        android:layout_alignParentLeft="true"
+                        android:layout_centerVertical="true"
+                        android:padding="15dp"
+                        android:text="Connect"/>
 
                     <TextView
-                        android:id="@+id/notesLabel"
+                        android:id="@+id/teamNumberView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_centerHorizontal="true"
-                        android:text="Notes: "
-                        android:textAppearance="@style/TextAppearance.AppCompat.Headline"/>
+                        android:layout_centerVertical="true"
+                        android:layout_toRightOf="@id/connectButton"
+                        android:padding="15dp"
+                        android:text="Team Number:"/>
 
                     <EditText
-                        android:id="@+id/notes"
-                        android:layout_width="match_parent"
+                        android:id="@+id/teamNumber"
+                        android:layout_width="100dp"
                         android:layout_height="wrap_content"
-                        android:layout_below="@id/notesLabel"
-                        android:layout_centerHorizontal="true"/>
-                    <Button
-                        android:id="@+id/sendConfigurationButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="100dp"
-                        android:layout_centerHorizontal="true"
-                        android:layout_below="@id/notes"
+                        android:layout_centerVertical="true"
+                        android:layout_toRightOf="@id/teamNumberView"
+                        android:inputType="number"
+                        android:maxLength="5"
+                        android:padding="15dp"/>
+
+                    <TextView
+                        android:id="@+id/matchNumberView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_gravity="center_vertical"
+                        android:layout_toRightOf="@id/teamNumber"
                         android:padding="15dp"
-                        android:text="Send"/>
+                        android:text="Match #"/>
+
+                    <NumberPicker
+                        android:id="@+id/matchNumber"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="15dp"
+                        android:layout_marginRight="15dp"
+                        android:layout_toRightOf="@id/matchNumberView"/>
+
+                </RelativeLayout>
+
+            </HorizontalScrollView>
+            <!--
+               <org.hotteam67.bluetoothscouter.ScoutGridLayout
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:id="@+id/scoutLayout"/>
+               -->
+            <org.hotteam67.bluetoothscouter.InputTableLayout
+                android:id="@+id/scoutLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:stretchColumns="*"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/notesLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:text="Notes: "
+                    android:textAppearance="@style/TextAppearance.AppCompat.Headline"/>
+
+                <EditText
+                    android:id="@+id/notes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/notesLabel"
+                    android:layout_centerHorizontal="true"/>
+                <!--
+                   <Button
+                       android:id="@+id/sendConfigurationButton"
+                       android:layout_width="match_parent"
+                       android:layout_height="100dp"
+                       android:layout_centerHorizontal="true"
+                       android:layout_below="@id/notes"
+                       android:padding="15dp"
+                       android:text="Send"/>
+                   -->
                 </RelativeLayout>
             </LinearLayout>
         </ScrollView>
-
-
-    </LinearLayout>
-
+        <android.support.design.widget.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/notes"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/email"
+            android:id="@+id/sendConfigurationButton"
+            android:layout_margin="24dp"
+            app:layout_anchorGravity="bottom|end"
+            app:layout_anchor="@id/scrollView"/>
+    </android.support.design.widget.CoordinatorLayout>
 </android.support.constraint.ConstraintLayout>

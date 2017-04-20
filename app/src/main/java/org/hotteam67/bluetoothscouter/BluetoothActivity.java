@@ -37,6 +37,8 @@ public class BluetoothActivity extends AppCompatActivity {
     private final UUID uuid = UUID.fromString("1cb5d5ce-00f5-11e7-93ae-92361f002671");
     // protected void AddUUID(String s) { uuid.add(UUID.fromString(s)); }
 
+    private boolean bluetoothFailed = false;
+
     protected BluetoothAdapter m_bluetoothAdapter;
 
 /*
@@ -82,6 +84,9 @@ public class BluetoothActivity extends AppCompatActivity {
             }
         });
 */
+
+        if (bluetoothFailed)
+            return;
 
         l("Setting up accept thread");
         acceptThread = new AcceptThread();
@@ -397,10 +402,10 @@ public class BluetoothActivity extends AppCompatActivity {
         if (m_bluetoothAdapter == null) {
             l("Bluetooth not detected");
             msgToast("Error, Bluetooth not Detected!");
-            System.exit(0);
+            bluetoothFailed = true;
         }
 
-        if (!m_bluetoothAdapter.isEnabled()) {
+        if (!bluetoothFailed && !m_bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, 1);
         }
@@ -419,6 +424,9 @@ public class BluetoothActivity extends AppCompatActivity {
     protected synchronized void Connect()
     {
         l("Connecting");
+
+        if (bluetoothFailed)
+            return;
 
         Set<BluetoothDevice> pairedDevices = m_bluetoothAdapter.getBondedDevices();
 
@@ -523,6 +531,8 @@ public class BluetoothActivity extends AppCompatActivity {
         super.onDestroy();
         l("Destroying application threads");
         Destroyed(true);
+        if (bluetoothFailed)
+            return;
         if (acceptThread.connectionSocket != null)
             try
             {

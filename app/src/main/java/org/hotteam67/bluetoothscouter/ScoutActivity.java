@@ -1,7 +1,11 @@
 package org.hotteam67.bluetoothscouter;
 
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.*;
 import android.widget.*;
 import android.view.*;
 import android.os.Message;
@@ -9,7 +13,9 @@ import android.text.InputFilter;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Environment;
+import android.support.design.widget.FloatingActionButton;
 import android.text.Spanned;
+import android.support.v7.widget.Toolbar;
 
 import java.util.*;
 import java.io.*;
@@ -18,13 +24,15 @@ import java.io.*;
 public class ScoutActivity extends BluetoothActivity {
     boolean isConnected = false;
 
-    Button sendButton;
+    FloatingActionButton sendButton;
     Button connectButton;
 
     EditText teamNumber;
     NumberPicker matchNumber;
 
     EditText notes;
+
+    Toolbar toolbar;
 
     /*
     GridView scoutLayout;
@@ -39,9 +47,17 @@ public class ScoutActivity extends BluetoothActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scout);
 
+        toolbar = (Toolbar) findViewById(R.id.toolBar);
+        setSupportActionBar(toolbar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
+        ab.setDisplayShowTitleEnabled(false);
+        ab.setCustomView(R.layout.layout_toolbar);
+        ab.setDisplayShowCustomEnabled(true);
+
         // setRequestedOrientation(getResources().getConfiguration().orientation);
 
-        sendButton = (Button) findViewById(R.id.sendConfigurationButton);
+        sendButton = (FloatingActionButton) findViewById(R.id.sendConfigurationButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -62,6 +78,7 @@ public class ScoutActivity extends BluetoothActivity {
                 sendButtonClick();
             }
         });
+        sendButton.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
 
         connectButton = (Button) findViewById(R.id.connectButton);
         connectButton.setOnClickListener(new View.OnClickListener() {
@@ -106,6 +123,14 @@ public class ScoutActivity extends BluetoothActivity {
 
         if (!Build())
             l("Build failed, no values loaded");
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        Toolbar tb = (Toolbar) findViewById(R.id.toolBar);
+        //tb.inflateMenu(R.menu.toolbar_menu);
+        return true;
     }
 
     @Override
@@ -272,7 +297,7 @@ public class ScoutActivity extends BluetoothActivity {
                     if (!Build((String) msg.obj, true))
                     {
                         toast("Failed to Build Values on Receive!");
-                        l("Input Failed: " + (String) msg.obj);
+                        l("Input Failed: " + msg.obj);
                     }
                 }
                 else
