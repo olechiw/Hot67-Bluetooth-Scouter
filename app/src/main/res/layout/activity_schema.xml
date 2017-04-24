@@ -14,20 +14,18 @@
         android:id="@+id/schemaActivityLayout"
         tools:layout_editor_absoluteY="8dp"
         tools:layout_editor_absoluteX="8dp">
-        <Button
-            android:layout_width="wrap_content"
+        <android.support.v7.widget.Toolbar
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.AppCompat.Title"
-            android:text="Schema:"
-            android:layout_marginTop="12dp"
-            android:id="@+id/expandSchemaButton"
-            android:layout_centerHorizontal="true"/>
+            android:id="@+id/toolBar"
+            android:background="?attr/colorPrimary"
+            android:elevation="4dp"/>
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/schemaInput"
             android:lines="1"
-            android:layout_below="@id/expandSchemaButton"/>
+            android:layout_below="@id/toolBar"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

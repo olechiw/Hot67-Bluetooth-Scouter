@@ -15,7 +15,7 @@ import android.os.Environment;
 
 public class ServerActivity extends BluetoothActivity {
     public static final String TEAM_NUMBER_SCHEMA =
-            "Team 12,Team 22,Team 32,Team 42,Team 52,Team 62";
+            "Team 14,Team 24,Team 34,Team 44,Team 54,Team 64";
 
     public static final int MATCH_NUMBER = 1;
 
@@ -37,11 +37,6 @@ public class ServerActivity extends BluetoothActivity {
     CheckBox autoSendTeams;
 
     android.support.v7.widget.Toolbar toolbar;
-
-    /*
-    TableLayout outputView;
-    ServerOutputAdapter outputAdapter;
-*/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item)

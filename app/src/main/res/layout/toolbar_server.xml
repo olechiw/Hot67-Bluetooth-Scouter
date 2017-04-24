@@ -16,7 +16,7 @@
             android:layout_gravity="center"
             android:paddingTop="15dp"
             android:paddingBottom="15dp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:text="Connected: 0"
             android:paddingRight="20dp"
             android:id="@+id/connectedDevices"/>

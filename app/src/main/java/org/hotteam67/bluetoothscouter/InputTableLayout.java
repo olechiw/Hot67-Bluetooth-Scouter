@@ -17,11 +17,10 @@ import android.util.*;
 public class InputTableLayout extends TableLayout
 {
     public static final int PADDING = 0;
-    public static final int TYPE_BOOLEAN = 1;
-    public static final int TYPE_STRING = 2;
+    public static final int TYPE_HEADER = 1;
+    public static final int TYPE_BOOLEAN = 2;
     public static final int TYPE_INTEGER = 3;
-    public static final int TYPE_HEADER = 4;
-    public static final int TYPE_CHOICE = 5;
+    public static final int TYPE_STRING = 4;
 
     private List<View> views = new ArrayList<>();
     private List<Variable> variables = new ArrayList<>();
@@ -272,6 +271,7 @@ public class InputTableLayout extends TableLayout
     private View initializeView(String tag, Integer type, int min, int max)
     {
         l("Initializing View:" + tag);
+        l("Type: " + type);
         View v = null;
         switch (type)
         {

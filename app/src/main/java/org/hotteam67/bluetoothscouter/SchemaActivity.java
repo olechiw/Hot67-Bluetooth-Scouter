@@ -2,8 +2,10 @@ package org.hotteam67.bluetoothscouter;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.util.Log;
 import java.io.*;
@@ -19,11 +21,33 @@ public class SchemaActivity extends AppCompatActivity
     Button expandSchemaButton;
     private int lines = 1;
 
+    android.support.v7.widget.Toolbar toolbar;
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        if (item.getItemId() == android.R.id.home)
+        {
+            finish();
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schema);
+
+        toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolBar);
+        setSupportActionBar(toolbar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
+        ab.setDisplayShowTitleEnabled(false);
+        ab.setCustomView(R.layout.toolbar_schema);
+        ab.setDisplayShowCustomEnabled(true);
 
         schemaInput = (EditText) findViewById(R.id.schemaInput);
         previewButton = (Button) findViewById(R.id.previewButton);
