@@ -13,51 +13,16 @@
                   android:layout_width="fill_parent"
                   android:layout_height="fill_parent"
                   android:orientation="vertical">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="100dp"
-            android:layout_gravity="center"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:paddingTop="15dp"
-                android:paddingBottom="15dp"
-                android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                android:text="Devices Connected: 0"
-                android:paddingRight="20dp"
-                android:id="@+id/connectedDevices"/>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:layout_gravity="center">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Latest Game #:"
-                    android:layout_gravity="top"
-                    android:paddingTop="10dp"
-                    android:id="@+id/latestMatch"
-                    android:textStyle="bold"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Teams Received:"
-                    android:id="@+id/teamsReceived"
-                    android:layout_gravity="bottom"
-                    android:textStyle="bold"/>
-            </LinearLayout>
-        </LinearLayout>
+        <android.support.v7.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            android:id="@+id/toolBar"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Send Configuration"
-            android:id="@+id/sendConfigurationButton"
+            android:id="@+id/sendButton"
             android:layout_gravity="center_horizontal"/>
         <org.hotteam67.bluetoothscouter.InputTableLayout
             android:layout_width="match_parent"

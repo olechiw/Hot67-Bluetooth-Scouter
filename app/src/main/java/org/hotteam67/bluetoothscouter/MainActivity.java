@@ -15,6 +15,8 @@ public class MainActivity extends AppCompatActivity {
 
     Button serverButton;
     Button scoutButton;
+    Button schemaButton;
+    Button matchesButton;
 
     public static final String ORIENTATION = "orientation";
 
@@ -25,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
 
         serverButton = (Button) findViewById(R.id.serverButton);
         scoutButton = (Button) findViewById(R.id.scoutButton);
+        schemaButton = (Button) findViewById(R.id.schemaButton);
+        matchesButton = (Button) findViewById(R.id.matchesButton);
 
         serverButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -40,9 +44,26 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(scoutIntent);
             }
         });
+        schemaButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent schemaIntent = new Intent(getApplicationContext(), SchemaActivity.class);
+                startActivity(schemaIntent);
+            }
+        });
+        matchesButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                Intent matchesIntent = new Intent(getApplicationContext(), MatchesActivity.class);
+                startActivity(matchesIntent);
+            }
+        });
 
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},

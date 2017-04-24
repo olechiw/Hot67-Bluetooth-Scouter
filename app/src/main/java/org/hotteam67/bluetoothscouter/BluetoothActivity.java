@@ -416,9 +416,17 @@ public class BluetoothActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        if (resultCode==RESULT_OK)
+
             if (requestCode==1)
+            {
+                if (resultCode==RESULT_OK)
+                {
+                    bluetoothFailed = false;
+                }
+                else
+                    bluetoothFailed = true;
                 setupUI();
+            }
     }
 
     protected synchronized void Connect()

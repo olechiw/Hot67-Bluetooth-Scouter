@@ -137,6 +137,7 @@ public class InputTableLayout extends TableLayout
 
     public boolean Build(String _schema)
     {
+        removeAllViews();
         schema = _schema;
         try
         {

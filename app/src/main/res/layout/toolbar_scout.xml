@@ -3,6 +3,7 @@
               android:orientation="horizontal"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
+              android:layout_margin="18dp"
     android:id="@+id/layout_toolbar">
 
     <Button
@@ -38,6 +39,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:textAppearance="@style/TextAppearance.AppCompat"
             android:text="Match Number"
             android:id="@+id/matchNumberView"/>
         <EditText

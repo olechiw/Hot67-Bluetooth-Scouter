@@ -1,18 +1,14 @@
 package org.hotteam67.bluetoothscouter;
 
-import android.content.res.ColorStateList;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.widget.*;
 import android.widget.*;
 import android.view.*;
 import android.os.Message;
 import android.text.InputFilter;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.text.Spanned;
 import android.support.v7.widget.Toolbar;
@@ -28,7 +24,7 @@ public class ScoutActivity extends BluetoothActivity {
     Button connectButton;
 
     EditText teamNumber;
-    NumberPicker matchNumber;
+    EditText matchNumber;
 
     EditText notes;
 
@@ -42,6 +38,19 @@ public class ScoutActivity extends BluetoothActivity {
     // SectionedView scoutGridLayout;
     InputTableLayout inputTable;
 
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        if (item.getItemId() == android.R.id.home)
+        {
+            finish();
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,12 +61,12 @@ public class ScoutActivity extends BluetoothActivity {
         ActionBar ab = getSupportActionBar();
         ab.setDisplayHomeAsUpEnabled(true);
         ab.setDisplayShowTitleEnabled(false);
-        ab.setCustomView(R.layout.layout_toolbar);
+        ab.setCustomView(R.layout.toolbar_scout);
         ab.setDisplayShowCustomEnabled(true);
 
         // setRequestedOrientation(getResources().getConfiguration().orientation);
 
-        sendButton = (FloatingActionButton) findViewById(R.id.sendConfigurationButton);
+        sendButton = (FloatingActionButton) findViewById(R.id.sendButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -78,9 +87,8 @@ public class ScoutActivity extends BluetoothActivity {
                 sendButtonClick();
             }
         });
-        sendButton.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
 
-        connectButton = (Button) findViewById(R.id.connectButton);
+        connectButton = (Button) ab.getCustomView().findViewById(R.id.connectButton);
         connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -91,7 +99,7 @@ public class ScoutActivity extends BluetoothActivity {
         if (connectedThreads.size() > 0)
             connectButton.setText("Connected!");
 
-        teamNumber = (EditText) findViewById(R.id.teamNumber);
+        teamNumber = (EditText) ab.getCustomView().findViewById(R.id.teamNumberText);
 
         InputFilter filter = new InputFilter() {
 
@@ -109,9 +117,7 @@ public class ScoutActivity extends BluetoothActivity {
         notes = (EditText) findViewById(R.id.notes);
         notes.setFilters(new InputFilter[] { filter });
 
-        matchNumber = (NumberPicker) findViewById(R.id.matchNumber);
-        matchNumber.setMinValue(1);
-        matchNumber.setMaxValue(200);
+        matchNumber = (EditText) ab.getCustomView().findViewById(R.id.matchNumberText);
 
         /*
         scoutLayout = (GridView)findViewById(R.id.scoutLayout);
@@ -125,13 +131,6 @@ public class ScoutActivity extends BluetoothActivity {
             l("Build failed, no values loaded");
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        Toolbar tb = (Toolbar) findViewById(R.id.toolBar);
-        //tb.inflateMenu(R.menu.toolbar_menu);
-        return true;
-    }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig)
@@ -219,7 +218,7 @@ public class ScoutActivity extends BluetoothActivity {
         else
             values += teamNumber.getText().toString() + div;
 
-        values += Integer.toString(matchNumber.getValue()) + div;
+        values += matchNumber.getText() + div;
 
         List<String> currentValues = inputTable.GetCurrentValues();
         for (int i = 0; i < currentValues.size(); ++i)
@@ -275,7 +274,7 @@ public class ScoutActivity extends BluetoothActivity {
             toast("Received a new Team!: " + values.get(1));
             try
             {
-                matchNumber.setValue(Integer.valueOf(values.get(0)));
+                matchNumber.setText(values.get(0));
             }
             catch (Exception e)
             {

@@ -2,6 +2,8 @@ package org.hotteam67.bluetoothscouter;
 
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.*;
 import android.widget.*;
 import android.view.*;
 import android.os.Message;
@@ -34,16 +36,38 @@ public class ServerActivity extends BluetoothActivity {
     List<List<String>> matches = new ArrayList<>();
     CheckBox autoSendTeams;
 
+    android.support.v7.widget.Toolbar toolbar;
+
     /*
     TableLayout outputView;
     ServerOutputAdapter outputAdapter;
 */
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        if (item.getItemId() == android.R.id.home)
+        {
+            finish();
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_server);
 
+
+        toolbar = (android.support.v7.widget.Toolbar) findViewById(R.id.toolBar);
+        setSupportActionBar(toolbar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayHomeAsUpEnabled(true);
+        ab.setDisplayShowTitleEnabled(false);
+        ab.setCustomView(R.layout.toolbar_server);
+        ab.setDisplayShowCustomEnabled(true);
         // setRequestedOrientation(getResources().getConfiguration().orientation);
 
         l("Setting up io");
@@ -54,7 +78,7 @@ public class ServerActivity extends BluetoothActivity {
         teamsReceivedText = (TextView)findViewById(R.id.teamsReceived);
         latestMatchText = (TextView)findViewById(R.id.latestMatch);
 
-        sendConfigurationButton = (Button)findViewById(R.id.sendConfigurationButton);
+        sendConfigurationButton = (Button)findViewById(R.id.sendButton);
         sendConfigurationButton.setOnClickListener(new View.OnClickListener()
         {
             @Override

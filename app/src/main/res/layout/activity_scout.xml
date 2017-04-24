@@ -9,12 +9,13 @@
     tools:layout_editor_absoluteX="0dp">
 
     <android.support.v7.widget.Toolbar
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
-        app:popupTheme="@style/Theme.AppCompat"
-        android:id="@+id/toolBar"/>
+        android:id="@+id/toolBar"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="8dp"/>
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent">
@@ -24,79 +25,13 @@
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbarAlwaysDrawHorizontalTrack="true"
         android:fadeScrollbars="false"
+        android:layout_marginTop="8dp"
         android:id="@+id/scrollView">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <HorizontalScrollView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:scrollbarAlwaysDrawHorizontalTrack="true"
-                android:scrollbarAlwaysDrawVerticalTrack="true"
-                android:fadeScrollbars="false">
-
-                <RelativeLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
-
-                    <Button
-                        android:id="@+id/connectButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="100dp"
-                        android:layout_alignParentLeft="true"
-                        android:layout_centerVertical="true"
-                        android:padding="15dp"
-                        android:text="Connect"/>
-
-                    <TextView
-                        android:id="@+id/teamNumberView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:layout_toRightOf="@id/connectButton"
-                        android:padding="15dp"
-                        android:text="Team Number:"/>
-
-                    <EditText
-                        android:id="@+id/teamNumber"
-                        android:layout_width="100dp"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:layout_toRightOf="@id/teamNumberView"
-                        android:inputType="number"
-                        android:maxLength="5"
-                        android:padding="15dp"/>
-
-                    <TextView
-                        android:id="@+id/matchNumberView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:layout_gravity="center_vertical"
-                        android:layout_toRightOf="@id/teamNumber"
-                        android:padding="15dp"
-                        android:text="Match #"/>
-
-                    <NumberPicker
-                        android:id="@+id/matchNumber"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="15dp"
-                        android:layout_marginRight="15dp"
-                        android:layout_toRightOf="@id/matchNumberView"/>
-
-                </RelativeLayout>
-
-            </HorizontalScrollView>
-            <!--
-               <org.hotteam67.bluetoothscouter.ScoutGridLayout
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               android:id="@+id/scoutLayout"/>
-               -->
             <org.hotteam67.bluetoothscouter.InputTableLayout
                 android:id="@+id/scoutLayout"
                 android:layout_width="match_parent"
@@ -141,10 +76,11 @@
             android:layout_below="@id/notes"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
-            android:src="@drawable/email"
-            android:id="@+id/sendConfigurationButton"
+            android:src="@drawable/ic_email"
+            android:id="@+id/sendButton"
             android:layout_margin="24dp"
             app:layout_anchorGravity="bottom|end"
+            app:backgroundTint="?attr/colorPrimary"
             app:layout_anchor="@id/scrollView"/>
     </android.support.design.widget.CoordinatorLayout>
 </android.support.constraint.ConstraintLayout>
