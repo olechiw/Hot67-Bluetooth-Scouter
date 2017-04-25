@@ -18,6 +18,8 @@ public class SchemaActivity extends AppCompatActivity
 
     InputTableLayout previewLayout;
 
+    ImageButton infoButton;
+
     Button expandSchemaButton;
     private int lines = 1;
 
@@ -95,9 +97,36 @@ public class SchemaActivity extends AppCompatActivity
             }
         });
 
+        infoButton = (ImageButton) findViewById(R.id.infoButton);
+        infoButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                onInfoClick();
+            }
+        });
+
         schemaInput.setText(FileHandler.LoadContents(FileHandler.SCHEMA));
         previewLayout.Build(schemaInput.getText().toString().replace("\n", ""));
         Log.d("[Bluetooth_Schema]", schemaInput.getText().toString());
+    }
+
+    private void onInfoClick()
+    {
+        AlertDialog.Builder dlg = new AlertDialog.Builder(this);
+        dlg.setTitle("Schema Information");
+        dlg.setMessage(
+                "Key:\n 1: Header\n 2: Boolean\n 3: Integer\n 4: EditText (Avoid using this)"
+        );
+        dlg.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        dlg.setCancelable(false);
+        dlg.create();
+        dlg.show();
     }
 
     @Override

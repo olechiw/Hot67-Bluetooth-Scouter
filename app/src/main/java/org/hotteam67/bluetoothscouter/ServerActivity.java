@@ -275,8 +275,8 @@ public class ServerActivity extends BluetoothActivity {
 
     private String loadSchema()
     {
-        String line = FileHandler.LoadContents(FileHandler.SCOUTER);
-        return line;
+        String line = FileHandler.LoadContents(FileHandler.SCHEMA);
+        return line.replace("\n", "");
     }
 
     private void loadExistingContent()

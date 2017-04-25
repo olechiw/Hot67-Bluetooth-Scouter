@@ -38,6 +38,9 @@ public final class FileHandler
             case SCHEMA:
                 f += SCHEMA_FILE;
                 break;
+            case SCOUTER:
+                f += SCOUTER_FILE;
+                break;
             case MATCHES:
                 f += MATCHES_FILE;
                 break;

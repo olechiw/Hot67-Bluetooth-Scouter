@@ -103,14 +103,14 @@ public class MatchesActivity extends AppCompatActivity
                     {
                         if (m.comp_level.equals("qm"))
                         {
-                            for (String t : m.blueTeams)
+                            for (String t : m.redTeams)
                             {
                                 s += t.replace("frc", "") + ",";
                             }
-                            for (int i = 0; i < m.redTeams.length; ++i)
+                            for (int i = 0; i < m.blueTeams.length; ++i)
                             {
-                                s += m.redTeams[i].replace("frc", "");
-                                if (i + 1 != m.redTeams.length)
+                                s += m.blueTeams[i].replace("frc", "");
+                                if (i + 1 != m.blueTeams.length)
                                     s += ",";
                             }
                             s += "\n";

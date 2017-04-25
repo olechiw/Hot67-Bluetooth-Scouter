@@ -178,9 +178,7 @@ public class ScoutActivity extends BluetoothActivity {
     {
         try
         {
-            FileWriter writer = FileHandler.GetWriter(FileHandler.SCOUTER);
-            writer.write("");
-            writer.close();
+            FileHandler.Write(FileHandler.SCOUTER, "");
         }
         catch (Exception e)
         {
@@ -191,6 +189,7 @@ public class ScoutActivity extends BluetoothActivity {
 
     private void write()
     {
+        toast("Not connected, saving locally");
         try
         {
             String content = getDatabaseContent() + "\n" + getValues();
@@ -218,7 +217,10 @@ public class ScoutActivity extends BluetoothActivity {
         else
             values += teamNumber.getText().toString() + div;
 
-        values += matchNumber.getText() + div;
+        if (matchNumber.getText().toString().trim().isEmpty())
+            values += "0" + div;
+        else
+            values += matchNumber.getText() + div;
 
         List<String> currentValues = inputTable.GetCurrentValues();
         for (int i = 0; i < currentValues.size(); ++i)
@@ -347,7 +349,7 @@ public class ScoutActivity extends BluetoothActivity {
         l("Building UI From String: " + s);
         if (write)
         {
-            FileHandler.Write(FileHandler.SCOUTER, s);
+            FileHandler.Write(FileHandler.SCHEMA, s);
         }
 
         return inputTable.Build(s);

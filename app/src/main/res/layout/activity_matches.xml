@@ -21,16 +21,10 @@
             android:id="@+id/toolBar"
             tools:layout_editor_absoluteY="0dp"
             tools:layout_editor_absoluteX="8dp"/>
-        <ScrollView
+        <EditText
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/toolBar">
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/outputText"
-                android:lines="25"/>
-        </ScrollView>
+            android:id="@+id/outputText"/>
         <android.support.design.widget.FloatingActionButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

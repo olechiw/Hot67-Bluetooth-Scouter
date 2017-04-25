@@ -118,7 +118,6 @@ public class BluetoothActivity extends AppCompatActivity {
 
 
 
-
     /*
     Accept Thread
      */
