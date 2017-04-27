@@ -84,6 +84,7 @@ public class ScoutActivity extends BluetoothActivity {
 
                         }).show();
 */
+                toast("Connecting!");
                 sendButtonClick();
             }
         });
