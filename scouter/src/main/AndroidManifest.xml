@@ -28,6 +28,8 @@
             android:parentActivityName="org.hotteam67.scouter.MainActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden"/>
+        <activity android:name=".TransferActivity"
+            android:parentActivityName="org.hotteam67.scouter.MainActivity"/>
     </application>
 
 </manifest>
