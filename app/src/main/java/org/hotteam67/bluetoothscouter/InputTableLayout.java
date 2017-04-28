@@ -238,9 +238,9 @@ public class InputTableLayout extends TableLayout
                     break;
                 case TYPE_INTEGER:
                     values.add(String.valueOf(
-                            ((NumberPicker) v.findViewById(R.id.numberPicker))
+                            ((DarkNumberPicker) v.findViewById(R.id.numberPicker))
                                     .getValue()));
-                    ((NumberPicker) v.findViewById(R.id.numberPicker)).setValue(0);
+                    ((DarkNumberPicker) v.findViewById(R.id.numberPicker)).setValue(0);
                     break;
                 default:
                     l("Not possible to get value of view with type: " + v.getTag(R.string.variable_type));
@@ -313,9 +313,9 @@ public class InputTableLayout extends TableLayout
                         android.R.style.TextAppearance_DeviceDefault);
 
 
-                NumberPicker picker = (NumberPicker) v.findViewById(R.id.numberPicker);
-                picker.setMinValue(min);
-                picker.setMaxValue(max);
+                DarkNumberPicker picker = (DarkNumberPicker) v.findViewById(R.id.numberPicker);
+                picker.setMinimum(min);
+                picker.setMaximum(max);
                 break;
             case TYPE_HEADER:
                 v = getInflater().inflate(R.layout.layout_header, null);

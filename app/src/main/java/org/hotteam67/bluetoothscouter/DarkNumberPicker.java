@@ -41,17 +41,31 @@ public class DarkNumberPicker extends LinearLayout
         this.setOrientation(LinearLayout.VERTICAL);
 
         mainText = new EditText(getContext());
-        mainText.setInputType(InputType.TYPE_NUMBER_VARIATION_NORMAL);
+        mainText.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+
         InputFilter filter = new InputFilter()
         {
             @Override
             public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend)
             {
-                int i = Integer.valueOf(source.toString());
-                if ((minimum < i) && (i < maximum))
+                int i = 0;
+                try
+                {
+                    android.util.Log.d("[DarkPicker]", "Source: " + source);
+                    i = Integer.valueOf(String.valueOf(source.toString()));
+                } catch (Exception e) {
+                    //android.util.Log.e("[DarkPicker]", "Failed to create integer value of : " + source.toString(), e);
+                }
+
+                //android.util.Log.d("[DarkPicker]", "Integer value: " + i);
+
+                if ((i >= minimum && i <= maximum))
                     return null;
                 else
-                    return "";
+                {
+                    return String.valueOf(minimum);
+                }
             }
         };
         mainText.setFilters(new InputFilter[] { filter });
@@ -59,6 +73,8 @@ public class DarkNumberPicker extends LinearLayout
         LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         params.gravity = Gravity.CENTER_HORIZONTAL;
         mainText.setLayoutParams(params);
+        mainText.setMinimumWidth(75);
+        mainText.setText("0");
 
         upButton = new Button(getContext());
         upButton.setOnClickListener(new OnClickListener()
@@ -66,10 +82,10 @@ public class DarkNumberPicker extends LinearLayout
             @Override
             public void onClick(View v)
             {
-                if (getValue() < maximum)
-                    setValue(getValue() + 1);
+                setValue(getValue() + 1);
             }
         });
+        upButton.setText("+");
         upButton.setLayoutParams(params);
 
         downButton = new Button(getContext());
@@ -78,10 +94,14 @@ public class DarkNumberPicker extends LinearLayout
             @Override
             public void onClick(View v)
             {
-                if (getValue() > minimum)
-                    setValue(getValue() - 1);
+                int i = getValue() - 1;
+                if (i < minimum)
+                    setValue(maximum);
+                else
+                    setValue(i);
             }
         });
+        downButton.setText("-");
         downButton.setLayoutParams(params);
 
         addView(upButton);
@@ -89,14 +109,33 @@ public class DarkNumberPicker extends LinearLayout
         addView(downButton);
     }
 
+    public void setMinimum(int value)
+    {
+        minimum = value;
+    }
+
+    public void setMaximum(int value)
+    {
+        maximum = value;
+    }
+
 
     public int getValue()
     {
         return Integer.valueOf(mainText.getText().toString());
+        /*
+        if (!mainText.getText().toString().trim().isEmpty())
+
+        else
+            return 0;
+            */
     }
 
-    public void setValue(int value)
+    public void setValue(Integer value)
     {
-        mainText.setText(value);
+        if (value > 0)
+            mainText.setText(value.toString());
+        else
+            mainText.setText("0");
     }
 }
