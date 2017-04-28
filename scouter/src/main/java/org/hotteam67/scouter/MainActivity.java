@@ -1,4 +1,4 @@
-package org.hotteam67.scoutapp;
+package org.hotteam67.scouter;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
