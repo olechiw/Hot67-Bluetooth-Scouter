@@ -40,11 +40,42 @@ public class ScoutActivity extends BluetoothActivity {
 
 
     @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+            android.util.Log.d(this.getClass().getName(), "back button pressed");
+            doConfirmEnd();
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    private void doConfirmEnd()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Confirm");
+        builder.setMessage("Are you sure you want to quit?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dlg, int id)
+            {
+                dlg.dismiss();
+                finish();
+            }
+        });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dlg, int id)
+            {
+                dlg.dismiss();
+            }
+        });
+        AlertDialog dlg = builder.create();
+        dlg.show();
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
         if (item.getItemId() == android.R.id.home)
         {
-            finish();
+            doConfirmEnd();
             return true;
         }
 
@@ -81,10 +112,9 @@ public class ScoutActivity extends BluetoothActivity {
                             public void onClick(DialogInterface dialog, int which) {
                                 sendButtonClick();
                             }
-
+ex
                         }).show();
 */
-                toast("Connecting!");
                 sendButtonClick();
             }
         });
@@ -93,6 +123,7 @@ public class ScoutActivity extends BluetoothActivity {
         connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                toast("Connecting!");
                 Connect();
                 l("Attempting Connect!");
             }
@@ -319,7 +350,7 @@ public class ScoutActivity extends BluetoothActivity {
                 break;
             case MESSAGE_DISCONNECTED:
                 l("Device connection lost");
-                // toast("Disconnected!");
+                toast("Lost Server Connection!");
                 isConnected = false;
                 connectButton.setText("Connect");
                 break;

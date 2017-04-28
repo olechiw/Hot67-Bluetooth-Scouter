@@ -550,9 +550,16 @@ public class BluetoothActivity extends AppCompatActivity {
             }
         for (int i = 0; i < connectedThreads.size(); ++i)
         {
-            connectedThreads.get(i).close();
-            connectedThreads.get(i).interrupt();
-            connectedThreads.remove(i);
+            try
+            {
+                connectedThreads.get(i).close();
+                connectedThreads.get(i).interrupt();
+                connectedThreads.remove(i);
+            }
+            catch (Exception e)
+            {
+
+            }
         }
     }
 

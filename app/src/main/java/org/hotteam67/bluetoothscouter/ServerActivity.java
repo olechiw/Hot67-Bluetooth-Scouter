@@ -93,6 +93,7 @@ public class ServerActivity extends BluetoothActivity {
             @Override
             public void onClick(View v)
             {
+                l("Sending Teams");
                 SendTeams();
             }
         });
@@ -220,12 +221,16 @@ public class ServerActivity extends BluetoothActivity {
     private void SendTeams()
     {
         List<String> teams = teamsLayout.GetCurrentValues();
+        l("Teams loaded: " + teams.size());
         String output = match.getValue() + ",";
         match.setValue(match.getValue() + 1);
         for (int i = 0; i < teams.size(); ++i)
         {
             if (i < connectedThreads.size())
+            {
+                l("Writing: " + output + teams.get(i));
                 Write(output + teams.get(i), i);
+            }
         }
         LoadTeams();
     }

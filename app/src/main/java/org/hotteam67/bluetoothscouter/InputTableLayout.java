@@ -6,6 +6,7 @@ import android.widget.*;
 import android.app.*;
 import android.content.Context;
 import android.view.*;
+import android.content.res.ColorStateList;
 
 import java.util.*;
 import android.util.*;
@@ -241,6 +242,8 @@ public class InputTableLayout extends TableLayout
                                     .getValue()));
                     ((NumberPicker) v.findViewById(R.id.numberPicker)).setValue(0);
                     break;
+                default:
+                    l("Not possible to get value of view with type: " + v.getTag(R.string.variable_type));
             }
         }
         return values;
@@ -266,6 +269,12 @@ public class InputTableLayout extends TableLayout
     private LayoutInflater getInflater()
     {
         return ((Activity)getContext()).getLayoutInflater();
+    }
+    private LayoutInflater getPickerInflater()
+    {
+        LayoutInflater inflater =  ((Activity)getContext()).getLayoutInflater();
+        final Context contextThemeWrapper = new ContextThemeWrapper(getContext(), R.style.NumberPickerTheme);
+        return inflater.cloneInContext(contextThemeWrapper);
     }
 
     private View initializeView(String tag, Integer type, int min, int max)
@@ -296,7 +305,7 @@ public class InputTableLayout extends TableLayout
                         android.R.style.TextAppearance_DeviceDefault);
                 break;
             case TYPE_INTEGER:
-                v = getInflater().inflate(R.layout.layout_numberpicker, null);
+                v = getPickerInflater().inflate(R.layout.layout_numberpicker, null);
                 ((TextView) v.findViewById(R.id.numberLabel)).setText(tag);
 
                 TextViewCompat.setTextAppearance(
@@ -304,8 +313,9 @@ public class InputTableLayout extends TableLayout
                         android.R.style.TextAppearance_DeviceDefault);
 
 
-                ((NumberPicker) v.findViewById(R.id.numberPicker)).setMinValue(min);
-                ((NumberPicker) v.findViewById(R.id.numberPicker)).setMaxValue(max);
+                NumberPicker picker = (NumberPicker) v.findViewById(R.id.numberPicker);
+                picker.setMinValue(min);
+                picker.setMaxValue(max);
                 break;
             case TYPE_HEADER:
                 v = getInflater().inflate(R.layout.layout_header, null);
