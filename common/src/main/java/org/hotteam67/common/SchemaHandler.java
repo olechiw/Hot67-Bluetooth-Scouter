@@ -98,9 +98,9 @@ public final class SchemaHandler
     public static List<String> GetCurrentValues(TableLayout table)
     {
         List<String> output = new ArrayList<>();
-        for (int i = 0; i < table.getChildCount(); ++i)
+
+        for (View v : getViews(table))
         {
-            View v = table.getChildAt(i);
             switch ((int) v.getTag(R.string.variable_type))
             {
                 case Constants.TYPE_INTEGER:
@@ -111,7 +111,7 @@ public final class SchemaHandler
                     );
                     break;
                 case Constants.TYPE_BOOLEAN:
-                    output.add(String.valueOf(((CheckBox)v).isChecked()));
+                    output.add(String.valueOf(((CheckBox)v.findViewById(R.id.checkBox1)).isChecked()));
                     break;
                 case Constants.TYPE_STRING:
                     output.add(((EditText)v.findViewById(R.id.editText)).getText().toString());
@@ -131,24 +131,37 @@ public final class SchemaHandler
         }
     }
 
-    public static void SetCurrentValues(TableLayout table, List<String> values)
+    public static List<View> getViews(TableLayout table)
     {
-        int val = 0;
+        List<View> views = new ArrayList<>();
         for (int i = 0; i < table.getChildCount(); ++i)
         {
-            View v = table.getChildAt(i);
+            ViewGroup row = (ViewGroup) table.getChildAt(i);
+            for (int v = 0; v < row.getChildCount(); ++v)
+            {
+                views.add(row.getChildAt(v));
+            }
+        }
+        return views;
+    }
+
+    public static void ClearCurrentValues(TableLayout table)
+    {
+        int val = 0;
+        for (View v : getViews(table))
+        {
             try
             {
                 switch ((int) v.getTag(R.string.variable_type))
                 {
                     case Constants.TYPE_INTEGER:
-                        ((DarkNumberPicker) v).setValue(Integer.valueOf(values.get(val)));
+                        ((DarkNumberPicker) v.findViewById(R.id.numberPicker)).setValue(Integer.valueOf("0"));
                         break;
                     case Constants.TYPE_BOOLEAN:
-                        ((CheckBox) v).setChecked(Boolean.valueOf(values.get(val)));
+                        ((CheckBox) v.findViewById(R.id.checkBox1)).setChecked(Boolean.valueOf("0"));
                         break;
                     case Constants.TYPE_STRING:
-                        ((EditText) v.findViewById(R.id.editText)).setText(values.get(val));
+                        ((EditText) v.findViewById(R.id.editText)).setText("");
                         break;
                     default:
                         val--;
@@ -161,6 +174,43 @@ public final class SchemaHandler
             ++val;
         }
     }
+
+    public static void SetCurrentValues(TableLayout table, List<String> values)
+    {
+        int val = 0;
+        try
+        {
+            for (View v : getViews(table))
+            {
+                switch ((int) v.getTag(R.string.variable_type))
+                {
+                    case Constants.TYPE_INTEGER:
+                        ((DarkNumberPicker) v.findViewById(R.id.numberPicker)).setValue(Integer.valueOf(values.get(val)));
+                        l("Loading in value: " + values.get(val));
+                        ++val;
+
+                        break;
+                    case Constants.TYPE_BOOLEAN:
+                        ((CheckBox) v.findViewById(R.id.checkBox1)).setChecked(Boolean.valueOf(values.get(val)));
+                        l("Loading in value: " + values.get(val));
+                        ++val;
+                        break;
+                    case Constants.TYPE_STRING:
+                        ((EditText) v.findViewById(R.id.editText)).setText(values.get(val));
+                        l("Loading in value: " + values.get(val));
+                        ++val;
+                        break;
+                }
+                if (val >= values.size())
+                    break;
+            }
+        }
+        catch (Exception e)
+        {
+            Log.e("[Schema Handler", "Failed to set value : " + e.getMessage(), e);
+            ClearCurrentValues(table);
+        }
+    };
 
     private static void SetParams(View v, int width)
     {
@@ -238,11 +288,19 @@ public final class SchemaHandler
                 check.setEnabled(true);
                 check.setText(variable.Tag);
                 check.setVisibility(View.VISIBLE);
+                /*
+                v.setTag(R.string.variable_type, Constants.TYPE_BOOLEAN);
+                v.setTag(R.string.variable_name, variable.Tag);
+                */
                 break;
             case Constants.TYPE_STRING:
                 v = getInflater(c).inflate(R.layout.layout_edittext, null);
                 TextView text = ((TextView) v.findViewById(R.id.textLabel));
                 text.setText(variable.Tag);
+                /*
+                v.setTag(R.string.variable_type, Constants.TYPE_STRING);
+                v.setTag(R.string.variable_name, variable.Tag);
+                */
                 TextViewCompat.setTextAppearance(
                         text,
                         android.R.style.TextAppearance_DeviceDefault);
@@ -250,7 +308,10 @@ public final class SchemaHandler
             case Constants.TYPE_INTEGER:
                 v = getInflater(c).inflate(R.layout.layout_numberpicker, null);
                 ((TextView) v.findViewById(R.id.numberLabel)).setText(variable.Tag);
-
+                /*
+                v.setTag(R.string.variable_type, Constants.TYPE_INTEGER);
+                v.setTag(R.string.variable_name, variable.Tag);
+                */
                 TextViewCompat.setTextAppearance(
                         ((TextView) v.findViewById(R.id.numberLabel)),
                         android.R.style.TextAppearance_DeviceDefault);
@@ -263,6 +324,10 @@ public final class SchemaHandler
             case Constants.TYPE_HEADER:
                 v = getInflater(c).inflate(R.layout.layout_header, null);
                 ((TextView)v).setText(variable.Tag);
+                /*
+                v.setTag(R.string.variable_type, Constants.TYPE_HEADER);
+                v.setTag(R.string.variable_name, variable.Tag);
+                */
                 break;
             default:
                 l("Error, invalid type given: " + variable.Type);
@@ -271,7 +336,11 @@ public final class SchemaHandler
         if (v != null)
         {
             v.setTag(R.string.variable_name, variable.Tag);
+            l("Adding variable tag: " + variable.Tag);
+            l("Returned: " + v.getTag(R.string.variable_name));
             v.setTag(R.string.variable_type, variable.Type);
+            l("Adding variable type: " + variable.Type);
+            l("Returned: " + v.getTag(R.string.variable_type));
         }
 
         return v;

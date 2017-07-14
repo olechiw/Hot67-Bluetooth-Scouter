@@ -3,6 +3,7 @@ package org.hotteam67.scouter;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.AppCompatImageButton;
 import android.widget.*;
 import android.view.*;
 import android.os.Message;
@@ -27,8 +28,11 @@ public class ScoutActivity extends BluetoothActivity
 {
     boolean isConnected = false;
 
-    FloatingActionButton saveButton;
+    ImageButton saveButton;
     Button connectButton;
+
+    FloatingActionButton nextMatchButton;
+    FloatingActionButton prevMatchButton;
 
     EditText teamNumber;
     EditText matchNumber;
@@ -46,6 +50,7 @@ public class ScoutActivity extends BluetoothActivity
     TableLayout inputTable;
 
     List<String> matches = new ArrayList<>();
+    List<String> teams = new ArrayList<>();
 
 
     @Override
@@ -101,12 +106,10 @@ public class ScoutActivity extends BluetoothActivity
         ActionBar ab = getSupportActionBar();
         ab.setDisplayHomeAsUpEnabled(true);
         ab.setDisplayShowTitleEnabled(false);
-        ab.setCustomView(R.layout.toolbar_scout);
-        ab.setDisplayShowCustomEnabled(true);
 
         // setRequestedOrientation(getResources().getConfiguration().orientation);
 
-        saveButton = (FloatingActionButton) findViewById(R.id.saveButton);
+            saveButton = (ImageButton) toolbar.findViewById(R.id.saveButton);
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -124,23 +127,11 @@ public class ScoutActivity extends BluetoothActivity
 ex
                         }).show();
 */
-                saveButtonClick();
+                save();
             }
         });
 
-        connectButton = (Button) ab.getCustomView().findViewById(R.id.connectButton);
-        connectButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toast("Connecting!");
-                Connect();
-                l("Attempting Connect!");
-            }
-        });
-        if (connectedThreads.size() > 0)
-            connectButton.setText("Connected!");
-
-        teamNumber = (EditText) ab.getCustomView().findViewById(R.id.teamNumberText);
+        teamNumber = (EditText) toolbar.findViewById(R.id.teamNumberText);
 
         InputFilter filter = new InputFilter() {
 
@@ -158,7 +149,7 @@ ex
         notes = (EditText) findViewById(R.id.notes);
         notes.setFilters(new InputFilter[] { filter });
 
-        matchNumber = (EditText) ab.getCustomView().findViewById(R.id.matchNumberText);
+        matchNumber = (EditText) findViewById(R.id.matchNumberText);
 
         /*
         scoutLayout = (GridView)findViewById(R.id.scoutLayout);
@@ -168,65 +159,118 @@ ex
         */
         inputTable = (TableLayout) findViewById(R.id.scoutLayout);
 
+        nextMatchButton = (FloatingActionButton) findViewById(R.id.nextMatchButton);
+        prevMatchButton = (FloatingActionButton) findViewById(R.id.prevMatchButton);
+
+        nextMatchButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                save();
+                loadMatch(currentMatch() + 1);
+                ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
+            }
+        });
+        prevMatchButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                save();
+                if (currentMatch() > 1)
+                    loadMatch(currentMatch() - 1);
+                ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
+            }
+        });
+
         if (!Build())
             l("Build failed, no values loaded");
+
+        loadDatabase();
+
+        matchNumber.setText("1");
+        if (!matches.isEmpty())
+        {
+            teamNumber.setText(teams.get(0));
+            loadMatch(1);
+        }
     }
 
+    int currentMatch() { return Integer.valueOf(matchNumber.getText().toString()); }
 
-    private void saveButtonClick()
+    private void loadMatch(int match)
     {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Confirm");
-        builder.setMessage("Are you sure you want to save?");
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dlg, int id)
-            {
-                dlg.dismiss();
-                write();
-            }
-        });
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dlg, int id)
-            {
-                dlg.dismiss();
-            }
-        });
-        AlertDialog dlg = builder.create();
-        dlg.show();
+        ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
+        if (matches.size() >= match)
+        {
+            l("Loading match: " + matches.get(match - 1));
+            String[] vals = matches.get(match - 1).split(",");
+            // List<String> subList = Arrays.asList(vals).subList(2, vals.length - 1);
+            SchemaHandler.SetCurrentValues(inputTable, Arrays.asList(vals).subList(2, vals.length-1));
+
+            teamNumber.setText(teams.get(match - 1));
+        }
+        else if (matches.size() + 1 == match)
+        {
+            teamNumber.setText("0");
+            SchemaHandler.ClearCurrentValues(inputTable);
+        }
+        else
+        {
+            loadMatch(matches.size());
+            return;
+        }
+
+        matchNumber.setText(String.valueOf(match));
     }
 
-    private String getDatabaseContent()
+    private String currentTeam()
     {
-        return FileHandler.LoadContents(FileHandler.SCOUTER);
+        String s = teamNumber.getText().toString();
+        if (!s.trim().isEmpty())
+            return s;
+        else
+            return "0";
     }
 
-    private void clearDatabase()
+    private void clearMatches()
     {
         try
         {
-            FileHandler.Write(FileHandler.SCOUTER, "");
+            FileHandler.Write(FileHandler.MATCHES, "");
         }
         catch (Exception e)
         {
-            l("Failed to clear file: " + e.getMessage());
+            l("Failed to clear file for re-write: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    private void write()
+    private void save()
     {
-        try
+        if (matches.size() >= currentMatch())
         {
-            String content = getDatabaseContent() + "\n" + getValues();
-            FileHandler.Write(FileHandler.SCOUTER, content);
-            teamNumber.setText("");
-            notes.setText("");
+            matches.set(currentMatch() - 1, getValues());
+            teams.set(currentMatch() - 1, currentTeam());
         }
-        catch (Exception e)
+        else if (matches.size() + 1 == currentMatch())
         {
-            l("Failed to open database file: " + e.getMessage());
-            e.printStackTrace();
+            matches.add(getValues());
+            teams.add(currentTeam());
         }
+
+        clearMatches();
+        String output = "";
+        int i = 1;
+        for (String s : matches)
+        {
+            output += s;
+            if (i < matches.size())
+                output += "\n";
+            i++;
+        }
+        FileHandler.Write(FileHandler.MATCHES, output);
     }
 
     private String getValues()
@@ -237,15 +281,20 @@ ex
         String values = "";
         String div = ",";
 
+        /*
         if (teamNumber.getText().toString().trim().isEmpty())
             values += "0" + div;
         else
             values += teamNumber.getText().toString() + div;
-
+            */
+        values += currentTeam() + div;
+/*
         if (matchNumber.getText().toString().trim().isEmpty())
             values += "0" + div;
         else
             values += matchNumber.getText() + div;
+            */
+        values += currentMatch() + div;
 
         List<String> currentValues = SchemaHandler.GetCurrentValues(inputTable);
         for (int i = 0; i < currentValues.size(); ++i)
@@ -266,48 +315,23 @@ ex
         return values;
     }
 
-    private void send()
+    private void loadDatabase()
     {
-        if (teamNumber.getText().toString().trim().isEmpty())
+        try
         {
-            toast("No team number!");
-            return;
-        }
-
-
-        if (!getDatabaseContent().isEmpty())
-        {
-            Write(getDatabaseContent());
-            clearDatabase();
-        }
-        Write(getValues());
-        // matchNumber.setValue(matchNumber.getValue() + 1);
-        teamNumber.setText("");
-        notes.setText("");
-    }
-
-
-    private void HandleMatchTeam(String s)
-    {
-        List<String> values = new ArrayList<>(Arrays.asList(s.split(",")));
-        if (values.size() != 2)
-        {
-            l("Invalid team/match number size: " + values.size());
-            return;
-        }
-        else
-        {
-            teamNumber.setText(values.get(1));
-            toast("Received a new Team!: " + values.get(1));
-            try
+            BufferedReader r = FileHandler.GetReader(FileHandler.MATCHES);
+            String line = r.readLine();
+            while (line != null)
             {
-                matchNumber.setText(values.get(0));
+                matches.add(line);
+                teams.add(line.split(",")[0]);
+                line = r.readLine();
             }
-            catch (Exception e)
-            {
-                l("Match number input failed: " + e.getMessage());
-                e.printStackTrace();
-            }
+        }
+        catch (Exception e)
+        {
+            l("Failed to load contents of matches database: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -317,6 +341,7 @@ ex
         switch (msg.what)
         {
             case MESSAGE_INPUT:
+                /*
                 String s = (String)msg.obj;
                 if (s.split(",").length > 2)
                 {
@@ -328,11 +353,13 @@ ex
                 }
 
                 break;
+                */
             case MESSAGE_TOAST:
                 l(new String((byte[])msg.obj));
                 break;
             case MESSAGE_CONNECTED:
                 // toast("Connected!");
+                /*
                 l("Device connection gained");
                 isConnected = true;
                 connectButton.setText("Connected!");
@@ -343,6 +370,7 @@ ex
                 isConnected = false;
                 connectButton.setText("Connect");
                 break;
+                */
         }
     }
 

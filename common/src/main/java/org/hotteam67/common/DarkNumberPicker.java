@@ -44,7 +44,6 @@ public class DarkNumberPicker extends LinearLayout
                 int i = 0;
                 try
                 {
-                    android.util.Log.d("[DarkPicker]", "Source: " + source);
                     i = Integer.valueOf(String.valueOf(source.toString()));
                 } catch (Exception e) {
                     //android.util.Log.e("[DarkPicker]", "Failed to create integer value of : " + source.toString(), e);

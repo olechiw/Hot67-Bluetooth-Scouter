@@ -10,12 +10,49 @@
 
     <android.support.v7.widget.Toolbar
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="70dp"
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
         android:id="@+id/toolBar"
+        android:minHeight="70dp"
         tools:layout_editor_absoluteY="0dp"
-        tools:layout_editor_absoluteX="8dp">
+        tools:layout_editor_absoluteX="0dp">
+        <!--
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_gravity="center"
+            android:layout_height="wrap_content"> -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Team:"
+                android:textAppearance="@style/TextAppearance.AppCompat"
+                android:layout_gravity="center_horizontal"/>
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLength="5"
+                android:hint="Team"
+                android:layout_margin="5dp"
+                android:text="0"
+                android:gravity="center"
+                android:inputType="number"
+                android:layout_gravity="center"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:id="@+id/teamNumberText"/>
+            <ImageButton
+                android:id="@+id/saveButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleX=".4"
+                android:scaleY=".4"
+                android:src="@drawable/ic_save"
+                android:layout_alignParentEnd="true"
+                android:layout_gravity="right"
+                android:background="?attr/colorPrimary"/>
+        <!-- </RelativeLayout> -->
+
     </android.support.v7.widget.Toolbar>
     <android.support.design.widget.CoordinatorLayout
         android:layout_width="fill_parent"
@@ -34,6 +71,19 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Match Number:"
+                android:textAppearance="@style/TextAppearance.AppCompat"/>
+            <EditText
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:inputType="number"
+                android:layout_height="wrap_content"
+                android:id="@+id/matchNumberText"
+                android:hint="Match Number"/>
             <TableLayout
                 android:id="@+id/scoutLayout"
                 android:layout_width="match_parent"
@@ -79,10 +129,21 @@
             android:layout_below="@id/notes"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
-            android:src="@drawable/ic_save"
-            android:id="@+id/saveButton"
+            android:src="@drawable/ic_right"
+            android:id="@+id/nextMatchButton"
             android:layout_margin="24dp"
             app:layout_anchorGravity="bottom|end"
+            app:backgroundTint="?attr/colorPrimary"
+            app:layout_anchor="@id/scrollView"/>
+        <android.support.design.widget.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/notes"
+            android:layout_alignParentLeft="true"
+            android:id="@+id/prevMatchButton"
+            android:src="@drawable/ic_left"
+            android:layout_margin="24dp"
+            app:layout_anchorGravity="bottom|left"
             app:backgroundTint="?attr/colorPrimary"
             app:layout_anchor="@id/scrollView"/>
     </android.support.design.widget.CoordinatorLayout>
