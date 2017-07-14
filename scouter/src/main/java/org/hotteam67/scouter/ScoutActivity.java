@@ -45,6 +45,8 @@ public class ScoutActivity extends BluetoothActivity
     // SectionedView scoutGridLayout;
     TableLayout inputTable;
 
+    List<String> matches = new ArrayList<>();
+
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
