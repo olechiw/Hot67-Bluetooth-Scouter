@@ -12,6 +12,7 @@ import java.util.*;
 import android.os.Environment;
 
 import org.hotteam67.common.BluetoothActivity;
+import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
 
@@ -86,7 +87,7 @@ public class ServerActivity extends BluetoothActivity
                 l("Sending configuration");
                 String s = loadSchema();
                 if (!s.trim().isEmpty())
-                    Write(s);
+                    Write(Constants.SCHEMA_TAG + s);
                 else
                     l("No configuration found");
             }
@@ -221,6 +222,29 @@ public class ServerActivity extends BluetoothActivity
 
     private void SendTeams()
     {
+        List<String> matches = new ArrayList<>();
+
+        BufferedReader reader = FileHandler.GetReader(FileHandler.MATCHES);
+        try
+        {
+            String line = reader.readLine();
+            while (line != null)
+            {
+                for (int i = 0; i < connectedDevices; ++i)
+                {
+                    Write(Constants.MATCH_TAG + line.split(",")[i], i);
+                }
+            }
+            reader.close();
+        }
+        catch (Exception e)
+        {
+            l("Failed to load all matches on server: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+
+
         List<String> teams = SchemaHandler.GetCurrentValues(teamsLayout);
         l("Teams loaded: " + teams.size());
         String output = match.getValue() + ",";

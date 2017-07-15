@@ -1,9 +1,10 @@
 package org.hotteam67.scouter;
 
-import android.content.res.Configuration;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
-import android.support.v7.widget.AppCompatImageButton;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.widget.*;
 import android.view.*;
 import android.os.Message;
@@ -20,8 +21,6 @@ import org.hotteam67.common.SchemaHandler;
 
 import java.util.*;
 import java.io.*;
-
-import javax.xml.validation.Schema;
 
 
 public class ScoutActivity extends BluetoothActivity
@@ -52,6 +51,30 @@ public class ScoutActivity extends BluetoothActivity
     List<String> matches = new ArrayList<>();
     List<String> teams = new ArrayList<>();
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.scout_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.menu_setup:
+                Intent transferIntent = new Intent(getApplicationContext(), SetupActivity.class);
+                startActivity(transferIntent);
+                return true;
+            case android.R.id.home:
+                doConfirmEnd();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -85,18 +108,6 @@ public class ScoutActivity extends BluetoothActivity
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        if (item.getItemId() == android.R.id.home)
-        {
-            doConfirmEnd();
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scout);
@@ -104,7 +115,7 @@ public class ScoutActivity extends BluetoothActivity
         toolbar = (Toolbar) findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
-        ab.setDisplayHomeAsUpEnabled(true);
+        //ab.setDisplayHomeAsUpEnabled(true);
         ab.setDisplayShowTitleEnabled(false);
 
         // setRequestedOrientation(getResources().getConfiguration().orientation);
@@ -120,6 +131,7 @@ public class ScoutActivity extends BluetoothActivity
                         .setMessage("Send?")
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener()
                         {
+
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 saveButtonClick();
@@ -195,11 +207,49 @@ ex
             teamNumber.setText(teams.get(0));
             loadMatch(1);
         }
+
+        matchNumber.addTextChangedListener(new TextWatcher()
+        {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {
+                save();
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
+                loadMatch(currentMatch(), false);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s)
+            {
+
+            }
+        });
     }
 
-    int currentMatch() { return Integer.valueOf(matchNumber.getText().toString()); }
+    int currentMatch()
+    {
+        try
+        {
+            int i = Integer.valueOf(matchNumber.getText().toString());
+            if (i <= 0)
+                return 1;
+            return i;
+        }
+        catch (Exception e)
+        {
+            return 1;
+        }
+    }
 
     private void loadMatch(int match)
+    {
+        loadMatch(match, true);
+    }
+    private void loadMatch(int match, boolean changeMatchText)
     {
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
         if (matches.size() >= match)
@@ -222,7 +272,8 @@ ex
             return;
         }
 
-        matchNumber.setText(String.valueOf(match));
+        if (changeMatchText)
+            matchNumber.setText(String.valueOf(match));
     }
 
     private String currentTeam()
@@ -327,6 +378,7 @@ ex
                 teams.add(line.split(",")[0]);
                 line = r.readLine();
             }
+            r.close();
         }
         catch (Exception e)
         {
@@ -384,6 +436,7 @@ ex
             String line = reader.readLine();
             if (line != null)
                 Build(line, false);
+            reader.close();
             return true;
         }
         catch (IOException e)

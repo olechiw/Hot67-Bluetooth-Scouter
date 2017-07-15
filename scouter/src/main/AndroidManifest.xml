@@ -15,21 +15,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="org.hotteam67.scouter.MainActivity">
+        <activity android:name="org.hotteam67.scouter.ScoutActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity
-            android:name="org.hotteam67.scouter.ScoutActivity"
-            android:configChanges="orientation|screenSize"
-            android:parentActivityName="org.hotteam67.scouter.MainActivity"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden"/>
-        <activity android:name=".TransferActivity"
-            android:parentActivityName="org.hotteam67.scouter.MainActivity"/>
+        <activity android:name=".SetupActivity"
+            android:parentActivityName="org.hotteam67.scouter.ScoutActivity"
+            android:screenOrientation="portrait"/>
     </application>
 
 </manifest>
