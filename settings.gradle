@@ -1,1 +1,1 @@
-include ':server', ':scouter', ':common'
+include ':scouter', ':common'
