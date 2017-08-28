@@ -16,34 +16,39 @@ import android.os.Message;
 public class BluetoothActivity extends AppCompatActivity {
 
 
+    // Messages, for when any event happens, to be sent to the main thread
     public final int MESSAGE_INPUT = 0;
     public final int MESSAGE_TOAST = 1;
     public final int MESSAGE_DISCONNECTED = 2;
     public final int MESSAGE_CONNECTED = 3;
-    public void MSG(int msg) { m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget(); }
 
+    // Send a specific message, from the above list
+    public synchronized void MSG(int msg) { m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget(); }
+
+    // The multi-thread handler for passing messages about bluetooth connection
     protected Handler m_handler;
 
+    // Simple log function
     protected void l(String s)
     {
         Log.d(TAG, s);
     }
 
+    // The log tag
     public static final String TAG = "BLUETOOTH_SCOUTER_DEBUG";
-    private final int numberOfDevices = 1;
-    //private final List<UUID> uuid = new ArrayList<UUID>();
 
+    // Application UUID to look for during connection, may be configurable in future
     private final UUID uuid = UUID.fromString("1cb5d5ce-00f5-11e7-93ae-92361f002671");
-    // protected void AddUUID(String s) { uuid.add(UUID.fromString(s)); }
 
+    // Whether the bluetooth hardware setup has completely failed (typically means something like it failed to be enabled)
     private boolean bluetoothFailed = false;
 
+    // Adapter to the hardware bluetooth device
     protected BluetoothAdapter m_bluetoothAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // setContentView(R.layout.activity_scout);
         m_handler = new Handler() {
             @Override
             public void handleMessage(Message msg)
@@ -53,40 +58,10 @@ public class BluetoothActivity extends AppCompatActivity {
         };
 
         l("Setting up bluetooth");
-        // setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setupBluetooth();
     }
 
-
-    private void setupUI() {
-/*
-        l("Setting up Connect Button");
-        m_connectButton = (Button) findViewById(R.id.connectButton);
-        m_connectButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Connect();
-            }
-        });
-
-        l("Setting up Send Button");
-        m_sendButton = (Button) findViewById(R.id.sendConfigurationButton);
-        m_sendButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Write("SENT!");
-            }
-        });
-*/
-
-        if (bluetoothFailed)
-            return;
-
-        l("Setting up accept thread");
-        acceptThread = new AcceptThread();
-
-        l("Running accept thread");
-        acceptThread.start();
-    }
-
+    // Display a popup box (not a toast, LOL)
     protected void toast(String text)
     {
         try {
@@ -105,74 +80,6 @@ public class BluetoothActivity extends AppCompatActivity {
         catch (Exception e)
         {
             l("Failed to create dialog: " + e.getMessage());
-        }
-    }
-
-
-
-    /*
-    Accept Thread
-     */
-    AcceptThread acceptThread;
-    private class AcceptThread extends Thread {
-        public final BluetoothServerSocket connectionSocket;
-        public AcceptThread()
-        {
-            BluetoothServerSocket tmp = null;
-            try
-            {
-                tmp = m_bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ConnectDevice", uuid);
-            }
-            catch (java.io.IOException e)
-            {
-                Log.e("[Bluetooth]", "Socket connection failed", e);
-            }
-
-
-            connectionSocket = tmp;
-        }
-
-        public void run()
-        {
-            BluetoothSocket s = null;
-
-            while (!Destroyed())
-            {
-                BluetoothSocket conn = null;
-                try
-                {
-                    conn = connectionSocket.accept();
-                }
-                catch (java.io.IOException e)
-                {
-                    // Log.e("[Bluetooth]", "Socket acception failed", e);
-                }
-
-                if (conn != null)
-                {
-                    connectSocket(conn);
-                    break;
-                }
-
-                if (Thread.currentThread().isInterrupted())
-                {
-                    break;
-                }
-
-            }
-            l("Accept Thread Ended!!");
-        }
-
-        public void cancel()
-        {
-            try
-            {
-                connectionSocket.close();
-            }
-            catch (java.io.IOException e)
-            {
-                // Log.e("[Bluetooth]", "Socket close failed", e);
-            }
         }
     }
 
@@ -267,7 +174,7 @@ public class BluetoothActivity extends AppCompatActivity {
         }
         public void run()
         {
-            while (!Destroyed())
+            while (!Thread.currentThread().isInterrupted())
             {
                 InputStream stream;
                 InputStream tmpIn = null;
@@ -284,14 +191,9 @@ public class BluetoothActivity extends AppCompatActivity {
                 {
                     break;
                 }
-
-                if (Thread.currentThread().isInterrupted())
-                {
-                    break;
-                }
             }
             l("Connected Thread Ended!!!");
-            disconnect(id);
+            disconnect();
         }
 
         private boolean read(InputStream stream)
@@ -338,7 +240,7 @@ public class BluetoothActivity extends AppCompatActivity {
             catch (Exception e)
             {
                 Log.e("[Bluetooth]", "Failed to send data", e);
-                disconnect(id);
+                disconnect();
             }
         }
 
@@ -395,8 +297,6 @@ public class BluetoothActivity extends AppCompatActivity {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, 1);
         }
-        else
-            setupUI();
     }
 
     @Override
@@ -411,7 +311,6 @@ public class BluetoothActivity extends AppCompatActivity {
                 }
                 else
                     bluetoothFailed = true;
-                setupUI();
             }
     }
 
@@ -419,12 +318,14 @@ public class BluetoothActivity extends AppCompatActivity {
     {
         l("Connecting");
 
-        if (bluetoothFailed)
+        if (bluetoothFailed) {
+            l("Failed to connect, bluetooth setup was unsuccessful");
             return;
+        }
 
         Set<BluetoothDevice> pairedDevices = m_bluetoothAdapter.getBondedDevices();
 
-        if (pairedDevices.size() < numberOfDevices)
+        if (pairedDevices.size() < 1)
         {
             msgToast("Not enough devices paired");
             return;
@@ -512,22 +413,12 @@ public class BluetoothActivity extends AppCompatActivity {
         Destroyed(true);
         if (bluetoothFailed)
             return;
-        if (acceptThread.connectionSocket != null)
-        {
-            try
-            {
-                acceptThread.connectionSocket.close();
-            } catch (java.io.IOException e)
-            {
-                l("Connection socket closing failed: " + e.getMessage());
-            }
-        }
         connectedThread.close();
         connectedThread.interrupt();
 
     }
 
-    private void disconnect(int id)
+    private void disconnect()
     {
         connectedThread.close();
         connectedThread.interrupt();

@@ -28,7 +28,7 @@ public class ScoutActivity extends BluetoothActivity
     boolean isConnected = false;
 
     ImageButton saveButton;
-    Button connectButton;
+    ImageButton connectButton;
 
     FloatingActionButton nextMatchButton;
     FloatingActionButton prevMatchButton;
@@ -52,22 +52,10 @@ public class ScoutActivity extends BluetoothActivity
     List<String> teams = new ArrayList<>();
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.scout_menu, menu);
-        return true;
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
         switch (item.getItemId())
         {
-            case R.id.menu_setup:
-                Intent transferIntent = new Intent(getApplicationContext(), SetupActivity.class);
-                startActivity(transferIntent);
-                return true;
             case android.R.id.home:
                 doConfirmEnd();
                 return true;
@@ -120,7 +108,8 @@ public class ScoutActivity extends BluetoothActivity
 
         // setRequestedOrientation(getResources().getConfiguration().orientation);
 
-            saveButton = (ImageButton) toolbar.findViewById(R.id.saveButton);
+        l("Setting up buttons");
+        saveButton = (ImageButton) toolbar.findViewById(R.id.saveButton);
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -139,7 +128,18 @@ public class ScoutActivity extends BluetoothActivity
 ex
                         }).show();
 */
+                l("Triggered save!");
                 save();
+            }
+        });
+
+        connectButton = (ImageButton) toolbar.findViewById(R.id.connectButton);
+        connectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                l("Triggered Connect!");
+                connectButton.setImageResource(R.drawable.ic_network_check);
+                Connect();
             }
         });
 
@@ -257,7 +257,15 @@ ex
             l("Loading match: " + matches.get(match - 1));
             String[] vals = matches.get(match - 1).split(",");
             // List<String> subList = Arrays.asList(vals).subList(2, vals.length - 1);
-            SchemaHandler.SetCurrentValues(inputTable, Arrays.asList(vals).subList(2, vals.length-1));
+            try {
+                SchemaHandler.SetCurrentValues(inputTable, Arrays.asList(vals).subList(2, vals.length - 1));
+            }
+            catch (Exception e)
+            {
+                l("Failed to load match, corrupted or doesn't exist " + e.getMessage());
+                e.printStackTrace();
+                l("Offending match: -->  " + matches.get(match - 1) + " <--");
+            }
 
             teamNumber.setText(teams.get(match - 1));
         }
@@ -423,6 +431,11 @@ ex
                 connectButton.setText("Connect");
                 break;
                 */
+                connectButton.setImageResource(R.drawable.ic_network_wifi);
+                break;
+            case MESSAGE_DISCONNECTED:
+                connectButton.setImageResource(R.drawable.ic_network_off);
+                break;
         }
     }
 
@@ -432,16 +445,15 @@ ex
         try
         {
             BufferedReader reader = FileHandler.GetReader(FileHandler.SCHEMA);
-            StringBuilder builder = new StringBuilder();
             String line = reader.readLine();
             if (line != null)
                 Build(line, false);
             reader.close();
             return true;
         }
-        catch (IOException e)
+        catch (Exception e)
         {
-            l("Failed to find file even after checking. Something went wrong");
+            l("Failed to read schema file");
             e.printStackTrace();
         }
         return false;

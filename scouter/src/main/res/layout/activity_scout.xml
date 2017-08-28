@@ -51,6 +51,15 @@
                 android:layout_alignParentEnd="true"
                 android:layout_gravity="right"
                 android:background="?attr/colorPrimary"/>
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleX=".4"
+                android:scaleY=".4"
+                android:src="@drawable/ic_network_off"
+                android:id="@+id/connectButton"
+                android:layout_gravity="left"
+                android:background="?attr/colorPrimary"/>
         <!-- </RelativeLayout> -->
 
     </android.support.v7.widget.Toolbar>

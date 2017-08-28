@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.widget.RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" tools:context="com.example.bluetoothserver.ServerActivity">
+
+    <android.support.v7.widget.Toolbar
+        android:layout_width="fill_parent"
+        android:layout_height="70dp"
+        android:id="@+id/toolBar"
+        android:background="?attr/colorPrimary"
+        tools:layout_editor_absoluteX="0dp"
+        android:layout_marginBottom="8dp"
+        android:minHeight="70dp">
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Connected Devices: 0" app:layout_constraintBottom_toBottomOf="parent"
+            android:id="@+id/connectedDevicesText"
+            android:textAppearance="@style/TextAppearance.AppCompat"
+            android:layout_gravity="center" />
+
+    </android.support.v7.widget.Toolbar>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/toolBar"
+        android:lines="50"
+        android:hint="Server Log"
+        android:clickable="false"
+        android:cursorVisible="false"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:id="@+id/serverLog"/>
+
+</android.widget.RelativeLayout>
