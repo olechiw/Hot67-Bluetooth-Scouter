@@ -20,6 +20,25 @@
             android:textAppearance="@style/TextAppearance.AppCompat"
             android:layout_gravity="center" />
 
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:src="@drawable/ic_settings"
+            android:background="?attr/colorPrimary"
+            android:scaleX=".4"
+            android:scaleY=".4"
+            android:id="@+id/configureButton"/>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:src="@drawable/ic_sync"
+            android:scaleX=".4"
+            android:scaleY=".4"
+            android:background="?attr/colorPrimary"
+            android:id="@+id/syncButton"/>
+
     </android.support.v7.widget.Toolbar>
 
     <EditText

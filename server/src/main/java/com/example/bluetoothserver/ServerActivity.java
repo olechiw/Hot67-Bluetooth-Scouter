@@ -6,12 +6,15 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.InputType;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.os.*;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -29,7 +32,7 @@ public class ServerActivity extends AppCompatActivity {
 
     // Messages, for when any event happens, to be sent to the main thread
     public final int MESSAGE_INPUT = 0;
-    public final int MESSAGE_TOAST = 1;
+    public final int MESSAGE_OTHER = 1;
     public final int MESSAGE_DISCONNECTED = 2;
     public final int MESSAGE_CONNECTED = 3;
 
@@ -83,6 +86,9 @@ public class ServerActivity extends AppCompatActivity {
     TextView connectedDevicesText;
     EditText serverLogText;
 
+    ImageButton configureButton;
+    ImageButton syncButton;
+
     // When the app is initialized, setup the UI and the bluetooth adapter
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,70 +106,29 @@ public class ServerActivity extends AppCompatActivity {
 
         connectedDevicesText = (TextView) findViewById(R.id.connectedDevicesText);
         serverLogText = (EditText) findViewById(R.id.serverLog);
-        // serverLogText.setInputType(InputType.TYPE_NULL);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolBar);
+        setSupportActionBar(toolbar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayShowTitleEnabled(false);
+
+        configureButton = toolbar.findViewById(R.id.configureButton);
+        configureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                configure();
+            }
+        });
+
+        syncButton = toolbar.findViewById(R.id.syncButton);
+        syncButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sync();
+            }
+        });
     }
 
-    // Log to the end user about things like connected and disconnected devices
-    private void VisualLog(String text)
-    {
-        serverLogText.append(text);
-    }
-
-    // Handle an input message from one of the bluetooth threads
-    protected synchronized void handle(Message msg)
-    {
-        switch (msg.what)
-        {
-            case MESSAGE_INPUT:
-
-                byte[] info = (byte[]) msg.obj;
-                String message = new String(info);
-                //m_sendButton.setText(message);
-
-                break;
-            case MESSAGE_TOAST:
-                String t = new String((byte[]) msg.obj);
-
-                l("TOASTING: " + t);
-
-                //toast(t);
-
-                break;
-            case MESSAGE_CONNECTED:
-                l("Received Connect");
-                connectedDevicesText.setText(String.valueOf(connectedThreads.size()));
-                break;
-            case MESSAGE_DISCONNECTED:
-                //toast("DISCONNECTED FROM DEVICE");
-                l("Received Disconnect");
-                connectedDevicesText.setText(String.valueOf(connectedThreads.size()));
-                break;
-        }
-    }
-
-    // Initialize the accept bluetooth connections thread
-    private void setupThreads()
-    {
-        if (!bluetoothFailed) {
-            l("Setting up accept thread");
-            acceptThread = new AcceptThread();
-
-            l("Running accept thread");
-            acceptThread.start();
-        }
-        else
-            l("Attempted to setup threads, but bluetooth setup has failed");
-    }
-
-    //
-    // Send a message under MESSAGE_TOAST,
-    // not utilized atm,
-    // but may be useful for sending info to main thread about other things
-    //
-    private void msgToast(String msg)
-    {
-        m_handler.obtainMessage(MESSAGE_TOAST, msg.getBytes().length, -1, msg.getBytes()).sendToTarget();
-    }
 
     // Initialize the bluetooth hardware adapter
     private synchronized void setupBluetooth()
@@ -174,7 +139,7 @@ public class ServerActivity extends AppCompatActivity {
 
         if (m_bluetoothAdapter == null) {
             l("Bluetooth not detected");
-            msgToast("Error, Bluetooth not Detected!");
+            sendMessage("Error, Bluetooth not Detected!");
             bluetoothFailed = true;
         }
 
@@ -206,6 +171,87 @@ public class ServerActivity extends AppCompatActivity {
             setupThreads();
         }
     }
+
+    // Initialize the accept bluetooth connections thread
+    private void setupThreads()
+    {
+        if (!bluetoothFailed) {
+            l("Setting up accept thread");
+            acceptThread = new AcceptThread();
+
+            l("Running accept thread");
+            acceptThread.start();
+        }
+        else
+            l("Attempted to setup threads, but bluetooth setup has failed");
+    }
+
+    // Configure the current scouting schema and database connection
+    private void configure()
+    {
+
+    }
+
+    // Synchronize all data to the server from the local json information
+    private void sync()
+    {
+
+    }
+
+    int currentLog = 1;
+    // Log to the end user about things like connected and disconnected devices
+    private void VisualLog(String text)
+    {
+        serverLogText.append(currentLog + ": " + text + "\n");
+        currentLog++;
+    }
+
+    // Handle an input message from one of the bluetooth threads
+    protected synchronized void handle(Message msg)
+    {
+        switch (msg.what)
+        {
+            case MESSAGE_INPUT:
+
+                byte[] info = (byte[]) msg.obj;
+                String message = new String(info);
+                //m_sendButton.setText(message);
+
+                break;
+            case MESSAGE_OTHER:
+                String t = new String((byte[]) msg.obj);
+
+                l("TOASTING: " + t);
+
+                //toast(t);
+
+                break;
+            case MESSAGE_CONNECTED:
+                l("Received Connect");
+                VisualLog("Device Connected!");
+                connectedDevicesText.setText(String.valueOf(connectedThreads.size()));
+                break;
+            case MESSAGE_DISCONNECTED:
+                //toast("DISCONNECTED FROM DEVICE");
+                l("Received Disconnect");
+                VisualLog("Device Disconnected!");
+                connectedDevicesText.setText(String.valueOf(connectedThreads.size()));
+                break;
+        }
+    }
+
+
+
+    //
+    // Send a message under MESSAGE_OTHER,
+    // not utilized atm,
+    // but may be useful for sending info to main thread about other things
+    //
+    private void sendMessage(String msg)
+    {
+        m_handler.obtainMessage(MESSAGE_OTHER, msg.getBytes().length, -1, msg.getBytes()).sendToTarget();
+    }
+
 
     // Accept incoming bluetooth connections thread, actual member and the definition
     AcceptThread acceptThread;
