@@ -21,6 +21,14 @@ public class Constants
     public static final int TYPE_INTEGER =  3;
     public static final int TYPE_STRING =   4;
 
+    public static final String PREF_EMAIL = "pref_email";
+    public static final String PREF_PASSWORD = "pref_password";
+    public static final String PREF_EVENTNAME = "pref_eventName";
+
+    public static String MATCH_NUMBER_JSON_TAG = "matchNumber";
+
+    public static final String DEFAULT_EVENT_NAME = "DefaultEventName";
+
     public static String getTag(String s)
     {
         try

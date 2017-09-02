@@ -4,8 +4,12 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,14 +17,27 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.os.*;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import org.hotteam67.common.Constants;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -35,6 +52,9 @@ public class ServerActivity extends AppCompatActivity {
     public final int MESSAGE_OTHER = 1;
     public final int MESSAGE_DISCONNECTED = 2;
     public final int MESSAGE_CONNECTED = 3;
+
+    public final int REQUEST_BLUETOOTH = 1;
+    public final int REQUEST_PREFERENCES = 2;
 
     // Whether bluetooth hardware setup failed, such as nonexistent bluetoothdevice
     private boolean bluetoothFailed = false;
@@ -87,7 +107,8 @@ public class ServerActivity extends AppCompatActivity {
     EditText serverLogText;
 
     ImageButton configureButton;
-    ImageButton syncButton;
+
+    Button testButton;
 
     // When the app is initialized, setup the UI and the bluetooth adapter
     @Override
@@ -120,13 +141,68 @@ public class ServerActivity extends AppCompatActivity {
             }
         });
 
-        syncButton = toolbar.findViewById(R.id.syncButton);
-        syncButton.setOnClickListener(new View.OnClickListener() {
+        testButton = (Button) findViewById(R.id.testButton);
+        testButton.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View view) {
-                sync();
+            public void onClick(View view)
+            {
+                refreshFirebaseAuth();
+
+                /*
+                JSONObject object = new JSONObject();
+                try
+                {
+                    object.put(Constants.MATCH_NUMBER_JSON_TAG, "1");
+                    object.put("teamNumber", "67");
+                    object.put("teamName", "The Hot Team");
+                    object.put("goals", "4");
+                }
+                catch (Exception e)
+                {
+                    l("JSON TEST ERROR!");
+                    e.printStackTrace();
+                }
+                */
+
+                DatabaseReference ref = database.getReference();
+                /*
+                ref
+                        .child(eventName)
+                        .child("1")
+                        .setValue(object.toString());
+                        */
+                /*
+                ref.child(eventName).child("1").addListenerForSingleValueEvent(new ValueEventListener()
+                {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot)
+                    {
+                        try
+                        {
+                            String value = (String) dataSnapshot.getValue();
+                            JSONObject readObject = new JSONObject(value);
+                            VisualLog(readObject.get("matchNumber").toString());
+                            VisualLog(readObject.get("teamNumber").toString());
+                            VisualLog(readObject.get("goals").toString());
+                        }
+                        catch (Exception e)
+                        {
+                            l("JSON TEST ERROR!");
+                            e.printStackTrace();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError)
+                    {
+
+                    }
+                });
+                */
             }
         });
+
     }
 
 
@@ -145,7 +221,7 @@ public class ServerActivity extends AppCompatActivity {
 
         if (!bluetoothFailed && !m_bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, 1);
+            startActivityForResult(enableBtIntent, REQUEST_BLUETOOTH);
         }
         else
             setupThreads();
@@ -160,7 +236,7 @@ public class ServerActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
 
-        if (requestCode==1)
+        if (requestCode==REQUEST_BLUETOOTH)
         {
             if (resultCode==RESULT_OK)
             {
@@ -170,6 +246,20 @@ public class ServerActivity extends AppCompatActivity {
                 bluetoothFailed = true;
             setupThreads();
         }
+        else if (requestCode==REQUEST_PREFERENCES)
+        {
+            refreshFirebaseAuth();
+        }
+    }
+
+    private void refreshFirebaseAuth()
+    {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        eventName = (String) prefs.getAll().get(Constants.PREF_EVENTNAME);
+        String email = (String) prefs.getAll().get(Constants.PREF_EMAIL);
+        String password = (String) prefs.getAll().get(Constants.PREF_PASSWORD);
+
+        authentication.signInWithEmailAndPassword(email, password);
     }
 
     // Initialize the accept bluetooth connections thread
@@ -185,17 +275,16 @@ public class ServerActivity extends AppCompatActivity {
         else
             l("Attempted to setup threads, but bluetooth setup has failed");
     }
+    
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    FirebaseAuth authentication = FirebaseAuth.getInstance();
+    String eventName = Constants.DEFAULT_EVENT_NAME;
 
     // Configure the current scouting schema and database connection
     private void configure()
     {
-
-    }
-
-    // Synchronize all data to the server from the local json information
-    private void sync()
-    {
-
+        Intent intent = new Intent(this, PreferencesActivity.class);
+        startActivityForResult(intent, REQUEST_PREFERENCES);
     }
 
     int currentLog = 1;
@@ -216,6 +305,22 @@ public class ServerActivity extends AppCompatActivity {
                 byte[] info = (byte[]) msg.obj;
                 String message = new String(info);
                 //m_sendButton.setText(message);
+
+                try
+                {
+                    JSONObject matchObj = new JSONObject(message);
+
+                    DatabaseReference ref = database.getReference();
+                    ref
+                            .child(eventName)
+                            .child((String) matchObj.get(Constants.MATCH_NUMBER_JSON_TAG))
+                            .setValue(matchObj.toString());
+                }
+                catch (Exception e)
+                {
+                    l("Failed to load input json:" + message);
+                    e.printStackTrace();
+                }
 
                 break;
             case MESSAGE_OTHER:
