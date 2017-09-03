@@ -1,5 +1,6 @@
 package com.example.bluetoothserver;
 
+import android.*;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
@@ -8,8 +9,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.preference.Preference;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -48,13 +52,14 @@ public class ServerActivity extends AppCompatActivity {
     private final UUID uuid = UUID.fromString("1cb5d5ce-00f5-11e7-93ae-92361f002671");
 
     // Messages, for when any event happens, to be sent to the main thread
-    public final int MESSAGE_INPUT = 0;
-    public final int MESSAGE_OTHER = 1;
-    public final int MESSAGE_DISCONNECTED = 2;
-    public final int MESSAGE_CONNECTED = 3;
+    public static final int MESSAGE_INPUT = 0;
+    public static final int MESSAGE_OTHER = 1;
+    public static final int MESSAGE_DISCONNECTED = 2;
+    public static final int MESSAGE_CONNECTED = 3;
 
-    public final int REQUEST_BLUETOOTH = 1;
-    public final int REQUEST_PREFERENCES = 2;
+    public static final int REQUEST_BLUETOOTH = 1;
+    public static final int REQUEST_PREFERENCES = 2;
+    public static final int REQUEST_ENABLE_PERMISSION = 3;
 
     // Whether bluetooth hardware setup failed, such as nonexistent bluetoothdevice
     private boolean bluetoothFailed = false;
@@ -108,7 +113,7 @@ public class ServerActivity extends AppCompatActivity {
 
     ImageButton configureButton;
 
-    Button testButton;
+    // Button testButton;
 
     // When the app is initialized, setup the UI and the bluetooth adapter
     @Override
@@ -123,86 +128,7 @@ public class ServerActivity extends AppCompatActivity {
             }
         };
 
-        setupBluetooth();
-
-        connectedDevicesText = (TextView) findViewById(R.id.connectedDevicesText);
-        serverLogText = (EditText) findViewById(R.id.serverLog);
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolBar);
-        setSupportActionBar(toolbar);
-        ActionBar ab = getSupportActionBar();
-        ab.setDisplayShowTitleEnabled(false);
-
-        configureButton = toolbar.findViewById(R.id.configureButton);
-        configureButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                configure();
-            }
-        });
-
-        testButton = (Button) findViewById(R.id.testButton);
-        testButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                refreshFirebaseAuth();
-
-                /*
-                JSONObject object = new JSONObject();
-                try
-                {
-                    object.put(Constants.MATCH_NUMBER_JSON_TAG, "1");
-                    object.put("teamNumber", "67");
-                    object.put("teamName", "The Hot Team");
-                    object.put("goals", "4");
-                }
-                catch (Exception e)
-                {
-                    l("JSON TEST ERROR!");
-                    e.printStackTrace();
-                }
-                */
-
-                DatabaseReference ref = database.getReference();
-                /*
-                ref
-                        .child(eventName)
-                        .child("1")
-                        .setValue(object.toString());
-                        */
-                /*
-                ref.child(eventName).child("1").addListenerForSingleValueEvent(new ValueEventListener()
-                {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot)
-                    {
-                        try
-                        {
-                            String value = (String) dataSnapshot.getValue();
-                            JSONObject readObject = new JSONObject(value);
-                            VisualLog(readObject.get("matchNumber").toString());
-                            VisualLog(readObject.get("teamNumber").toString());
-                            VisualLog(readObject.get("goals").toString());
-                        }
-                        catch (Exception e)
-                        {
-                            l("JSON TEST ERROR!");
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError)
-                    {
-
-                    }
-                });
-                */
-            }
-        });
-
+        setupPermissions();
     }
 
 
@@ -224,7 +150,26 @@ public class ServerActivity extends AppCompatActivity {
             startActivityForResult(enableBtIntent, REQUEST_BLUETOOTH);
         }
         else
+        {
             setupThreads();
+
+            connectedDevicesText = (TextView) findViewById(R.id.connectedDevicesText);
+            serverLogText = (EditText) findViewById(R.id.serverLog);
+
+            Toolbar toolbar = (Toolbar) findViewById(R.id.toolBar);
+            setSupportActionBar(toolbar);
+            ActionBar ab = getSupportActionBar();
+            ab.setDisplayShowTitleEnabled(false);
+
+            configureButton = toolbar.findViewById(R.id.configureButton);
+            configureButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    configure();
+                }
+            });
+        }
+
     }
 
     //
@@ -249,6 +194,39 @@ public class ServerActivity extends AppCompatActivity {
         else if (requestCode==REQUEST_PREFERENCES)
         {
             refreshFirebaseAuth();
+        }
+    }
+
+    private void setupPermissions()
+    {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            l("Permission granted");
+            setupBluetooth();
+        }
+        else
+        {
+            l("Permission requested!");
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_ENABLE_PERMISSION);
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+    {
+        if (requestCode == REQUEST_ENABLE_PERMISSION)
+        {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                l("Permission granted");
+                setupBluetooth();
+            }
+            else
+            {
+                setupPermissions();
+            }
         }
     }
 

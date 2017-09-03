@@ -19,6 +19,7 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
 import java.util.*;
 
 /**
@@ -36,9 +37,9 @@ public final class SchemaHandler
             if (vars.get(i) != null && vars.get(i).Type != Constants.TYPE_HEADER)
             {
                 scheme += vars.get(i).Tag;
+                if (i + 1 < vars.size())
+                    scheme += ",";
             }
-            if (i + 1 < vars.size())
-                scheme += ",";
         }
 
         return scheme;
@@ -104,6 +105,11 @@ public final class SchemaHandler
             switch ((int) v.getTag(R.string.variable_type))
             {
                 case Constants.TYPE_INTEGER:
+                    /* l("Integer value of : " + v.getTag(R.string.variable_name) + " " +
+                            String.valueOf(
+                                    ((DarkNumberPicker)v.findViewById(R.id.numberPicker)).getValue())
+                            );*/
+
                     output.add(
                             String.valueOf(
                             ((DarkNumberPicker)v.findViewById(R.id.numberPicker)).getValue()
@@ -116,9 +122,11 @@ public final class SchemaHandler
                 case Constants.TYPE_STRING:
                     output.add(((EditText)v.findViewById(R.id.editText)).getText().toString());
                     break;
+                default:
+                    // l("Found a header of tag: " + v.getTag(R.string.variable_name));
             }
         }
-        l("Returning output of length: " + output.size());
+       // "Returning output of length: " + output.size());
         return output;
     }
 
@@ -128,6 +136,25 @@ public final class SchemaHandler
         for (View v : GetRows(schema, context))
         {
             table.addView(v);
+        }
+    }
+
+    public static String LoadSchemaFromFile()
+    {
+        try
+        {
+            BufferedReader reader = FileHandler.GetReader(FileHandler.SCHEMA);
+            String line = reader.readLine();
+            reader.close();
+            if (line != null)
+                return line;
+            else
+                return "";
+        }
+        catch (Exception e)
+        {
+            l("Failed to load schema: " + e.getMessage());
+            return "";
         }
     }
 
@@ -186,18 +213,18 @@ public final class SchemaHandler
                 {
                     case Constants.TYPE_INTEGER:
                         ((DarkNumberPicker) v.findViewById(R.id.numberPicker)).setValue(Integer.valueOf(values.get(val)));
-                        l("Loading in value: " + values.get(val));
+                        // l("Loading in value: " + values.get(val));
                         ++val;
 
                         break;
                     case Constants.TYPE_BOOLEAN:
                         ((CheckBox) v.findViewById(R.id.checkBox1)).setChecked(Boolean.valueOf(values.get(val)));
-                        l("Loading in value: " + values.get(val));
+                        // l("Loading in value: " + values.get(val));
                         ++val;
                         break;
                     case Constants.TYPE_STRING:
                         ((EditText) v.findViewById(R.id.editText)).setText(values.get(val));
-                        l("Loading in value: " + values.get(val));
+                        // l("Loading in value: " + values.get(val));
                         ++val;
                         break;
                 }
@@ -235,17 +262,17 @@ public final class SchemaHandler
                 int tmp = i;
                 try
                 {
-                    l("Loading: " + str);
-                    l("Found tag: " + getBeforeLast(str));
-                    l("Found type: " + getLast(str));
+                    // l("Loading: " + str);
+                    // l("Found tag: " + getBeforeLast(str));
+                    // l("Found type: " + getLast(str));
                     int number = Integer.valueOf(getLast(str));
                     int min = 0, max = 0;
                     if (number == Constants.TYPE_INTEGER)
                     {
-                        l("Getting integer value of: " + vals.get(tmp + 1));
+                        // l("Getting integer value of: " + vals.get(tmp + 1));
                         min = Integer.valueOf(vals.get(tmp + 1));
                         ++i;
-                        l("Getting integer value of: " + vals.get(tmp + 2));
+                        // l("Getting integer value of: " + vals.get(tmp + 2));
                         max = Integer.valueOf(vals.get(tmp + 2));
                         ++i;
                     }

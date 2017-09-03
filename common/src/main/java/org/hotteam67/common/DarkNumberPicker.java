@@ -3,6 +3,7 @@ package org.hotteam67.common;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Spanned;
+import android.util.Log;
 import android.widget.*;
 import android.view.*;
 
@@ -112,6 +113,7 @@ public class DarkNumberPicker extends LinearLayout
 
     public int getValue()
     {
+        // Log.d("BLUETOOTH_SCOUTER_DEBUG", "Returning value: " + mainText.getText().toString());
         return Integer.valueOf(mainText.getText().toString());
         /*
         if (!mainText.getText().toString().trim().isEmpty())

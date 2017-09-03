@@ -26,6 +26,7 @@ public class Constants
     public static final String PREF_EVENTNAME = "pref_eventName";
 
     public static String MATCH_NUMBER_JSON_TAG = "matchNumber";
+    public static String TEAM_NUMBER_JSON_TAG = "teamNumber";
 
     public static final String DEFAULT_EVENT_NAME = "DefaultEventName";
 

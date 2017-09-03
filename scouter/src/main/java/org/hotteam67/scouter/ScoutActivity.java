@@ -1,7 +1,12 @@
 package org.hotteam67.scouter;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.ActionBar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -16,8 +21,11 @@ import android.text.Spanned;
 import android.support.v7.widget.Toolbar;
 
 import org.hotteam67.common.BluetoothActivity;
+import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.*;
 import java.io.*;
@@ -25,9 +33,8 @@ import java.io.*;
 
 public class ScoutActivity extends BluetoothActivity
 {
-    boolean isConnected = false;
+    private static final int REQUEST_ENABLE_PERMISSION = 3;
 
-    ImageButton saveButton;
     ImageButton connectButton;
 
     FloatingActionButton nextMatchButton;
@@ -39,6 +46,8 @@ public class ScoutActivity extends BluetoothActivity
     EditText notes;
 
     Toolbar toolbar;
+
+    GestureDetectorCompat gestureDetectorCompat;
 
     /*
     GridView scoutLayout;
@@ -100,6 +109,12 @@ public class ScoutActivity extends BluetoothActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scout);
 
+        setupPermissions();
+
+    }
+
+    private void setupUI()
+    {
         toolbar = (Toolbar) findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
@@ -107,31 +122,6 @@ public class ScoutActivity extends BluetoothActivity
         ab.setDisplayShowTitleEnabled(false);
 
         // setRequestedOrientation(getResources().getConfiguration().orientation);
-
-        l("Setting up buttons");
-        saveButton = (ImageButton) toolbar.findViewById(R.id.saveButton);
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                /*
-                new AlertDialog.Builder(getApplicationContext())
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .setTitle("Sending")
-                        .setMessage("Send?")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener()
-                        {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                saveButtonClick();
-                            }
-ex
-                        }).show();
-*/
-                l("Triggered save!");
-                save();
-            }
-        });
 
         connectButton = (ImageButton) toolbar.findViewById(R.id.connectButton);
         connectButton.setOnClickListener(new View.OnClickListener() {
@@ -179,9 +169,7 @@ ex
             @Override
             public void onClick(View v)
             {
-                save();
-                loadMatch(currentMatch() + 1);
-                ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
+                loadNext();
             }
         });
         prevMatchButton.setOnClickListener(new View.OnClickListener()
@@ -189,21 +177,20 @@ ex
             @Override
             public void onClick(View v)
             {
-                save();
-                if (currentMatch() > 1)
-                    loadMatch(currentMatch() - 1);
-                ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
+                loadPrevious();
             }
         });
 
-        if (!Build())
-            l("Build failed, no values loaded");
+
+        Build(); // Build the input table's rows and columns.
 
         loadDatabase();
 
+        matchNumber.clearFocus();
         matchNumber.setText("1");
         if (!matches.isEmpty())
         {
+            l("Loading first match!");
             teamNumber.setText(teams.get(0));
             loadMatch(1);
         }
@@ -213,7 +200,8 @@ ex
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after)
             {
-                save();
+                if (getCurrentFocus() == matchNumber)
+                    save();
             }
 
             @Override
@@ -228,6 +216,38 @@ ex
 
             }
         });
+
+        gestureDetectorCompat = new GestureDetectorCompat(this, new GestureListener());
+
+        ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView);
+        // scrollView.requestDisallowInterceptTouchEvent(true);
+        scrollView.setOnTouchListener(new View.OnTouchListener()
+        {
+            @Override
+            public boolean onTouch(View v, MotionEvent event)
+            {
+                return gestureDetectorCompat.onTouchEvent(event);
+            }
+        });
+    }
+
+    private void loadNext()
+    {
+        save();
+        l("Loading Next Match");
+        loadMatch(currentMatch() + 1);
+        ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
+    }
+
+    private void loadPrevious()
+    {
+        save();
+        if (currentMatch() > 1)
+        {
+            l("Loading Previous Match");
+            loadMatch(currentMatch() - 1);
+        }
+        ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
     }
 
     int currentMatch()
@@ -254,7 +274,8 @@ ex
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
         if (matches.size() >= match)
         {
-            l("Loading match: " + matches.get(match - 1));
+            // l("Loading match number: " + match);
+            // l("Loading match: " + matches.get(match - 1));
             String[] vals = matches.get(match - 1).split(",");
             // List<String> subList = Arrays.asList(vals).subList(2, vals.length - 1);
             try {
@@ -262,8 +283,8 @@ ex
             }
             catch (Exception e)
             {
-                l("Failed to load match, corrupted or doesn't exist " + e.getMessage());
-                e.printStackTrace();
+                l("Failed to load match, corrupted, out of sync, or doesn't exist " + e.getMessage());
+                // e.printStackTrace();
                 l("Offending match: -->  " + matches.get(match - 1) + " <--");
             }
 
@@ -281,7 +302,10 @@ ex
         }
 
         if (changeMatchText)
+        {
+            matchNumber.clearFocus();
             matchNumber.setText(String.valueOf(match));
+        }
     }
 
     private String currentTeam()
@@ -308,17 +332,21 @@ ex
 
     private void save()
     {
+        // Existing match
         if (matches.size() >= currentMatch())
         {
+            // l("Setting value: " + getValues());
             matches.set(currentMatch() - 1, getValues());
             teams.set(currentMatch() - 1, currentTeam());
         }
+        // New match
         else if (matches.size() + 1 == currentMatch())
         {
             matches.add(getValues());
             teams.add(currentTeam());
         }
 
+        // Store all matches locally
         clearMatches();
         String output = "";
         int i = 1;
@@ -329,7 +357,44 @@ ex
                 output += "\n";
             i++;
         }
+        // l("Writing output to matches file: " + output);
         FileHandler.Write(FileHandler.MATCHES, output);
+
+        JSONObject outputObject = new JSONObject();
+
+        List<String> values = new ArrayList<>(Arrays.asList(
+                getValues().split(",")));
+        List<String> headers = new ArrayList<>(Arrays.asList(
+                SchemaHandler.GetHeader(
+                SchemaHandler.LoadSchemaFromFile()).split(",")));
+        headers.removeAll(Arrays.asList("", null));
+        headers.add(0, Constants.TEAM_NUMBER_JSON_TAG);
+        headers.add(1, Constants.MATCH_NUMBER_JSON_TAG);
+        if (headers.size() != values.size())
+        {
+            l("Failed to load schema into json, values out of sync!");
+            l(String.valueOf(headers.size()));
+            l(String.valueOf(values.size()));
+        }
+        else
+        {
+            try
+            {
+                for (i = 0; i < headers.size(); ++i)
+                {
+                    outputObject.put(headers.get(i), values.get(i));
+                }
+
+                Write(outputObject.toString());
+
+                l("Output JSON: " + outputObject.toString());
+            }
+            catch (JSONException e)
+            {
+                l("Exception raised in json addition:" + e.getMessage());
+                return;
+            }
+        }
     }
 
     private String getValues()
@@ -359,10 +424,10 @@ ex
         for (int i = 0; i < currentValues.size(); ++i)
         {
             String s = currentValues.get(i);
-            l("Appending to output: '" + s + "'");
             values += s;
             values += div;
         }
+
 
         String s = notes.getText().toString().replace("\n", " ").replace(",", " ");
         if (!s.trim().isEmpty())
@@ -371,8 +436,74 @@ ex
             if (values.length() > 0)
                 values = values.substring(0, values.length() - 1);
 
+        // l("Current Values: " + values);
+
         return values;
     }
+
+    private void setupPermissions()
+    {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            l("Permission granted");
+            setupUI();
+        }
+        else
+        {
+            l("Permission requested!");
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_ENABLE_PERMISSION);
+        }
+    }
+
+    class GestureListener extends GestureDetector.SimpleOnGestureListener {
+
+        @Override
+        public boolean onDown(MotionEvent event) {
+            // l("onDown: " + event.toString());
+            return false; // Allow scrollview work
+        }
+
+        @Override
+        public boolean onFling(MotionEvent event1, MotionEvent event2,
+                               float velocityX, float velocityY) {
+            float sens = 500;
+            if (
+                    Math.abs(velocityX) > Math.abs(velocityY)
+                    && Math.abs(velocityX) > sens)
+            {
+                if (velocityX > 0)
+                {
+                    loadPrevious();
+                }
+                else
+                {
+                    loadNext();
+                }
+                return true;
+            }
+            return false;
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+    {
+        if (requestCode == REQUEST_ENABLE_PERMISSION)
+        {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                l("Permission granted");
+                setupUI();
+            }
+            else
+            {
+                setupPermissions();
+            }
+        }
+    }
+
 
     private void loadDatabase()
     {
@@ -440,34 +571,11 @@ ex
     }
 
 
-    private boolean Build()
+    private void Build()
     {
-        try
-        {
-            BufferedReader reader = FileHandler.GetReader(FileHandler.SCHEMA);
-            String line = reader.readLine();
-            if (line != null)
-                Build(line, false);
-            reader.close();
-            return true;
-        }
-        catch (Exception e)
-        {
-            l("Failed to read schema file");
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    private void Build(String s, boolean write)
-    {
-        l("Building UI From String: " + s);
-        if (write)
-        {
-            FileHandler.Write(FileHandler.SCHEMA, s);
-        }
-
-        SchemaHandler.Setup(inputTable, s, this);
-
+        SchemaHandler.Setup(
+                inputTable, // Table
+                SchemaHandler.LoadSchemaFromFile(), // Text schema
+                this); // Context
     }
 }

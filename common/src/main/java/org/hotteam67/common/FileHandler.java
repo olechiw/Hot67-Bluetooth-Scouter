@@ -52,22 +52,19 @@ public final class FileHandler
 
     public static final BufferedReader GetReader(int FILE)
     {
-        String f = file(FILE);
-
         try
         {
-            BufferedReader reader = new BufferedReader(new FileReader(f));
-            return reader;
+            return  new BufferedReader(new FileReader(file(FILE)));
         }
         catch (FileNotFoundException e)
         {
-            l("File not found");
+            l("File not found: " + file(FILE));
             new File(DIRECTORY).mkdirs();
 
             try
             {
-                new File(f).createNewFile();
-                return new BufferedReader(new FileReader(f));
+                new File(file(FILE)).createNewFile();
+                return new BufferedReader(new FileReader(file(FILE)));
             }
             catch (Exception ex)
             {
@@ -130,7 +127,6 @@ public final class FileHandler
         catch (Exception e)
         {
             l("Failed to load :" + e.getMessage());
-            e.printStackTrace();
         }
 
         return content;

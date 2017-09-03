@@ -29,10 +29,12 @@
             android:scaleX=".4"
             android:scaleY=".4"
             android:id="@+id/configureButton"/>
+        <!--
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/testButton"/>
+            -->
 
     </android.support.v7.widget.Toolbar>
 

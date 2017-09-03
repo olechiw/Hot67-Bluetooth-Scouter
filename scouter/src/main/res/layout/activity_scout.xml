@@ -42,16 +42,6 @@
                 android:layout_centerVertical="true"
                 android:id="@+id/teamNumberText"/>
             <ImageButton
-                android:id="@+id/saveButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:scaleX=".4"
-                android:scaleY=".4"
-                android:src="@drawable/ic_save"
-                android:layout_alignParentEnd="true"
-                android:layout_gravity="right"
-                android:background="?attr/colorPrimary"/>
-            <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:scaleX=".4"
