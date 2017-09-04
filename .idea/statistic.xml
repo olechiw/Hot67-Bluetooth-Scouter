@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Statistic">
+    <option name="excludeDotArtifactDirectory" value="true" />
+    <option name="excludedDirectories">
+      <list>
+        <option value="$PROJECT_DIR$/.gradle" />
+        <option value="$PROJECT_DIR$/.idea" />
+        <option value="$PROJECT_DIR$/gradle" />
+        <option value="$PROJECT_DIR$/build" />
+        <option value="$PROJECT_DIR$/gradle" />
+        <option value="$PROJECT_DIR$/scouter/build" />
+        <option value="$PROJECT_DIR$/scouter/libs" />
+        <option value="$PROJECT_DIR$/server/build" />
+        <option value="$PROJECT_DIR$/common/build" />
+        <option value="$PROJECT_DIR$/common/libs" />
+      </list>
+    </option>
+  </component>
+</project>

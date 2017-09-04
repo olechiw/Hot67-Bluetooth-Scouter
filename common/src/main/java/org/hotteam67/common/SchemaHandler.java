@@ -205,9 +205,9 @@ public final class SchemaHandler
     public static void SetCurrentValues(TableLayout table, List<String> values)
     {
         int val = 0;
-        try
+        for (View v : getViews(table))
         {
-            for (View v : getViews(table))
+            try
             {
                 switch ((int) v.getTag(R.string.variable_type))
                 {
@@ -230,14 +230,13 @@ public final class SchemaHandler
                 }
                 if (val >= values.size())
                     break;
+            } catch (Exception e)
+            {
+                Log.e("[Schema Handler", "Failed to set value : " + e.getMessage(), e);
+                ClearCurrentValues(table);
             }
         }
-        catch (Exception e)
-        {
-            Log.e("[Schema Handler", "Failed to set value : " + e.getMessage(), e);
-            ClearCurrentValues(table);
-        }
-    };
+    }
 
     private static void SetParams(View v, int width)
     {

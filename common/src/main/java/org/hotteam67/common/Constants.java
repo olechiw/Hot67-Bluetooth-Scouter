@@ -8,12 +8,19 @@ import android.util.Log;
 
 public class Constants
 {
-    public static final int TAG_LENGTH = 8;
+    public static final int SCOUTER_TAG_LENGTH = 8;
+    public static final String SCOUTER_TEAMS_TAG =      ":TEAM:  ";
+    public static final String SCOUTER_SCHEMA_TAG =     ":SCHEMA:";
 
-    public static final String MATCH_TAG=     ":SCOUT: ";
-    public static final String MATCH_TEAM_TAG =     ":TEAM:  ";
-    public static final String MATCH_NUMBER_TAG =   ":MATCH: ";
-    public static final String SCHEMA_TAG =         ":SCHEMA:";
+    public static String getScouterInputTag(String input)
+    {
+        return input.substring(0, SCOUTER_TAG_LENGTH);
+    }
+
+    public static String getScouterInputWithoutTag(String input)
+    {
+        return input.substring(SCOUTER_TAG_LENGTH, input.length());
+    }
 
     public static final int PADDING =       0;
     public static final int TYPE_HEADER =   1;

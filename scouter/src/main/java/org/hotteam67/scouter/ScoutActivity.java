@@ -1,6 +1,7 @@
 package org.hotteam67.scouter;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -36,6 +37,7 @@ public class ScoutActivity extends BluetoothActivity
     private static final int REQUEST_ENABLE_PERMISSION = 3;
 
     ImageButton connectButton;
+    ImageButton syncAllButton;
 
     FloatingActionButton nextMatchButton;
     FloatingActionButton prevMatchButton;
@@ -181,6 +183,23 @@ public class ScoutActivity extends BluetoothActivity
             }
         });
 
+        final Context c = this;
+        syncAllButton = (ImageButton) findViewById(R.id.syncAllButton);
+        syncAllButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                for (String match : matches)
+                {
+                    SendJsonValues(match);
+                }
+                new AlertDialog.Builder(c)
+                        .setMessage("Sent all scouted data to server!")
+                        .create().show();
+            }
+        });
+
 
         Build(); // Build the input table's rows and columns.
 
@@ -288,11 +307,18 @@ public class ScoutActivity extends BluetoothActivity
                 l("Offending match: -->  " + matches.get(match - 1) + " <--");
             }
 
-            teamNumber.setText(teams.get(match - 1));
+            if (teams.size() >= match)
+                teamNumber.setText(teams.get(match - 1));
+            else
+                teamNumber.setText("0");
         }
         else if (matches.size() + 1 == match)
         {
-            teamNumber.setText("0");
+            if (teams.size() >= match)
+                teamNumber.setText(teams.get(match - 1));
+            else
+                teamNumber.setText("0");
+
             SchemaHandler.ClearCurrentValues(inputTable);
         }
         else
@@ -360,40 +386,51 @@ public class ScoutActivity extends BluetoothActivity
         // l("Writing output to matches file: " + output);
         FileHandler.Write(FileHandler.MATCHES, output);
 
-        JSONObject outputObject = new JSONObject();
+        SendJsonValues(matches.get(currentMatch() - 1));
+    }
 
-        List<String> values = new ArrayList<>(Arrays.asList(
-                getValues().split(",")));
-        List<String> headers = new ArrayList<>(Arrays.asList(
-                SchemaHandler.GetHeader(
-                SchemaHandler.LoadSchemaFromFile()).split(",")));
-        headers.removeAll(Arrays.asList("", null));
-        headers.add(0, Constants.TEAM_NUMBER_JSON_TAG);
-        headers.add(1, Constants.MATCH_NUMBER_JSON_TAG);
-        if (headers.size() != values.size())
+    private void SendJsonValues(String match)
+    {
+        try
         {
-            l("Failed to load schema into json, values out of sync!");
-            l(String.valueOf(headers.size()));
-            l(String.valueOf(values.size()));
-        }
-        else
-        {
-            try
+            JSONObject outputObject = new JSONObject();
+
+            List<String> values = new ArrayList<>(Arrays.asList(
+                    match.split(",")));
+            List<String> headers = new ArrayList<>(Arrays.asList(
+                    SchemaHandler.GetHeader(
+                            SchemaHandler.LoadSchemaFromFile()).split(",")));
+            headers.removeAll(Arrays.asList("", null));
+            headers.add(0, Constants.TEAM_NUMBER_JSON_TAG);
+            headers.add(1, Constants.MATCH_NUMBER_JSON_TAG);
+            if (headers.size() != values.size())
             {
-                for (i = 0; i < headers.size(); ++i)
+                l("Failed to load schema into json, values out of sync!");
+                l(String.valueOf(headers.size()));
+                l(String.valueOf(values.size()));
+            } else
+            {
+                try
                 {
-                    outputObject.put(headers.get(i), values.get(i));
+                    for (int i = 0; i < headers.size(); ++i)
+                    {
+                        outputObject.put(headers.get(i), values.get(i));
+                    }
+
+                    Write(outputObject.toString());
+
+                    l("Output JSON: " + outputObject.toString());
+                } catch (JSONException e)
+                {
+                    l("Exception raised in json addition:" + e.getMessage());
+                    return;
                 }
-
-                Write(outputObject.toString());
-
-                l("Output JSON: " + outputObject.toString());
             }
-            catch (JSONException e)
-            {
-                l("Exception raised in json addition:" + e.getMessage());
-                return;
-            }
+        }
+        catch (Exception e)
+        {
+            l("Failure to load and parse csv match ot json: " + match);
+            e.printStackTrace();
         }
     }
 
@@ -531,45 +568,76 @@ public class ScoutActivity extends BluetoothActivity
     {
         switch (msg.what)
         {
-            case MESSAGE_INPUT:
-                /*
-                String s = (String)msg.obj;
-                if (s.split(",").length > 2)
-                {
-                    Build((String)msg.obj, true);
-                }
-                else
-                {
-                    HandleMatchTeam(s);
-                }
+            case MESSAGE_INPUT: // Input received through bluetooth
+                final String message =
+                        Constants.getScouterInputWithoutTag(new String((byte[]) msg.obj));
+                final String tag =
+                        Constants.getScouterInputTag(new String((byte[]) msg.obj));
 
-                break;
-                */
-            case MESSAGE_TOAST:
+                if (tag == Constants.SCOUTER_SCHEMA_TAG)
+                {
+                    final Context c = this;
+                    // Show a confirmation dialog
+                    new AlertDialog.Builder(this)
+                            .setMessage("Received new schema, clear local schema?")
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                            {
+                                // If the user selects yes
+                                @Override
+                                public void onClick(DialogInterface dialog, int which)
+                                {
+                                    FileHandler.Write(FileHandler.SCHEMA, message);
+                                    SchemaHandler.Setup(
+                                            inputTable, // Table to setup the new schema on
+                                            SchemaHandler.LoadSchemaFromFile(), // Schema text
+                                            c); // Context
+                                }
+                            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which)
+                        {
+
+                        }
+                    }).create().show();
+                }
+                else if (tag == Constants.SCOUTER_TEAMS_TAG)
+                {
+                    // Show a confirmation dialog
+                    new AlertDialog.Builder(this)
+                            .setMessage("Received new teams, clear local database?")
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                            {
+                                // Confirmed. Clear out the database and load in new teams and matches
+                                @Override
+                                public void onClick(DialogInterface dialog, int which)
+                                {
+                                    teams = new ArrayList<>(Arrays.asList(message.split(",")));
+                                    matches = new ArrayList<>();
+                                    clearMatches();
+                                    SchemaHandler.ClearCurrentValues(inputTable);
+                                    loadMatch(1);
+                                }
+                            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which)
+                        {
+
+                        }
+                    }).create().show();
+                }
+            case MESSAGE_TOAST: // Deprecated
                 l(new String((byte[])msg.obj));
                 break;
-            case MESSAGE_CONNECTED:
-                // toast("Connected!");
-                /*
-                l("Device connection gained");
-                isConnected = true;
-                connectButton.setText("Connected!");
-                break;
-            case MESSAGE_DISCONNECTED:
-                l("Device connection lost");
-                toast("Lost Server Connection!");
-                isConnected = false;
-                connectButton.setText("Connect");
-                break;
-                */
+            case MESSAGE_CONNECTED: // A device has connected
                 connectButton.setImageResource(R.drawable.ic_network_wifi);
                 break;
-            case MESSAGE_DISCONNECTED:
+            case MESSAGE_DISCONNECTED: // A device has disconnected
                 connectButton.setImageResource(R.drawable.ic_network_off);
                 break;
         }
     }
-
 
     private void Build()
     {
