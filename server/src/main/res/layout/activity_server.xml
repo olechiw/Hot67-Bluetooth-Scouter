@@ -35,6 +35,15 @@
             android:layout_height="wrap_content"
             android:id="@+id/testButton"/>
             -->
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:src="@drawable/ic_download"
+            android:scaleX=".4"
+            android:scaleY=".4"
+            android:background="?attr/colorPrimary"
+            android:id="@+id/matchesDownloadButton"/>
 
     </android.support.v7.widget.Toolbar>
 

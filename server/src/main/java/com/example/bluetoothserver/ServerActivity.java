@@ -26,6 +26,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -34,13 +35,22 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import org.hotteam67.common.Constants;
+import org.hotteam67.common.FileHandler;
 import org.json.JSONObject;
+
+import com.cpjd.main.*;
+import com.cpjd.models.*;
+import com.cpjd.requests.*;
+import com.cpjd.utils.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -112,6 +122,7 @@ public class ServerActivity extends AppCompatActivity {
     EditText serverLogText;
 
     ImageButton configureButton;
+    ImageButton downloadMatchesButton;
 
     // Button testButton;
 
@@ -153,24 +164,104 @@ public class ServerActivity extends AppCompatActivity {
         {
             setupThreads();
 
-            connectedDevicesText = (TextView) findViewById(R.id.connectedDevicesText);
-            serverLogText = (EditText) findViewById(R.id.serverLog);
-
-            Toolbar toolbar = (Toolbar) findViewById(R.id.toolBar);
-            setSupportActionBar(toolbar);
-            ActionBar ab = getSupportActionBar();
-            ab.setDisplayShowTitleEnabled(false);
-
-            configureButton = toolbar.findViewById(R.id.configureButton);
-            configureButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    configure();
-                }
-            });
+            setupUI();
         }
 
     }
+
+    private void setupUI()
+    {
+        connectedDevicesText = (TextView) findViewById(R.id.connectedDevicesText);
+        serverLogText = (EditText) findViewById(R.id.serverLog);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolBar);
+        setSupportActionBar(toolbar);
+        ActionBar ab = getSupportActionBar();
+        ab.setDisplayShowTitleEnabled(false);
+
+        configureButton = toolbar.findViewById(R.id.configureButton);
+        configureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                configure();
+            }
+        });
+
+        downloadMatchesButton = (ImageButton) findViewById(R.id.matchesDownloadButton);
+        downloadMatchesButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                doDownloadMatches();
+            }
+        });
+    }
+
+
+    private void doDownloadMatches()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final EditText matchKeyInput = new EditText(this);
+
+        final Context c = this;
+
+        builder.setView(matchKeyInput);
+        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i)
+            {
+                TBA.setID("HOT67", "BluetoothScouter", "V1");
+                TBA tba = new TBA();
+                Settings.GET_EVENT_MATCHES = true;
+
+                l("Fetching");
+                try
+                {
+                    String s = "";
+                    Event e = tba.getEvent(matchKeyInput.getText().toString(),
+                            Integer.valueOf(new SimpleDateFormat("yyyy", Locale.US).format(new Date())));
+                    l("Obtained event: " + e.name);
+                    l("Year: " + new SimpleDateFormat("yyyy", Locale.US).format(new Date()));
+                    l("Matches: " + e.matches.length);
+                    for (Match m : e.matches)
+                    {
+                        if (m.comp_level.equals("qm"))
+                        {
+                            for (String t : m.redTeams)
+                            {
+                                s += t.replace("frc", "") + ",";
+                            }
+                            for (int t = 0; t < m.blueTeams.length; ++t)
+                            {
+                                s += m.blueTeams[t].replace("frc", "");
+                                if (t + 1 != m.blueTeams.length)
+                                    s += ",";
+                            }
+                            s += "\n";
+                        }
+                    }
+                    FileHandler.Write(FileHandler.MATCHES, s);
+
+                    new AlertDialog.Builder(c).setMessage("Saved!").create().show();
+                }
+                catch (Exception e)
+                {
+                    toast("Failed to load matches");
+                    Log.e("[Matches Fetcher]", "Failed to get event: " + e.getMessage(), e);
+                }
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i)
+            {
+
+            }
+        }).setTitle("Enter Match Key:").create().show();
+    }
+
 
     //
     // This is to handle the enable bluetooth activity,
