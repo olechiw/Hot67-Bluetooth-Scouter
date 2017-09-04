@@ -2,6 +2,8 @@ package org.hotteam67.common;
 
 import android.util.Log;
 
+import java.util.UUID;
+
 /**
  * Created by Jakob on 4/28/2017.
  */
@@ -65,4 +67,7 @@ public class Constants
             return s;
         }
     }
+
+    // Application UUID to look for during connection, may be configurable in future
+    public static final UUID uuid = UUID.fromString("1cb5d5ce-00f5-11e7-93ae-92361f002671");
 }

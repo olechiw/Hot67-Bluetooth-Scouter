@@ -36,7 +36,8 @@ dependencies {
     compile 'com.android.support:support-v4:26.0.0'
     compile 'com.android.support:support-vector-drawable:26.0.0'
     testCompile 'junit:junit:4.12'
-    compile files('TBA-API.jar')
+    compile files('src/TBA-API.jar')
+    compile files ('src/json-simple-1.1.1.jar')
 }
 
 

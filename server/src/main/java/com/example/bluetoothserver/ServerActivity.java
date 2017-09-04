@@ -57,10 +57,6 @@ import java.util.UUID;
 
 public class ServerActivity extends AppCompatActivity {
 
-
-    // Application UUID to look for during connection, may be configurable in future
-    private final UUID uuid = UUID.fromString("1cb5d5ce-00f5-11e7-93ae-92361f002671");
-
     // Messages, for when any event happens, to be sent to the main thread
     public static final int MESSAGE_INPUT = 0;
     public static final int MESSAGE_OTHER = 1;
@@ -71,7 +67,7 @@ public class ServerActivity extends AppCompatActivity {
     public static final int REQUEST_PREFERENCES = 2;
     public static final int REQUEST_ENABLE_PERMISSION = 3;
 
-    // Whether bluetooth hardware setup failed, such as nonexistent bluetoothdevice
+    // Whether bluetooth hardware setup failed, such as nonexistent bluetooth device
     private boolean bluetoothFailed = false;
 
     // Message Handler, simple!
@@ -216,12 +212,16 @@ public class ServerActivity extends AppCompatActivity {
                 TBA tba = new TBA();
                 Settings.GET_EVENT_MATCHES = true;
 
+                StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
+                StrictMode.setThreadPolicy(policy);
+
                 l("Fetching");
                 try
                 {
                     String s = "";
                     Event e = tba.getEvent(matchKeyInput.getText().toString(),
                             Integer.valueOf(new SimpleDateFormat("yyyy", Locale.US).format(new Date())));
+                    toast(e.matches.length + " Matches Loaded");
                     l("Obtained event: " + e.name);
                     l("Year: " + new SimpleDateFormat("yyyy", Locale.US).format(new Date()));
                     l("Matches: " + e.matches.length);
@@ -243,8 +243,6 @@ public class ServerActivity extends AppCompatActivity {
                         }
                     }
                     FileHandler.Write(FileHandler.MATCHES, s);
-
-                    new AlertDialog.Builder(c).setMessage("Saved!").create().show();
                 }
                 catch (Exception e)
                 {
@@ -328,7 +326,14 @@ public class ServerActivity extends AppCompatActivity {
         String email = (String) prefs.getAll().get(Constants.PREF_EMAIL);
         String password = (String) prefs.getAll().get(Constants.PREF_PASSWORD);
 
-        authentication.signInWithEmailAndPassword(email, password);
+        try {
+            authentication.signInWithEmailAndPassword(email, password);
+        }
+        catch (Exception e)
+        {
+            l("Invalid username or password used! Email: " + email + " Password: " + password);
+            l("Error occured:" + e.getMessage());
+        }
     }
 
     // Initialize the accept bluetooth connections thread
@@ -387,7 +392,7 @@ public class ServerActivity extends AppCompatActivity {
                 }
                 catch (Exception e)
                 {
-                    l("Failed to load input json:" + message);
+                    l("Failed to load and send input json, most likely not logged in:" + message);
                     e.printStackTrace();
                 }
 
@@ -436,7 +441,7 @@ public class ServerActivity extends AppCompatActivity {
             BluetoothServerSocket tmp = null;
             try
             {
-                tmp = m_bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ConnectDevice", uuid);
+                tmp = m_bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ConnectDevice", Constants.uuid);
             }
             catch (java.io.IOException e)
             {

@@ -1,4 +1,4 @@
-package org.hotteam67.common;
+package org.hotteam67.scouter;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,6 +12,8 @@ import android.app.*;
 import android.content.*;
 import android.os.Handler;
 import android.os.Message;
+
+import org.hotteam67.common.Constants;
 
 public class BluetoothActivity extends AppCompatActivity {
 
@@ -36,9 +38,6 @@ public class BluetoothActivity extends AppCompatActivity {
 
     // The log tag
     public static final String TAG = "BLUETOOTH_SCOUTER_DEBUG";
-
-    // Application UUID to look for during connection, may be configurable in future
-    private final UUID uuid = UUID.fromString("1cb5d5ce-00f5-11e7-93ae-92361f002671");
 
     // Whether the bluetooth hardware setup has completely failed (typically means something like it failed to be enabled)
     private boolean bluetoothFailed = false;
@@ -100,7 +99,7 @@ public class BluetoothActivity extends AppCompatActivity {
                 connectionSocket = null;
                 try {
                     l("Getting Connection");
-                    connectionSocket = device.createRfcommSocketToServiceRecord(uuid);
+                    connectionSocket = device.createRfcommSocketToServiceRecord(Constants.uuid);
                 } catch (java.io.IOException e) {
                     Log.e("[Bluetooth]", "Failed to connect to socket", e);
                 }

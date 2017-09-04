@@ -2,7 +2,6 @@ package org.hotteam67.scouter;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -21,7 +20,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.text.Spanned;
 import android.support.v7.widget.Toolbar;
 
-import org.hotteam67.common.BluetoothActivity;
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
