@@ -29,6 +29,8 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile project(':common')
+    compile files('src/TBA-API.jar')
+    compile files('src/json-simple-1.1.1.jar')
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.google.firebase:firebase-core:11.2.0'
     compile 'com.google.firebase:firebase-auth:11.2.0'
@@ -36,9 +38,8 @@ dependencies {
     compile 'com.android.support:support-v4:26.0.0'
     compile 'com.android.support:support-vector-drawable:26.0.0'
     testCompile 'junit:junit:4.12'
-    compile files('src/TBA-API.jar')
-    compile files ('src/json-simple-1.1.1.jar')
 }
+
 
 
 

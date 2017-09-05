@@ -4,21 +4,27 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.ActionBar;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.widget.*;
-import android.view.*;
-import android.os.Message;
-import android.text.InputFilter;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.support.design.widget.FloatingActionButton;
-import android.text.Spanned;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.Spanned;
+import android.text.TextWatcher;
+import android.view.GestureDetector;
+import android.view.KeyEvent;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ScrollView;
+import android.widget.TableLayout;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
@@ -26,8 +32,10 @@ import org.hotteam67.common.SchemaHandler;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 public class ScoutActivity extends BluetoothActivity
@@ -84,24 +92,12 @@ public class ScoutActivity extends BluetoothActivity
 
     private void doConfirmEnd()
     {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Confirm");
-        builder.setMessage("Are you sure you want to quit?");
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dlg, int id)
-            {
-                dlg.dismiss();
+        Constants.OnConfirm("Are you sure you want to quit?", this, new Runnable() {
+            @Override
+            public void run() {
                 finish();
             }
         });
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dlg, int id)
-            {
-                dlg.dismiss();
-            }
-        });
-        AlertDialog dlg = builder.create();
-        dlg.show();
     }
 
     @Override
@@ -192,9 +188,7 @@ public class ScoutActivity extends BluetoothActivity
                 {
                     SendJsonValues(match);
                 }
-                new AlertDialog.Builder(c)
-                        .setMessage("Sent all scouted data to server!")
-                        .create().show();
+                toast("Sent all scouted data to server!");
             }
         });
 
@@ -491,7 +485,7 @@ public class ScoutActivity extends BluetoothActivity
         }
     }
 
-    class GestureListener extends GestureDetector.SimpleOnGestureListener {
+    private class GestureListener extends GestureDetector.SimpleOnGestureListener {
 
         @Override
         public boolean onDown(MotionEvent event) {
@@ -523,7 +517,7 @@ public class ScoutActivity extends BluetoothActivity
 
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
         if (requestCode == REQUEST_ENABLE_PERMISSION)
         {
@@ -576,54 +570,30 @@ public class ScoutActivity extends BluetoothActivity
                 {
                     final Context c = this;
                     // Show a confirmation dialog
-                    new AlertDialog.Builder(this)
-                            .setMessage("Received new schema, clear local schema?")
-                            .setPositiveButton("Yes", new DialogInterface.OnClickListener()
-                            {
-                                // If the user selects yes
-                                @Override
-                                public void onClick(DialogInterface dialog, int which)
-                                {
-                                    FileHandler.Write(FileHandler.SCHEMA, message);
-                                    SchemaHandler.Setup(
-                                            inputTable, // Table to setup the new schema on
-                                            SchemaHandler.LoadSchemaFromFile(), // Schema text
-                                            c); // Context
-                                }
-                            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener()
-                    {
+                    Constants.OnConfirm("Received new schema, clear local schema?", this, new Runnable() {
                         @Override
-                        public void onClick(DialogInterface dialog, int which)
-                        {
-
+                        public void run() {
+                            FileHandler.Write(FileHandler.SCHEMA, message);
+                            SchemaHandler.Setup(
+                                    inputTable, // Table to setup the new schema on
+                                    SchemaHandler.LoadSchemaFromFile(), // Schema text
+                                    c); // Context
                         }
-                    }).create().show();
+                    });
                 }
                 else if (tag == Constants.SCOUTER_TEAMS_TAG)
                 {
                     // Show a confirmation dialog
-                    new AlertDialog.Builder(this)
-                            .setMessage("Received new teams, clear local database?")
-                            .setPositiveButton("Yes", new DialogInterface.OnClickListener()
-                            {
-                                // Confirmed. Clear out the database and load in new teams and matches
-                                @Override
-                                public void onClick(DialogInterface dialog, int which)
-                                {
-                                    teams = new ArrayList<>(Arrays.asList(message.split(",")));
-                                    matches = new ArrayList<>();
-                                    clearMatches();
-                                    SchemaHandler.ClearCurrentValues(inputTable);
-                                    loadMatch(1);
-                                }
-                            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener()
-                    {
+                    Constants.OnConfirm("Received new teams, clear local database?", this, new Runnable() {
                         @Override
-                        public void onClick(DialogInterface dialog, int which)
-                        {
-
+                        public void run() {
+                            teams = new ArrayList<>(Arrays.asList(message.split(",")));
+                            matches = new ArrayList<>();
+                            clearMatches();
+                            SchemaHandler.ClearCurrentValues(inputTable);
+                            loadMatch(1);
                         }
-                    }).create().show();
+                    });
                 }
             case MESSAGE_TOAST: // Deprecated
                 l(new String((byte[])msg.obj));

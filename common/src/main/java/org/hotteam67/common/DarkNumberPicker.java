@@ -3,9 +3,12 @@ package org.hotteam67.common;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.Spanned;
-import android.util.Log;
-import android.widget.*;
-import android.view.*;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 
 /**
  * Created by Jakob on 4/27/2017.

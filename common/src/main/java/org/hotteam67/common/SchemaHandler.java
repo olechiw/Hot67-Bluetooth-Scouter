@@ -2,9 +2,6 @@ package org.hotteam67.common;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.KeyEventCompat;
-import android.support.v4.view.ViewPager;
 import android.support.v4.widget.TextViewCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -20,7 +17,9 @@ import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Jakob on 4/28/2017.

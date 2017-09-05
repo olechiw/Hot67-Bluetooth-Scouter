@@ -1,5 +1,8 @@
 package org.hotteam67.common;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.util.Log;
 
 import java.util.UUID;
@@ -37,8 +40,6 @@ public class Constants
     public static String MATCH_NUMBER_JSON_TAG = "matchNumber";
     public static String TEAM_NUMBER_JSON_TAG = "teamNumber";
 
-    public static final String DEFAULT_EVENT_NAME = "DefaultEventName";
-
     public static String getTag(String s)
     {
         try
@@ -70,4 +71,21 @@ public class Constants
 
     // Application UUID to look for during connection, may be configurable in future
     public static final UUID uuid = UUID.fromString("1cb5d5ce-00f5-11e7-93ae-92361f002671");
+
+    public static void OnConfirm(String message, Context context, final Runnable effect)
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage(message);
+        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                effect.run();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        }).create().show();
+    }
 }

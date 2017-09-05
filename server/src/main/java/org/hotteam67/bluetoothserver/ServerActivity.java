@@ -1,6 +1,5 @@
-package com.example.bluetoothserver;
+package org.hotteam67.bluetoothserver;
 
-import android.*;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
@@ -10,49 +9,50 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.preference.Preference;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.os.StrictMode;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.os.*;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-
+import com.cpjd.main.Settings;
+import com.cpjd.main.TBA;
+import com.cpjd.models.Event;
+import com.cpjd.models.Match;
+import com.example.bluetoothserver.R;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
+import org.hotteam67.common.SchemaHandler;
+import org.hotteam67.scouter.SchemaActivity;
 import org.json.JSONObject;
 
-import com.cpjd.main.*;
-import com.cpjd.models.*;
-import com.cpjd.requests.*;
-import com.cpjd.utils.*;
-
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
 
 
 public class ServerActivity extends AppCompatActivity {
@@ -120,8 +120,6 @@ public class ServerActivity extends AppCompatActivity {
     ImageButton configureButton;
     ImageButton downloadMatchesButton;
 
-    // Button testButton;
-
     // When the app is initialized, setup the UI and the bluetooth adapter
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,7 +146,6 @@ public class ServerActivity extends AppCompatActivity {
 
         if (m_bluetoothAdapter == null) {
             l("Bluetooth not detected");
-            sendMessage("Error, Bluetooth not Detected!");
             bluetoothFailed = true;
         }
 
@@ -165,15 +162,65 @@ public class ServerActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.menu_server, menu);
+        return true;
+    }
+
+    @Override
+    public synchronized boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.menuItemSetupSchema:
+            {
+                Intent launchSchemaActivityIntent = new Intent(this, SchemaActivity.class);
+                startActivity(launchSchemaActivityIntent);
+                break;
+            }
+            case R.id.menuItemSendSchema:
+            {
+                // Obtain schema
+                String schema = SchemaHandler.LoadSchemaFromFile();
+
+                try {
+                    // Send to each device
+                    for (ConnectedThread device : connectedThreads) {
+                        device.write(schema.getBytes());
+                    }
+                    VisualLog("Wrote schema to " + connectedThreads.size() + " devices");
+                }
+                catch (Exception e)
+                {
+                    VisualLog("Failed to send schema to devices: " + e.getMessage());
+                    e.printStackTrace();
+                }
+                break;
+            }
+            case R.id.menuItemSendMatches:
+            {
+                sendEventMatches();
+                break;
+            }
+        }
+
+        return true;
+    }
+
     private void setupUI()
     {
+        // TODO: Implement the schema sending, and that should be that.
+
         connectedDevicesText = (TextView) findViewById(R.id.connectedDevicesText);
         serverLogText = (EditText) findViewById(R.id.serverLog);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
-        ab.setDisplayShowTitleEnabled(false);
+        if (ab != null)
+            ab.setDisplayShowTitleEnabled(false);
 
         configureButton = toolbar.findViewById(R.id.configureButton);
         configureButton.setOnClickListener(new View.OnClickListener() {
@@ -189,13 +236,31 @@ public class ServerActivity extends AppCompatActivity {
             @Override
             public void onClick(View view)
             {
-                doDownloadMatches();
+                downloadEventMatches();
             }
         });
+
+
+        final Context c = this;
+        downloadMatchesButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+
+                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                // Vibrate for 500 milliseconds
+                v.vibrate(500);
+
+                sendEventMatches();
+
+                return true;
+            }
+        });
+
+        refreshFirebaseAuth();
     }
 
 
-    private void doDownloadMatches()
+    private void downloadEventMatches()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final EditText matchKeyInput = new EditText(this);
@@ -260,6 +325,63 @@ public class ServerActivity extends AppCompatActivity {
         }).setTitle("Enter Match Key:").create().show();
     }
 
+    private void sendEventMatches()
+    {
+        Constants.OnConfirm("Send Matches?", this, new Runnable() {
+            @Override
+            public void run() {
+                List<String> deviceTeams = new ArrayList<>(Arrays.asList(
+                        "", "", "", "", "", ""
+                ));
+                List<String> matches =
+                        new ArrayList<>(
+                                Arrays.asList(
+                                        FileHandler.LoadContents(FileHandler.MATCHES)
+                                                .split("\n")
+                                )
+                        );
+
+                int failed = 0;
+                VisualLog("Sending Teams");
+                for (int m = 0; m < matches.size(); ++m)
+                {
+                    String[] teams = matches.get(m).split(",");
+                    // Has to have six teams
+                    if (teams.length < deviceTeams.size()) {
+                        VisualLog("Dropping match: " + matches.get(m));
+                        ++failed;
+                    }
+                    else {
+                        for (int i = 0; i < teams.length; ++i) {
+                            // Add the team out of the six teams
+                            deviceTeams.set(i, deviceTeams.get(i) + teams[i]);
+                            // If not the last match, add a comma
+                            if (m + 1 < matches.size())
+                                deviceTeams.set(i, deviceTeams.get(i) + ",");
+                        }
+                    }
+                }
+
+                for (int i = 0; i < connectedThreads.size(); ++i)
+                {
+                    connectedThreads.get(i).write(deviceTeams.get(i).getBytes());
+                }
+
+
+                String s;
+
+                if (connectedThreads.size() == 1)
+                    s = "Sent to 1 device!";
+                else
+                    s = "Sent to " + connectedThreads.size() + " devices!";
+
+                if (failed > 0)
+                    s += " Dropped " + failed + " matches";
+                toast(s);
+            }
+        });
+    }
+
 
     //
     // This is to handle the enable bluetooth activity,
@@ -283,6 +405,8 @@ public class ServerActivity extends AppCompatActivity {
         else if (requestCode==REQUEST_PREFERENCES)
         {
             refreshFirebaseAuth();
+            if (eventName.trim().isEmpty())
+                eventName = "DefaultEvent";
         }
     }
 
@@ -303,7 +427,7 @@ public class ServerActivity extends AppCompatActivity {
 
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults)
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
         if (requestCode == REQUEST_ENABLE_PERMISSION)
         {
@@ -328,9 +452,11 @@ public class ServerActivity extends AppCompatActivity {
 
         try {
             authentication.signInWithEmailAndPassword(email, password);
+            VisualLog("Firebase Login Successful");
         }
         catch (Exception e)
         {
+            VisualLog("Failed to Login to Firebase");
             l("Invalid username or password used! Email: " + email + " Password: " + password);
             l("Error occured:" + e.getMessage());
         }
@@ -352,7 +478,7 @@ public class ServerActivity extends AppCompatActivity {
     
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     FirebaseAuth authentication = FirebaseAuth.getInstance();
-    String eventName = Constants.DEFAULT_EVENT_NAME;
+    String eventName;
 
     // Configure the current scouting schema and database connection
     private void configure()
@@ -370,18 +496,15 @@ public class ServerActivity extends AppCompatActivity {
     }
 
     // Handle an input message from one of the bluetooth threads
-    protected synchronized void handle(Message msg)
-    {
-        switch (msg.what)
-        {
+    protected synchronized void handle(Message msg) {
+        switch (msg.what) {
             case MESSAGE_INPUT:
 
                 byte[] info = (byte[]) msg.obj;
                 String message = new String(info);
                 //m_sendButton.setText(message);
 
-                try
-                {
+                try {
                     JSONObject matchObj = new JSONObject(message);
 
                     DatabaseReference ref = database.getReference();
@@ -389,9 +512,7 @@ public class ServerActivity extends AppCompatActivity {
                             .child(eventName)
                             .child((String) matchObj.get(Constants.MATCH_NUMBER_JSON_TAG))
                             .setValue(matchObj.toString());
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     l("Failed to load and send input json, most likely not logged in:" + message);
                     e.printStackTrace();
                 }
@@ -400,9 +521,7 @@ public class ServerActivity extends AppCompatActivity {
             case MESSAGE_OTHER:
                 String t = new String((byte[]) msg.obj);
 
-                l("TOASTING: " + t);
-
-                //toast(t);
+                l("Received Message Other: " + t);
 
                 break;
             case MESSAGE_CONNECTED:
@@ -417,18 +536,6 @@ public class ServerActivity extends AppCompatActivity {
                 connectedDevicesText.setText(String.valueOf(connectedThreads.size()));
                 break;
         }
-    }
-
-
-
-    //
-    // Send a message under MESSAGE_OTHER,
-    // not utilized atm,
-    // but may be useful for sending info to main thread about other things
-    //
-    private void sendMessage(String msg)
-    {
-        m_handler.obtainMessage(MESSAGE_OTHER, msg.getBytes().length, -1, msg.getBytes()).sendToTarget();
     }
 
 
