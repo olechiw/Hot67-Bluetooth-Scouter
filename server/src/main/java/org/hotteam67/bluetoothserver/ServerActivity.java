@@ -211,8 +211,6 @@ public class ServerActivity extends AppCompatActivity {
 
     private void setupUI()
     {
-        // TODO: Implement the schema sending, and that should be that.
-
         connectedDevicesText = (TextView) findViewById(R.id.connectedDevicesText);
         serverLogText = (EditText) findViewById(R.id.serverLog);
 
