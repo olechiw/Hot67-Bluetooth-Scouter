@@ -37,11 +37,13 @@ import com.example.bluetoothserver.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
 import org.hotteam67.scouter.SchemaActivity;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -503,13 +505,7 @@ public class ServerActivity extends AppCompatActivity {
                 //m_sendButton.setText(message);
 
                 try {
-                    JSONObject matchObj = new JSONObject(message);
-
-                    DatabaseReference ref = database.getReference();
-                    ref
-                            .child(eventName)
-                            .child((String) matchObj.get(Constants.MATCH_NUMBER_JSON_TAG))
-                            .setValue(matchObj.toString());
+                    UploadJson(new JSONObject(message));
                 } catch (Exception e) {
                     l("Failed to load and send input json, most likely not logged in:" + message);
                     e.printStackTrace();
@@ -534,6 +530,29 @@ public class ServerActivity extends AppCompatActivity {
                 connectedDevicesText.setText(String.valueOf(connectedThreads.size()));
                 break;
         }
+    }
+
+    private void UploadJson(JSONObject json) throws JSONException
+    {
+        DatabaseReference ref = database.getReference();
+
+
+        // Each individual match gets a tag, with the team number then match number,
+        // so unique for every team's match. For instance:
+        //
+        // 671 for team 67 match one,
+        // or 204815 for team 2048 match 15
+        //
+        // This is simply to make sure no duplicate matches are recorded for any team
+        String tag =
+                json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() +
+                        json.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
+        l(tag);
+        String output = new Gson().toJson(json);
+        ref
+                .child(eventName)
+                .child(tag)
+                .setValue(output);
     }
 
 

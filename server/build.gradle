@@ -37,6 +37,9 @@ dependencies {
     compile 'com.google.firebase:firebase-database:11.2.0'
     compile 'com.android.support:support-v4:26.0.0'
     compile 'com.android.support:support-vector-drawable:26.0.0'
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.7'
+
     testCompile 'junit:junit:4.12'
 }
 
