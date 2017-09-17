@@ -149,12 +149,6 @@ public class ScoutActivity extends BluetoothActivity
 
         matchNumber = (EditText) findViewById(R.id.matchNumberText);
 
-        /*
-        scoutLayout = (GridView)findViewById(R.id.scoutLayout);
-
-        scoutInputAdapter = new org.hotteam67.bluetoothscouter.ScoutInputAdapter(this);
-        scoutLayout.setAdapter(scoutInputAdapter);
-        */
         inputTable = (TableLayout) findViewById(R.id.scoutLayout);
 
         nextMatchButton = (FloatingActionButton) findViewById(R.id.nextMatchButton);
@@ -184,9 +178,19 @@ public class ScoutActivity extends BluetoothActivity
             @Override
             public void onClick(View v)
             {
+                // toast("Matches sending: " + matches.size());
                 for (String match : matches)
                 {
                     SendJsonValues(match);
+                    /*
+                    try {
+                        Thread.sleep(1000);
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                    */
                 }
                 toast("Sent all scouted data to server!");
             }
@@ -383,6 +387,7 @@ public class ScoutActivity extends BluetoothActivity
 
     private void SendJsonValues(String match)
     {
+        if (match == null || match.split(",").length <= 1) return;
         try
         {
             JSONObject outputObject = new JSONObject();
@@ -562,41 +567,44 @@ public class ScoutActivity extends BluetoothActivity
         {
             case MESSAGE_INPUT: // Input received through bluetooth
                 final String message =
-                        Constants.getScouterInputWithoutTag(new String((byte[]) msg.obj));
+                        Constants.getScouterInputWithoutTag((String) msg.obj);
                 final String tag =
-                        Constants.getScouterInputTag(new String((byte[]) msg.obj));
+                        Constants.getScouterInputTag((String) msg.obj);
 
-                if (tag.equals(Constants.SCOUTER_SCHEMA_TAG))
-                {
-                    final Context c = this;
-                    // Show a confirmation dialog
-                    Constants.OnConfirm("Received new schema, clear local schema?", this, new Runnable() {
-                        @Override
-                        public void run() {
-                            FileHandler.Write(FileHandler.SCHEMA, message);
-                            SchemaHandler.Setup(
-                                    inputTable, // Table to setup the new schema on
-                                    SchemaHandler.LoadSchemaFromFile(), // Schema text
-                                    c); // Context
-                        }
-                    });
-                }
-                else if (tag.equals(Constants.SCOUTER_TEAMS_TAG))
-                {
-                    // Show a confirmation dialog
-                    Constants.OnConfirm("Received new teams, clear local database?", this, new Runnable() {
-                        @Override
-                        public void run() {
-                            teams = new ArrayList<>(Arrays.asList(message.split(",")));
-                            matches = new ArrayList<>();
-                            clearMatches();
-                            SchemaHandler.ClearCurrentValues(inputTable);
-                            loadMatch(1);
-                        }
-                    });
+                switch (tag) {
+                    case Constants.SCOUTER_SCHEMA_TAG:
+                        final Context c = this;
+                        // Show a confirmation dialog
+                        Constants.OnConfirm("Received new schema, clear local schema?", this, new Runnable() {
+                            @Override
+                            public void run() {
+                                FileHandler.Write(FileHandler.SCHEMA, message);
+                                SchemaHandler.Setup(
+                                        inputTable, // Table to setup the new schema on
+                                        SchemaHandler.LoadSchemaFromFile(), // Schema text
+                                        c); // Context
+                            }
+                        });
+                        break;
+                    case Constants.SCOUTER_TEAMS_TAG:
+                        // Show a confirmation dialog
+                        Constants.OnConfirm("Received new teams, clear local database?", this, new Runnable() {
+                            @Override
+                            public void run() {
+                                teams = new ArrayList<>(Arrays.asList(message.split(",")));
+                                matches = new ArrayList<>();
+                                clearMatches();
+                                SchemaHandler.ClearCurrentValues(inputTable);
+                                loadMatch(1);
+                            }
+                        });
+                        break;
+                    default:
+                        l("Received unknown tag: " + tag);
+                        break;
                 }
             case MESSAGE_TOAST: // Deprecated
-                l(new String((byte[])msg.obj));
+                // l(new String(msg.obj));
                 break;
             case MESSAGE_CONNECTED: // A device has connected
                 connectButton.setImageResource(R.drawable.ic_network_wifi);

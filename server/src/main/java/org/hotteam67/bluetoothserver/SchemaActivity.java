@@ -5,17 +5,22 @@ import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
@@ -40,6 +45,19 @@ public class SchemaActivity extends AppCompatActivity {
             case android.R.id.home:
                 doConfirmEnd();
                 return true;
+            case R.id.menuItemDeleteAll:
+                final Context c = this;
+                Constants.OnConfirm("Delete All?", this, new Runnable() {
+                    @Override
+                    public void run() {
+                        schema = "";
+                        SchemaHandler.Setup(
+                                (TableLayout) findViewById(R.id.scoutLayout),
+                                schema,
+                                c);
+                    }
+                });
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -56,14 +74,23 @@ public class SchemaActivity extends AppCompatActivity {
 
     private void doConfirmEnd()
     {
+        /*
         Constants.OnConfirm("Are you sure you want to quit?", this, new Runnable() {
             @Override
             public void run() {
                 finish();
             }
         });
+        */
+        finish();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.menu_schema, menu);
+        return true;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,6 +105,18 @@ public class SchemaActivity extends AppCompatActivity {
         Button booleanButton;
         Button headerButton;
         Button deleteButton;
+
+        ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView);
+        scrollView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
+        scrollView.setFocusable(true);
+        scrollView.setFocusableInTouchMode(true);
+        scrollView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                v.requestFocusFromTouch();
+                return false;
+            }
+        });
 
         final TableLayout tableLayout = (TableLayout) findViewById(R.id.scoutLayout);
 

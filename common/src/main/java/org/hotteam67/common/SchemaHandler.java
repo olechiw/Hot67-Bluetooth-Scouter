@@ -49,21 +49,26 @@ public final class SchemaHandler
         List<SchemaVariable> variables = GetVariables(schema);
         List<View> views = new ArrayList<>();
 
+        // Obtain the final list of views to organize
         for (SchemaVariable v : variables)
         {
             views.add(GetView(v, context));
         }
 
+        // Measure screen
         DisplayMetrics metrics = new DisplayMetrics();
         ((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
         List<TableRow> rows = new ArrayList<>();
 
+        // Calculate column width
         int columnWidth = MeasureColumnWidth(views);
         int maxColumns = metrics.widthPixels / columnWidth;
+
+
         int currentColumn = 0;
         int totalViews = 0;
-        while (totalViews + 1 < views.size())
+        while (totalViews < views.size())
         {
             TableRow row = new TableRow(context);
             if (variables.get(totalViews).Type == Constants.TYPE_HEADER)
