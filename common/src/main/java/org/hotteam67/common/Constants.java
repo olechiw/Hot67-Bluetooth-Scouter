@@ -37,8 +37,8 @@ public class Constants
     public static final String PREF_PASSWORD = "pref_password";
     public static final String PREF_EVENTNAME = "pref_eventName";
 
-    public static String MATCH_NUMBER_JSON_TAG = "matchNumber";
-    public static String TEAM_NUMBER_JSON_TAG = "teamNumber";
+    public static String MATCH_NUMBER_JSON_TAG = "Match Number";
+    public static String TEAM_NUMBER_JSON_TAG = "Team Number";
 
     public static String getTag(String s)
     {

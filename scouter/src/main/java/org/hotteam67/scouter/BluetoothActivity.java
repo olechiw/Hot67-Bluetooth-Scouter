@@ -345,7 +345,7 @@ public class BluetoothActivity extends AppCompatActivity {
         if (!Destroyed())
         {
             l("Storing socket in connected devices");
-            ConnectedThread connectedThread = new ConnectedThread(socket);
+            connectedThread = new ConnectedThread(socket);
             connectedThread.start();
             msgToast("CONNECTED!");
             MSG(MESSAGE_CONNECTED);
@@ -366,6 +366,7 @@ public class BluetoothActivity extends AppCompatActivity {
         catch (Exception e)
         {
             l("Failed to write: Exception: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -383,8 +384,7 @@ public class BluetoothActivity extends AppCompatActivity {
         {
             case MESSAGE_INPUT:
 
-                byte[] info = (byte[]) msg.obj;
-                String message = new String(info);
+                String message = (String) msg.obj;
                 //m_sendButton.setText(message);
 
                 inputEvent.call(message);
@@ -418,8 +418,10 @@ public class BluetoothActivity extends AppCompatActivity {
         Destroyed(true);
         if (bluetoothFailed)
             return;
-        connectedThread.close();
-        connectedThread.interrupt();
+        if (connectedThread != null) {
+            connectedThread.close();
+            connectedThread.interrupt();
+        }
 
     }
 

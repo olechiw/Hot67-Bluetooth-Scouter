@@ -421,7 +421,7 @@ public class ScoutActivity extends BluetoothActivity
         }
         catch (Exception e)
         {
-            l("Failure to load and parse csv match ot json: " + match);
+            l("Failure to load and parse csv match to json: " + match);
             e.printStackTrace();
         }
     }
@@ -566,7 +566,7 @@ public class ScoutActivity extends BluetoothActivity
                 final String tag =
                         Constants.getScouterInputTag(new String((byte[]) msg.obj));
 
-                if (tag == Constants.SCOUTER_SCHEMA_TAG)
+                if (tag.equals(Constants.SCOUTER_SCHEMA_TAG))
                 {
                     final Context c = this;
                     // Show a confirmation dialog
@@ -581,7 +581,7 @@ public class ScoutActivity extends BluetoothActivity
                         }
                     });
                 }
-                else if (tag == Constants.SCOUTER_TEAMS_TAG)
+                else if (tag.equals(Constants.SCOUTER_TEAMS_TAG))
                 {
                     // Show a confirmation dialog
                     Constants.OnConfirm("Received new teams, clear local database?", this, new Runnable() {

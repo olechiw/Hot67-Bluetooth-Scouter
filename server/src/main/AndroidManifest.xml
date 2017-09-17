@@ -27,7 +27,7 @@
         <activity
             android:name="org.hotteam67.bluetoothserver.PreferencesActivity"
             android:label="@string/title_activity_preferences"></activity>
-        <activity android:name="org.hotteam67.scouter.SchemaActivity"></activity>
+        <activity android:name="org.hotteam67.bluetoothserver.SchemaActivity"></activity>
     </application>
 
 </manifest>

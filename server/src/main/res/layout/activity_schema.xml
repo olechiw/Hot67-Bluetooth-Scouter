@@ -1,9 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.widget.RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.hotteam67.scouter.SchemaActivity">
+    tools:context="org.hotteam67.bluetoothserver.SchemaActivity">
+    <android.support.v7.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="?attr/colorPrimary"
+        android:minHeight="70dp"
+        android:id="@+id/toolbar">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textAppearance="@style/TextAppearance.AppCompat"
+            android:text="Schema Setup"/>
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleX=".4"
+            android:scaleY=".4"
+            android:layout_gravity="end"
+            android:src="@drawable/ic_save"
+            android:id="@+id/saveButton"
+            android:background="?attr/colorPrimary"/>
+    </android.support.v7.widget.Toolbar>
 
-</android.support.constraint.ConstraintLayout>
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="*"
+        android:id="@+id/buttonsTable"
+        android:layout_below="@+id/toolbar">
+        <TableRow>
+            <Button
+                android:id="@+id/booleanButton"
+                android:text="Boolean" />
+
+            <Button
+                android:id="@+id/numberButton"
+                android:text="Number"/>
+        </TableRow>
+        <TableRow>
+            <Button
+                android:id="@+id/headerButton"
+                android:text="Header" />
+            <Button
+                android:id="@+id/deleteButton"
+                android:text="Delete"/>
+        </TableRow>
+
+    </TableLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:layout_below="@+id/buttonsTable"
+        android:scrollbarAlwaysDrawHorizontalTrack="true"
+        android:fadeScrollbars="false"
+        android:layout_marginTop="8dp"
+        android:id="@+id/scrollView">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Match Number:"
+                android:textAppearance="@style/TextAppearance.AppCompat"/>
+            <EditText
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:inputType="number"
+                android:layout_height="wrap_content"
+                android:id="@+id/matchNumberText"
+                android:hint="Match Number"/>
+            <TableLayout
+                android:id="@+id/scoutLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:stretchColumns="*"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/notesLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:text="Notes: "
+                    android:textAppearance="@style/TextAppearance.AppCompat.Headline"/>
+
+                <EditText
+                    android:id="@+id/notes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/notesLabel"
+                    android:layout_centerHorizontal="true"/>
+                <!--
+                   <Button
+                       android:id="@+id/sendConfigurationButton"
+                       android:layout_width="match_parent"
+                       android:layout_height="100dp"
+                       android:layout_centerHorizontal="true"
+                       android:layout_below="@id/notes"
+                       android:padding="15dp"
+                       android:text="Send"/>
+                   -->
+            </RelativeLayout>
+        </LinearLayout>
+    </ScrollView>
+
+
+</android.widget.RelativeLayout>

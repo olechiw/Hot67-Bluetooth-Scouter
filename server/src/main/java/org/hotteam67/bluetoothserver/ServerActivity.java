@@ -42,13 +42,14 @@ import com.google.gson.Gson;
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
-import org.hotteam67.scouter.SchemaActivity;
 import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -500,12 +501,11 @@ public class ServerActivity extends AppCompatActivity {
         switch (msg.what) {
             case MESSAGE_INPUT:
 
-                byte[] info = (byte[]) msg.obj;
-                String message = new String(info);
+                String message = (String) msg.obj;
                 //m_sendButton.setText(message);
 
                 try {
-                    UploadJson(new JSONObject(message));
+                    UploadJson((JSONObject) new JSONParser().parse(message));
                 } catch (Exception e) {
                     l("Failed to load and send input json, most likely not logged in:" + message);
                     e.printStackTrace();
@@ -521,18 +521,19 @@ public class ServerActivity extends AppCompatActivity {
             case MESSAGE_CONNECTED:
                 l("Received Connect");
                 VisualLog("Device Connected!");
-                connectedDevicesText.setText(String.valueOf(connectedThreads.size()));
+                connectedDevicesText.setText("Connected Devices: " + String.valueOf(connectedThreads.size()));
+
                 break;
             case MESSAGE_DISCONNECTED:
                 //toast("DISCONNECTED FROM DEVICE");
                 l("Received Disconnect");
                 VisualLog("Device Disconnected!");
-                connectedDevicesText.setText(String.valueOf(connectedThreads.size()));
+                connectedDevicesText.setText("Connected Devices: " + String.valueOf(connectedThreads.size()));
                 break;
         }
     }
 
-    private void UploadJson(JSONObject json) throws JSONException
+    private void UploadJson(JSONObject json) throws JSONException, IOException
     {
         DatabaseReference ref = database.getReference();
 
@@ -548,11 +549,15 @@ public class ServerActivity extends AppCompatActivity {
                 json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() +
                         json.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
         l(tag);
-        String output = new Gson().toJson(json);
         ref
                 .child(eventName)
                 .child(tag)
-                .setValue(output);
+                .setValue(json);
+
+        VisualLog("Received Match Number: "
+                + json.get(Constants.MATCH_NUMBER_JSON_TAG)
+                + " For Team Number: "
+                + json.get(Constants.TEAM_NUMBER_JSON_TAG));
     }
 
 
@@ -683,6 +688,7 @@ public class ServerActivity extends AppCompatActivity {
             }
             l("Connected Thread Ended!!!");
             disconnect(id);
+            MSG(MESSAGE_DISCONNECTED);
         }
 
         private boolean read(InputStream stream)
@@ -701,7 +707,6 @@ public class ServerActivity extends AppCompatActivity {
             catch (java.io.IOException e)
             {
                 Log.d("[Bluetooth]", "Input stream disconnected", e);
-                MSG(MESSAGE_DISCONNECTED);
                 return false;
             }
         }
