@@ -35,7 +35,10 @@ public class Constants
 
     public static final String PREF_EMAIL = "pref_email";
     public static final String PREF_PASSWORD = "pref_password";
+    public static final String PREF_APIKEY = "pref_apiKey";
     public static final String PREF_EVENTNAME = "pref_eventName";
+    public static final String PREF_DATABASEURL = "pref_databaseUrl";
+
 
     public static String MATCH_NUMBER_JSON_TAG = "Match Number";
     public static String TEAM_NUMBER_JSON_TAG = "Team Number";
