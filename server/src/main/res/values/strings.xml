@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BluetoothServer</string>
+    <string name="app_name">Server</string>
     <string name="title_activity_preferences">Preferences</string>
 
     <!-- Strings related to Settings -->
