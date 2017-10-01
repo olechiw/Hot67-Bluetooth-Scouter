@@ -4,4 +4,4 @@ and a wireless LTE network to scout teams, load them into json, update the remot
 
 For a browser for the firebase database, try here: https://github.com/pianist1119/BluetoothScouterPits/
 
-Note for setup: All email/password stuff is configurble, but you must build the server with your google-services.json to use this with YOUR firebase database.
+Note for setup: All email/password stuff is configurable, but you must build the server with your google-services.json to use this with YOUR firebase database.
