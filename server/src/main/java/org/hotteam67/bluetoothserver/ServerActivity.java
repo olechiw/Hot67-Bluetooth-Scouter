@@ -558,7 +558,7 @@ public class ServerActivity extends AppCompatActivity {
         //
         // This is simply to make sure no duplicate matches are recorded for any team
         String tag =
-                json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() +
+                json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_"
                         json.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
         l(tag);
         ref
