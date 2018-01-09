@@ -34,6 +34,9 @@ import com.cpjd.main.TBA;
 import com.cpjd.models.Event;
 import com.cpjd.models.Match;
 import com.example.bluetoothserver.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -460,19 +463,22 @@ public class ServerActivity extends AppCompatActivity {
     {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         eventName = (String) prefs.getAll().get(Constants.PREF_EVENTNAME);
-        String email = (String) prefs.getAll().get(Constants.PREF_EMAIL);
-        String password = (String) prefs.getAll().get(Constants.PREF_PASSWORD);
+        final String email = (String) prefs.getAll().get(Constants.PREF_EMAIL);
+        final String password = (String) prefs.getAll().get(Constants.PREF_PASSWORD);
 
-        try {
-            authentication.signInWithEmailAndPassword(email, password);
-            VisualLog("Firebase Login Successful");
-        }
-        catch (Exception e)
-        {
-            VisualLog("Failed to Login to Firebase");
-            l("Invalid username or password used! Email: " + email + " Password: " + password);
-            l("Error occured:" + e.getMessage());
-        }
+        authentication.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful())
+                            VisualLog("Firebase Login Successful");
+                        else
+                        {
+                            VisualLog("Failed to Login to Firebase");
+                            l("Failed to login with email and password:" + email + "and" + password);
+                        }
+                    }
+                });
     }
 
     // Initialize the accept bluetooth connections thread
@@ -558,7 +564,7 @@ public class ServerActivity extends AppCompatActivity {
         //
         // This is simply to make sure no duplicate matches are recorded for any team
         String tag =
-                json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_"
+                json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
                         json.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
         l(tag);
         ref
