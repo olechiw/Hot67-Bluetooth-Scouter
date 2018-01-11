@@ -310,12 +310,7 @@ public class BluetoothActivity extends AppCompatActivity {
 
             if (requestCode==1)
             {
-                if (resultCode==RESULT_OK)
-                {
-                    bluetoothFailed = false;
-                }
-                else
-                    bluetoothFailed = true;
+                bluetoothFailed = resultCode != RESULT_OK;
             }
     }
 

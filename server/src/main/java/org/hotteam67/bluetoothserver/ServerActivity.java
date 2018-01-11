@@ -418,12 +418,7 @@ public class ServerActivity extends AppCompatActivity {
 
         if (requestCode==REQUEST_BLUETOOTH)
         {
-            if (resultCode==RESULT_OK)
-            {
-                bluetoothFailed = false;
-            }
-            else
-                bluetoothFailed = true;
+            bluetoothFailed = resultCode != RESULT_OK;
             setupThreads();
         }
         else if (requestCode==REQUEST_PREFERENCES)
@@ -507,7 +502,7 @@ public class ServerActivity extends AppCompatActivity {
         else
             l("Attempted to setup threads, but bluetooth setup has failed");
     }
-    
+
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     FirebaseAuth authentication = FirebaseAuth.getInstance();
     String eventName;
@@ -535,6 +530,24 @@ public class ServerActivity extends AppCompatActivity {
                 String message = (String) msg.obj;
                 if (message == null || message.trim().isEmpty())
                     return;
+
+                int id = msg.arg2; // The id of the thread received from
+                // Send a "message received" in the form of a match tag
+                try
+                {
+                    // Send on the connected thread
+                    connectedThreads.get(id).write(Constants.SERVER_TEAMS_RECEIVED_TAG.getBytes());
+                }
+                catch (IndexOutOfBoundsException e)
+                {
+                    e.printStackTrace();
+                    l("Failed to find connected thread: " + id + " was it disposed?");
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                    l("Exception occured in trying to write team received tag: " + e.getMessage());
+                }
                 //m_sendButton.setText(message);
 
                 serverMatches.add(message);
@@ -735,7 +748,7 @@ public class ServerActivity extends AppCompatActivity {
 
                 l("Reading Bytes of Length:" + numBytes);
 
-                m_handler.obtainMessage(MESSAGE_INPUT, numBytes, -1, new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "")).sendToTarget();
+                m_handler.obtainMessage(MESSAGE_INPUT, numBytes, id, new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "")).sendToTarget();
                 return true;
             }
             catch (java.io.IOException e)

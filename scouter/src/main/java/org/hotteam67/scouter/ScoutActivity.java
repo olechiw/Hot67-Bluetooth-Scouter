@@ -57,6 +57,8 @@ public class ScoutActivity extends BluetoothActivity
 
     GestureDetectorCompat gestureDetectorCompat;
 
+    List<String> queuedMatchesToSend = new ArrayList<>();
+
     /*
     GridView scoutLayout;
     org.hotteam67.bluetoothscouter.ScoutInputAdapter scoutInputAdapter;
@@ -179,20 +181,21 @@ public class ScoutActivity extends BluetoothActivity
             public void onClick(View v)
             {
                 // toast("Matches sending: " + matches.size());
-                for (String match : matches)
-                {
-                    SendJsonValues(match);
-                    /*
-                    try {
-                        Thread.sleep(1000);
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-                    */
+
+                if (!(matches.size() > 1))
+                    return;
+
+                if (matches.size() == 1) {
+                    SendJsonValues(queuedMatchesToSend.get(0));
+                    toast("Sent 1 match");
                 }
-                toast("Sent all scouted data to server!");
+                else
+                {
+                    queuedMatchesToSend = new ArrayList<>(matches.subList(1, matches.size() - 1));
+                    SendJsonValues(matches.get(0));
+                    toast("Sent 1 match, queued " + queuedMatchesToSend.size() + " matches");
+                }
+
             }
         });
 
@@ -566,43 +569,59 @@ public class ScoutActivity extends BluetoothActivity
         switch (msg.what)
         {
             case MESSAGE_INPUT: // Input received through bluetooth
-                final String message =
-                        Constants.getScouterInputWithoutTag((String) msg.obj);
-                final String tag =
-                        Constants.getScouterInputTag((String) msg.obj);
+                try {
+                    final String message =
+                            Constants.getScouterInputWithoutTag((String) msg.obj);
+                    final String tag =
+                            Constants.getScouterInputTag((String) msg.obj);
 
-                switch (tag) {
-                    case Constants.SCOUTER_SCHEMA_TAG:
-                        final Context c = this;
-                        // Show a confirmation dialog
-                        Constants.OnConfirm("Received new schema, clear local schema?", this, new Runnable() {
-                            @Override
-                            public void run() {
-                                FileHandler.Write(FileHandler.SCHEMA, message);
-                                SchemaHandler.Setup(
-                                        inputTable, // Table to setup the new schema on
-                                        SchemaHandler.LoadSchemaFromFile(), // Schema text
-                                        c); // Context
-                            }
-                        });
-                        break;
-                    case Constants.SCOUTER_TEAMS_TAG:
-                        // Show a confirmation dialog
-                        Constants.OnConfirm("Received new teams, clear local database?", this, new Runnable() {
-                            @Override
-                            public void run() {
-                                teams = new ArrayList<>(Arrays.asList(message.split(",")));
-                                matches = new ArrayList<>();
-                                clearMatches();
-                                SchemaHandler.ClearCurrentValues(inputTable);
-                                loadMatch(1);
-                            }
-                        });
-                        break;
-                    default:
-                        l("Received unknown tag: " + tag);
-                        break;
+                    if (message.equals(Constants.SERVER_TEAMS_RECEIVED_TAG)
+                            &&
+                            (queuedMatchesToSend.size() > 0))
+                    {
+                        SendJsonValues(queuedMatchesToSend.get(0));
+                        queuedMatchesToSend.remove(0);
+                    }
+
+                    switch (tag) {
+                        case Constants.SCOUTER_SCHEMA_TAG:
+                            final Context c = this;
+                            // Show a confirmation dialog
+                            Constants.OnConfirm("Received new schema, clear local schema?", this, new Runnable() {
+                                @Override
+                                public void run() {
+                                    FileHandler.Write(FileHandler.SCHEMA, message);
+                                    SchemaHandler.Setup(
+                                            inputTable, // Table to setup the new schema on
+                                            SchemaHandler.LoadSchemaFromFile(), // Schema text
+                                            c); // Context
+                                }
+                            });
+                            break;
+                        case Constants.SCOUTER_TEAMS_TAG:
+                            // Show a confirmation dialog
+                            Constants.OnConfirm("Received new teams, clear local database?", this, new Runnable() {
+                                @Override
+                                public void run() {
+                                    teams = new ArrayList<>(Arrays.asList(message.split(",")));
+                                    matches = new ArrayList<>();
+                                    clearMatches();
+                                    SchemaHandler.ClearCurrentValues(inputTable);
+                                    loadMatch(1);
+                                }
+                            });
+                            break;
+                        default:
+                            l("Received unknown tag: " + tag);
+                            break;
+                    }
                 }
+                catch (Exception e)
+                {
+                    l("Failed to load processed input: " + e.getMessage());
+                    e.printStackTrace();
+                }
+                break;
             case MESSAGE_TOAST: // Deprecated
                 // l(new String(msg.obj));
                 break;

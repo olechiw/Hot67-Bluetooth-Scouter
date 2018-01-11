@@ -13,13 +13,14 @@ import java.util.UUID;
 
 public class Constants
 {
-    public static final int SCOUTER_TAG_LENGTH = 8;
-    public static final String SCOUTER_TEAMS_TAG =      ":TEAM:  ";
-    public static final String SCOUTER_SCHEMA_TAG =     ":SCHEMA:";
+    public static final int SCOUTER_TAG_LENGTH = 10;
+    public static final String SCOUTER_TEAMS_TAG =          ":TEAM:,,,,";
+    public static final String SCOUTER_SCHEMA_TAG =         ":SCHEMA:,,";
+    public static final String SERVER_TEAMS_RECEIVED_TAG =  ":HEARD:,,,";
 
     public static String getScouterInputTag(String input)
     {
-        return input.substring(0, SCOUTER_TAG_LENGTH);
+        return input.substring(0, SCOUTER_TAG_LENGTH - 1);
     }
 
     public static String getScouterInputWithoutTag(String input)
