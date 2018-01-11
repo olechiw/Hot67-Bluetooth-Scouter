@@ -343,7 +343,7 @@ public class ScoutActivity extends BluetoothActivity
     {
         try
         {
-            FileHandler.Write(FileHandler.MATCHES, "");
+            FileHandler.Write(FileHandler.SCOUTER_DATABASE, "");
         }
         catch (Exception e)
         {
@@ -380,7 +380,7 @@ public class ScoutActivity extends BluetoothActivity
             i++;
         }
         // l("Writing output to matches file: " + output);
-        FileHandler.Write(FileHandler.MATCHES, output);
+        FileHandler.Write(FileHandler.SCOUTER_DATABASE, output);
 
         SendJsonValues(matches.get(currentMatch() - 1));
     }
@@ -543,7 +543,7 @@ public class ScoutActivity extends BluetoothActivity
     {
         try
         {
-            BufferedReader r = FileHandler.GetReader(FileHandler.MATCHES);
+            BufferedReader r = FileHandler.GetReader(FileHandler.SCOUTER_DATABASE);
             String line = r.readLine();
             while (line != null)
             {

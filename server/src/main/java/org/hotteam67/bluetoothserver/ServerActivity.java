@@ -40,7 +40,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.gson.Gson;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
@@ -52,7 +51,6 @@ import org.json.simple.parser.JSONParser;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -97,6 +95,8 @@ public class ServerActivity extends AppCompatActivity {
     // Bluetooth hardware adapter
     protected BluetoothAdapter m_bluetoothAdapter;
 
+    // List of matches in memory, stored as they are received, just a bunch of lines
+    private List<String> serverMatches = new ArrayList<>();
 
     // Display a popup box (not a toast, LOL)
     protected void toast(String text)
@@ -138,6 +138,12 @@ public class ServerActivity extends AppCompatActivity {
                 handle(msg);
             }
         };
+
+        // Load contents of matches file
+        String file = FileHandler.LoadContents(FileHandler.SERVER_DATABASE);
+        if (file != null && !file.trim().isEmpty())
+            for (String s : file.split("\n"))
+                serverMatches.add(s);
 
         setupPermissions();
     }
@@ -245,7 +251,7 @@ public class ServerActivity extends AppCompatActivity {
         });
 
 
-        final Context c = this;
+        // Classic useless feature
         downloadMatchesButton.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
@@ -311,7 +317,7 @@ public class ServerActivity extends AppCompatActivity {
                             s += "\n";
                         }
                     }
-                    FileHandler.Write(FileHandler.MATCHES, s);
+                    FileHandler.Write(FileHandler.SERVER_MATCHES, s);
                 }
                 catch (Exception e)
                 {
@@ -329,6 +335,8 @@ public class ServerActivity extends AppCompatActivity {
         }).setTitle("Enter Match Key:").create().show();
     }
 
+
+    // Loads all of the loaded matches, split into 6 devices, and then sends them as one giant string
     private void sendEventMatches()
     {
         Constants.OnConfirm("Send Matches?", this, new Runnable() {
@@ -348,7 +356,7 @@ public class ServerActivity extends AppCompatActivity {
                     List<String> matches =
                             new ArrayList<>(
                                     Arrays.asList(
-                                            FileHandler.LoadContents(FileHandler.MATCHES)
+                                            FileHandler.LoadContents(FileHandler.SERVER_MATCHES)
                                                     .split("\n")
                                     )
                             );
@@ -421,7 +429,7 @@ public class ServerActivity extends AppCompatActivity {
         else if (requestCode==REQUEST_PREFERENCES)
         {
             refreshFirebaseAuth();
-            if (eventName.trim().isEmpty())
+            if (eventName == null || eventName.trim().isEmpty())
                 eventName = "DefaultEvent";
         }
     }
@@ -465,20 +473,25 @@ public class ServerActivity extends AppCompatActivity {
         eventName = (String) prefs.getAll().get(Constants.PREF_EVENTNAME);
         final String email = (String) prefs.getAll().get(Constants.PREF_EMAIL);
         final String password = (String) prefs.getAll().get(Constants.PREF_PASSWORD);
-
-        authentication.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful())
-                            VisualLog("Firebase Login Successful");
-                        else
-                        {
-                            VisualLog("Failed to Login to Firebase");
-                            l("Failed to login with email and password:" + email + "and" + password);
+        try {
+            authentication.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful())
+                                VisualLog("Firebase Login Successful");
+                            else {
+                                VisualLog("Failed to Login to Firebase");
+                                l("Failed to login with email and password:" + email + " and " + password);
+                            }
                         }
-                    }
-                });
+                    });
+        }
+        catch (Exception e)
+        {
+            VisualLog("Failed to Login to Firebase");
+            l("Failed to login with email and password: " + email + " and " + password);
+        }
     }
 
     // Initialize the accept bluetooth connections thread
@@ -520,8 +533,11 @@ public class ServerActivity extends AppCompatActivity {
             case MESSAGE_INPUT:
 
                 String message = (String) msg.obj;
+                if (message == null || message.trim().isEmpty())
+                    return;
                 //m_sendButton.setText(message);
 
+                serverMatches.add(message);
                 try {
                     UploadJson((JSONObject) new JSONParser().parse(message));
                 } catch (Exception e) {
@@ -826,6 +842,13 @@ public class ServerActivity extends AppCompatActivity {
             thread.close();
             thread.interrupt();
         }
+
+        // Save server matches
+        String matchesFileContent = "";
+        for (String match : serverMatches)
+            matchesFileContent += match + "\n";
+        FileHandler.Write(FileHandler.SERVER_DATABASE, matchesFileContent);
+
 
     }
 }

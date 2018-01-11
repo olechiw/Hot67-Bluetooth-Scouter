@@ -16,18 +16,18 @@ import java.io.FileWriter;
 
 public final class FileHandler
 {
-    private static final String SERVER_FILE = "database.csv";
+    private static final String SERVER_FILE = "serverDatabase.csv";
     private static final String SCHEMA_FILE = "schema.csv";
-    private static final String SCOUTER_FILE = "localdatabase.csv";
-    private static final String MATCHES_FILE = "matches.csv";
+    private static final String SCOUTER_FILE = "scouterDatabase.csv";
+    private static final String MATCHES_FILE = "serverMatches.csv";
     private static final String DIRECTORY =
             Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
 
 
-    public static final int SERVER = 1;
+    public static final int SERVER_DATABASE = 1;
     public static final int SCHEMA = 2;
-    public static final int SCOUTER = 3;
-    public static final int MATCHES = 4;
+    public static final int SCOUTER_DATABASE = 3;
+    public static final int SERVER_MATCHES = 4;
 
 
     private static String file(int FILE)
@@ -35,16 +35,16 @@ public final class FileHandler
         String f = DIRECTORY;
         switch (FILE)
         {
-            case SERVER:
+            case SERVER_DATABASE:
                 f += SERVER_FILE;
                 break;
             case SCHEMA:
                 f += SCHEMA_FILE;
                 break;
-            case SCOUTER:
+            case SCOUTER_DATABASE:
                 f += SCOUTER_FILE;
                 break;
-            case MATCHES:
+            case SERVER_MATCHES:
                 f += MATCHES_FILE;
                 break;
             default:
