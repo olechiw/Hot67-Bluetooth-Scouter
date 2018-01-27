@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -37,10 +38,14 @@ import com.example.bluetoothserver.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.gson.Gson;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.HTTP;
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
@@ -48,9 +53,16 @@ import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -421,12 +433,6 @@ public class ServerActivity extends AppCompatActivity {
             bluetoothFailed = resultCode != RESULT_OK;
             setupThreads();
         }
-        else if (requestCode==REQUEST_PREFERENCES)
-        {
-            refreshFirebaseAuth();
-            if (eventName == null || eventName.trim().isEmpty())
-                eventName = "DefaultEvent";
-        }
     }
 
     private void setupPermissions()
@@ -464,29 +470,6 @@ public class ServerActivity extends AppCompatActivity {
 
     private void refreshFirebaseAuth()
     {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        eventName = (String) prefs.getAll().get(Constants.PREF_EVENTNAME);
-        final String email = (String) prefs.getAll().get(Constants.PREF_EMAIL);
-        final String password = (String) prefs.getAll().get(Constants.PREF_PASSWORD);
-        try {
-            authentication.signInWithEmailAndPassword(email, password)
-                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful())
-                                VisualLog("Firebase Login Successful");
-                            else {
-                                VisualLog("Failed to Login to Firebase");
-                                l("Failed to login with email and password:" + email + " and " + password);
-                            }
-                        }
-                    });
-        }
-        catch (Exception e)
-        {
-            VisualLog("Failed to Login to Firebase");
-            l("Failed to login with email and password: " + email + " and " + password);
-        }
     }
 
     // Initialize the accept bluetooth connections thread
@@ -502,10 +485,6 @@ public class ServerActivity extends AppCompatActivity {
         else
             l("Attempted to setup threads, but bluetooth setup has failed");
     }
-
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    FirebaseAuth authentication = FirebaseAuth.getInstance();
-    String eventName;
 
     // Configure the current scouting schema and database connection
     private void configure()
@@ -582,29 +561,94 @@ public class ServerActivity extends AppCompatActivity {
 
     private void UploadJson(JSONObject json) throws JSONException, IOException
     {
-        DatabaseReference ref = database.getReference();
+        AsyncUploadTask uploadTask = new AsyncUploadTask();
+        uploadTask.execute(json);
+    }
+
+    private final Context context = this;
+    private class AsyncUploadTask extends AsyncTask<JSONObject, Void, JSONObject> {
+        protected JSONObject doInBackground(JSONObject... json)
+        {
+            try {
+                // Each individual match gets a tag, with the team number then match number,
+                // so unique for every team's match. For instance:
+                //
+                // 671 for team 67 match one,
+                // or 204815 for team 2048 match 15
+                //
+                // This is simply to make sure no duplicate matches are recorded for any team
+                String tag =
+                        json[0].get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
+                                json[0].get(Constants.MATCH_NUMBER_JSON_TAG).toString();
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                String eventname = (String) prefs.getAll().get(Constants.PREF_EVENTNAME);
+                String eventUrl = (String) prefs.getAll().get(Constants.PREF_DATABASEURL);
+                String apiKey = (String) prefs.getAll().get(Constants.PREF_APIKEY);
+                l(tag);
+                if (!eventUrl.endsWith("/")) eventUrl += "/";
+
+                JSONObject outputObject = json[0];
+                JSONObject tmpObject = new JSONObject();
+                tmpObject.put(tag, outputObject);
+                outputObject = tmpObject;
+
+                String url;
+
+                // Test for eventName
+                /*
+                HttpURLConnection testConn = (HttpURLConnection) new URL(eventUrl + eventname)
+                        .openConnection();
+                if (testConn.getResponseCode() != HttpURLConnection.HTTP_OK)
+                {
+                    JSONObject tmp = new JSONObject();
+                    tmp.put(eventname, outputObject);
+                    outputObject = tmp;
+                    url = eventUrl;
+                }
+                else
+                {
+                    url = eventUrl + eventname;
+                }*/
+
+                url = eventUrl + eventname + ".json?auth=" + apiKey;
+
+                String jsonString = outputObject.toJSONString();
+                Log.d("BluetoothScouter", "Outputting json: " + jsonString);
+
+                HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+                conn.setRequestMethod("PUT");
+                conn.setDoOutput(true);
+
+                try{
+                    conn.getOutputStream().write(jsonString.getBytes());
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
 
 
-        // Each individual match gets a tag, with the team number then match number,
-        // so unique for every team's match. For instance:
-        //
-        // 671 for team 67 match one,
-        // or 204815 for team 2048 match 15
-        //
-        // This is simply to make sure no duplicate matches are recorded for any team
-        String tag =
-                json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
-                        json.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
-        l(tag);
-        ref
-                .child(eventName)
-                .child(tag)
-                .setValue(json);
+                Log.d("BLUETOOTH_SCOUTER", "Sending request to url: "
+                        + url + "\n Received response code: " + conn.getResponseCode());
 
-        VisualLog("Received Match Number: "
-                + json.get(Constants.MATCH_NUMBER_JSON_TAG)
-                + " For Team Number: "
-                + json.get(Constants.TEAM_NUMBER_JSON_TAG));
+                String resp = conn.getResponseMessage();
+                Log.d("BLUETOOTH_SCOUTER", "Response: " + resp);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            return json[0];
+        }
+
+        protected void onPostExecute(JSONObject j)
+        {
+            VisualLog("Received Match Number: "
+                    + j.get(Constants.MATCH_NUMBER_JSON_TAG)
+                    + " For Team Number: "
+                    + j.get(Constants.TEAM_NUMBER_JSON_TAG));
+        }
     }
 
 
@@ -630,8 +674,6 @@ public class ServerActivity extends AppCompatActivity {
 
         public void run()
         {
-            BluetoothSocket s = null;
-
             while (!Thread.currentThread().isInterrupted())
             {
                 BluetoothSocket conn = null;

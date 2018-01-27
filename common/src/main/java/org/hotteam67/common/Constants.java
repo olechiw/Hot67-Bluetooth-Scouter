@@ -28,14 +28,11 @@ public class Constants
         return input.substring(SCOUTER_TAG_LENGTH, input.length());
     }
 
-    public static final int PADDING =       0;
     public static final int TYPE_HEADER =   1;
     public static final int TYPE_BOOLEAN =  2;
     public static final int TYPE_INTEGER =  3;
     public static final int TYPE_STRING =   4;
 
-    public static final String PREF_EMAIL = "pref_email";
-    public static final String PREF_PASSWORD = "pref_password";
     public static final String PREF_APIKEY = "pref_apiKey";
     public static final String PREF_EVENTNAME = "pref_eventName";
     public static final String PREF_DATABASEURL = "pref_databaseUrl";

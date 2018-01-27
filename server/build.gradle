@@ -14,12 +14,23 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         vectorDrawables.useSupportLibrary = true
+        multiDexEnabled = true;
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
     }
 }
 
@@ -32,9 +43,10 @@ dependencies {
     compile files('src/TBA-API.jar')
     compile files('src/json-simple-1.1.1.jar')
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'com.google.firebase:firebase-core:11.2.0'
-    compile 'com.google.firebase:firebase-auth:11.2.0'
-    compile 'com.google.firebase:firebase-database:11.2.0'
+    compile (group: 'org.apache.httpcomponents' , name: 'httpmime' , version: '4.3.5') {
+        exclude module: 'org.apache.httpcomponents:httpclient'
+    }
+
     compile 'com.android.support:support-v4:26.0.0'
     compile 'com.android.support:support-vector-drawable:26.0.0'
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
