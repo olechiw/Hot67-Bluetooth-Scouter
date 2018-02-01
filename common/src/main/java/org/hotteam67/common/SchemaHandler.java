@@ -52,8 +52,12 @@ public final class SchemaHandler
         // Obtain the final list of views to organize
         for (SchemaVariable v : variables)
         {
-            views.add(GetView(v, context));
+            if (v != null)
+                views.add(GetView(v, context));
         }
+
+        if (views.size() == 0)
+            return new ArrayList<>();
 
         // Measure screen
         DisplayMetrics metrics = new DisplayMetrics();
@@ -139,7 +143,8 @@ public final class SchemaHandler
         table.removeAllViews();
         for (View v : GetRows(schema, context))
         {
-            table.addView(v);
+            if (v != null)
+                table.addView(v);
         }
     }
 
@@ -305,6 +310,8 @@ public final class SchemaHandler
     public static View GetView(SchemaVariable variable, Context c)
     {
         View v = null;
+        if (variable == null)
+            return null;
         switch (variable.Type)
         {
             case Constants.TYPE_BOOLEAN:
