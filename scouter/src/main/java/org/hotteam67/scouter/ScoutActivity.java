@@ -51,20 +51,18 @@ public class ScoutActivity extends BluetoothActivity
     EditText teamNumber;
     EditText matchNumber;
 
-    EditText notes;
-
     Toolbar toolbar;
 
     GestureDetectorCompat gestureDetectorCompat;
 
     List<String> queuedMatchesToSend = new ArrayList<>();
 
+    String matchValuesOnLoad;
+
     /*
     GridView scoutLayout;
     org.hotteam67.bluetoothscouter.ScoutInputAdapter scoutInputAdapter;
     */
-    //ScoutGridLayout scoutGridLayout;
-    // SectionedView scoutGridLayout;
     TableLayout inputTable;
 
     List<String> matches = new ArrayList<>();
@@ -76,7 +74,7 @@ public class ScoutActivity extends BluetoothActivity
         switch (item.getItemId())
         {
             case android.R.id.home:
-                doConfirmEnd();
+                confirmActivityEnd();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -87,12 +85,12 @@ public class ScoutActivity extends BluetoothActivity
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
             android.util.Log.d(this.getClass().getName(), "back button pressed");
-            doConfirmEnd();
+            confirmActivityEnd();
         }
         return super.onKeyDown(keyCode, event);
     }
 
-    private void doConfirmEnd()
+    private void confirmActivityEnd()
     {
         Constants.OnConfirm("Are you sure you want to quit?", this, new Runnable() {
             @Override
@@ -107,11 +105,11 @@ public class ScoutActivity extends BluetoothActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scout);
 
-        setupPermissions();
+        setupPreBluetooth();
 
     }
 
-    private void setupUI()
+    private void setupPostBluetooth()
     {
         toolbar = (Toolbar) findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
@@ -145,10 +143,6 @@ public class ScoutActivity extends BluetoothActivity
             }
         };
 
-
-        notes = (EditText) findViewById(R.id.notes);
-        notes.setFilters(new InputFilter[] { filter });
-
         matchNumber = (EditText) findViewById(R.id.matchNumberText);
 
         inputTable = (TableLayout) findViewById(R.id.scoutLayout);
@@ -161,7 +155,7 @@ public class ScoutActivity extends BluetoothActivity
             @Override
             public void onClick(View v)
             {
-                loadNext();
+                loadNextMatch();
             }
         });
         prevMatchButton.setOnClickListener(new View.OnClickListener()
@@ -169,7 +163,7 @@ public class ScoutActivity extends BluetoothActivity
             @Override
             public void onClick(View v)
             {
-                loadPrevious();
+                loadPreviousMatch();
             }
         });
 
@@ -186,13 +180,13 @@ public class ScoutActivity extends BluetoothActivity
                     return;
 
                 if (matches.size() == 1) {
-                    SendJsonValues(queuedMatchesToSend.get(0));
+                    bluetoothSendMatch(queuedMatchesToSend.get(0));
                     toast("Sent 1 match");
                 }
                 else
                 {
                     queuedMatchesToSend = new ArrayList<>(matches.subList(1, matches.size() - 1));
-                    SendJsonValues(matches.get(0));
+                    bluetoothSendMatch(matches.get(0));
                     toast("Sent 1 match, queued " + queuedMatchesToSend.size() + " matches");
                 }
 
@@ -200,7 +194,11 @@ public class ScoutActivity extends BluetoothActivity
         });
 
 
-        Build(); // Build the input table's rows and columns.
+        // Build the input table's rows and columns.
+        SchemaHandler.Setup(
+                inputTable, // Table
+                SchemaHandler.LoadSchemaFromFile(), // Text schema
+                this); // Context
 
         loadDatabase();
 
@@ -210,7 +208,7 @@ public class ScoutActivity extends BluetoothActivity
         {
             l("Loading first match!");
             teamNumber.setText(teams.get(0));
-            loadMatch(1);
+            displayMatch(1);
         }
 
         matchNumber.addTextChangedListener(new TextWatcher()
@@ -219,13 +217,13 @@ public class ScoutActivity extends BluetoothActivity
             public void beforeTextChanged(CharSequence s, int start, int count, int after)
             {
                 if (getCurrentFocus() == matchNumber)
-                    save();
+                    saveCurrentMatch();
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count)
             {
-                loadMatch(currentMatch(), false);
+                displayMatch(getCurrentMatchNumber(), false);
             }
 
             @Override
@@ -249,26 +247,26 @@ public class ScoutActivity extends BluetoothActivity
         });
     }
 
-    private void loadNext()
+    private void loadNextMatch()
     {
-        save();
+        saveCurrentMatch();
         l("Loading Next Match");
-        loadMatch(currentMatch() + 1);
+        displayMatch(getCurrentMatchNumber() + 1);
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
     }
 
-    private void loadPrevious()
+    private void loadPreviousMatch()
     {
-        save();
-        if (currentMatch() > 1)
+        saveCurrentMatch();
+        if (getCurrentMatchNumber() > 1)
         {
             l("Loading Previous Match");
-            loadMatch(currentMatch() - 1);
+            displayMatch(getCurrentMatchNumber() - 1);
         }
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
     }
 
-    int currentMatch()
+    int getCurrentMatchNumber()
     {
         try
         {
@@ -283,18 +281,18 @@ public class ScoutActivity extends BluetoothActivity
         }
     }
 
-    private void loadMatch(int match)
+    private void displayMatch(int match)
     {
-        loadMatch(match, true);
+        displayMatch(match, true);
     }
-    private void loadMatch(int match, boolean changeMatchText)
+    private void displayMatch(int match, boolean changeMatchText)
     {
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
-        if (matches.size() >= match)
+        if (matches.size() >= match) // Currently existing match
         {
-            // l("Loading match number: " + match);
-            // l("Loading match: " + matches.get(match - 1));
-            String[] vals = matches.get(match - 1).split(",");
+            String val = matches.get(match - 1);
+            matchValuesOnLoad = val;
+            String[] vals = val.split(",");
             // List<String> subList = Arrays.asList(vals).subList(2, vals.length - 1);
             try {
                 SchemaHandler.SetCurrentValues(inputTable, Arrays.asList(vals).subList(2, vals.length - 1));
@@ -311,7 +309,7 @@ public class ScoutActivity extends BluetoothActivity
             else
                 teamNumber.setText("0");
         }
-        else if (matches.size() + 1 == match)
+        else if (matches.size() + 1 == match) // Last match
         {
             if (teams.size() >= match)
                 teamNumber.setText(teams.get(match - 1));
@@ -320,9 +318,9 @@ public class ScoutActivity extends BluetoothActivity
 
             SchemaHandler.ClearCurrentValues(inputTable);
         }
-        else
+        else // Other match, display new match 1 after last match
         {
-            loadMatch(matches.size());
+            displayMatch(matches.size());
             return;
         }
 
@@ -333,7 +331,7 @@ public class ScoutActivity extends BluetoothActivity
         }
     }
 
-    private String currentTeam()
+    private String getCurrentTeamNumber()
     {
         String s = teamNumber.getText().toString();
         if (!s.trim().isEmpty())
@@ -342,7 +340,7 @@ public class ScoutActivity extends BluetoothActivity
             return "0";
     }
 
-    private void clearMatches()
+    private void clearMatchesDatabase()
     {
         try
         {
@@ -355,24 +353,24 @@ public class ScoutActivity extends BluetoothActivity
         }
     }
 
-    private void save()
+    private void saveCurrentMatch()
     {
         // Existing match
-        if (matches.size() >= currentMatch())
+        if (matches.size() >= getCurrentMatchNumber())
         {
-            // l("Setting value: " + getValues());
-            matches.set(currentMatch() - 1, getValues());
-            teams.set(currentMatch() - 1, currentTeam());
+            // l("Setting value: " + getCurrentMatchValues());
+            matches.set(getCurrentMatchNumber() - 1, getCurrentMatchValues());
+            teams.set(getCurrentMatchNumber() - 1, getCurrentTeamNumber());
         }
         // New match
-        else if (matches.size() + 1 == currentMatch())
+        else if (matches.size() + 1 == getCurrentMatchNumber())
         {
-            matches.add(getValues());
-            teams.add(currentTeam());
+            matches.add(getCurrentMatchValues());
+            teams.add(getCurrentTeamNumber());
         }
 
         // Store all matches locally
-        clearMatches();
+        clearMatchesDatabase();
         String output = "";
         int i = 1;
         for (String s : matches)
@@ -385,10 +383,14 @@ public class ScoutActivity extends BluetoothActivity
         // l("Writing output to matches file: " + output);
         FileHandler.Write(FileHandler.SCOUTER_DATABASE, output);
 
-        SendJsonValues(matches.get(currentMatch() - 1));
+        // Check if something actually changed since the value was loaded
+        if (matches.get(getCurrentMatchNumber() - 1).equals(matchValuesOnLoad))
+            return;
+
+        bluetoothSendMatch(matches.get(getCurrentMatchNumber() - 1));
     }
 
-    private void SendJsonValues(String match)
+    private void bluetoothSendMatch(String match)
     {
         if (match == null || match.split(",").length <= 1) return;
         try
@@ -434,12 +436,12 @@ public class ScoutActivity extends BluetoothActivity
         }
     }
 
-    private String getValues()
+    private String getCurrentMatchValues()
     {
                 /*
         l("Sending values:\n" + "67,1");
         */
-        String values = "";
+        StringBuilder values = new StringBuilder();
         String div = ",";
 
         /*
@@ -448,41 +450,37 @@ public class ScoutActivity extends BluetoothActivity
         else
             values += teamNumber.getText().toString() + div;
             */
-        values += currentTeam() + div;
+        values.append(getCurrentTeamNumber()).append(div);
 /*
         if (matchNumber.getText().toString().trim().isEmpty())
             values += "0" + div;
         else
             values += matchNumber.getText() + div;
             */
-        values += currentMatch() + div;
+        values.append(getCurrentMatchNumber()).append(div);
 
         List<String> currentValues = SchemaHandler.GetCurrentValues(inputTable);
         for (int i = 0; i < currentValues.size(); ++i)
         {
             String s = currentValues.get(i);
-            values += s;
-            values += div;
+            values.append(s);
+            values.append(div);
         }
 
 
-        String s = notes.getText().toString().replace("\n", " ").replace(",", " ");
-        if (!s.trim().isEmpty())
-            values += s;
-        else
-            if (values.length() > 0)
-                values = values.substring(0, values.length() - 1);
+        if (values.length() > 0)
+            values = new StringBuilder(values.substring(0, values.length() - 1));
 
         // l("Current Values: " + values);
 
-        return values;
+        return values.toString();
     }
 
-    private void setupPermissions()
+    private void setupPreBluetooth()
     {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             l("Permission granted");
-            setupUI();
+            setupPostBluetooth();
         }
         else
         {
@@ -511,11 +509,11 @@ public class ScoutActivity extends BluetoothActivity
             {
                 if (velocityX > 0)
                 {
-                    loadPrevious();
+                    loadPreviousMatch();
                 }
                 else
                 {
-                    loadNext();
+                    loadNextMatch();
                 }
                 return true;
             }
@@ -532,11 +530,11 @@ public class ScoutActivity extends BluetoothActivity
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
             {
                 l("Permission granted");
-                setupUI();
+                setupPostBluetooth();
             }
             else
             {
-                setupPermissions();
+                setupPreBluetooth();
             }
         }
     }
@@ -563,67 +561,68 @@ public class ScoutActivity extends BluetoothActivity
         }
     }
 
+    private synchronized void bluetoothProcessInput(Message msg)
+    {
+        try {
+            final String message =
+                    Constants.getScouterInputWithoutTag((String) msg.obj);
+            final String tag =
+                    Constants.getScouterInputTag((String) msg.obj);
+
+            if (message.equals(Constants.SERVER_TEAMS_RECEIVED_TAG)
+                    &&
+                    (queuedMatchesToSend.size() > 0))
+            {
+                bluetoothSendMatch(queuedMatchesToSend.get(0));
+                queuedMatchesToSend.remove(0);
+            }
+
+            switch (tag) {
+                case Constants.SCOUTER_SCHEMA_TAG:
+                    final Context c = this;
+                    // Show a confirmation dialog
+                    Constants.OnConfirm("Received new schema, clear local schema?", this, new Runnable() {
+                        @Override
+                        public void run() {
+                            FileHandler.Write(FileHandler.SCHEMA, message);
+                            SchemaHandler.Setup(
+                                    inputTable, // Table to setup the new schema on
+                                    SchemaHandler.LoadSchemaFromFile(), // Schema text
+                                    c); // Context
+                        }
+                    });
+                    break;
+                case Constants.SCOUTER_TEAMS_TAG:
+                    // Show a confirmation dialog
+                    Constants.OnConfirm("Received new teams, clear local database?", this, new Runnable() {
+                        @Override
+                        public void run() {
+                            teams = new ArrayList<>(Arrays.asList(message.split(",")));
+                            matches = new ArrayList<>();
+                            clearMatchesDatabase();
+                            SchemaHandler.ClearCurrentValues(inputTable);
+                            displayMatch(1);
+                        }
+                    });
+                    break;
+                default:
+                    l("Received unknown tag: " + tag);
+            }
+        }
+        catch (Exception e)
+        {
+            l("Failed to load processed input: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     @Override
     protected synchronized void handle(Message msg)
     {
         switch (msg.what)
         {
             case MESSAGE_INPUT: // Input received through bluetooth
-                try {
-                    final String message =
-                            Constants.getScouterInputWithoutTag((String) msg.obj);
-                    final String tag =
-                            Constants.getScouterInputTag((String) msg.obj);
-
-                    if (message.equals(Constants.SERVER_TEAMS_RECEIVED_TAG)
-                            &&
-                            (queuedMatchesToSend.size() > 0))
-                    {
-                        SendJsonValues(queuedMatchesToSend.get(0));
-                        queuedMatchesToSend.remove(0);
-                    }
-
-                    switch (tag) {
-                        case Constants.SCOUTER_SCHEMA_TAG:
-                            final Context c = this;
-                            // Show a confirmation dialog
-                            Constants.OnConfirm("Received new schema, clear local schema?", this, new Runnable() {
-                                @Override
-                                public void run() {
-                                    FileHandler.Write(FileHandler.SCHEMA, message);
-                                    SchemaHandler.Setup(
-                                            inputTable, // Table to setup the new schema on
-                                            SchemaHandler.LoadSchemaFromFile(), // Schema text
-                                            c); // Context
-                                }
-                            });
-                            break;
-                        case Constants.SCOUTER_TEAMS_TAG:
-                            // Show a confirmation dialog
-                            Constants.OnConfirm("Received new teams, clear local database?", this, new Runnable() {
-                                @Override
-                                public void run() {
-                                    teams = new ArrayList<>(Arrays.asList(message.split(",")));
-                                    matches = new ArrayList<>();
-                                    clearMatches();
-                                    SchemaHandler.ClearCurrentValues(inputTable);
-                                    loadMatch(1);
-                                }
-                            });
-                            break;
-                        default:
-                            l("Received unknown tag: " + tag);
-                            break;
-                    }
-                }
-                catch (Exception e)
-                {
-                    l("Failed to load processed input: " + e.getMessage());
-                    e.printStackTrace();
-                }
-                break;
-            case MESSAGE_TOAST: // Deprecated
-                // l(new String(msg.obj));
+                bluetoothProcessInput(msg);
                 break;
             case MESSAGE_CONNECTED: // A device has connected
                 connectButton.setImageResource(R.drawable.ic_network_wifi);
@@ -632,13 +631,5 @@ public class ScoutActivity extends BluetoothActivity
                 connectButton.setImageResource(R.drawable.ic_network_off);
                 break;
         }
-    }
-
-    private void Build()
-    {
-        SchemaHandler.Setup(
-                inputTable, // Table
-                SchemaHandler.LoadSchemaFromFile(), // Text schema
-                this); // Context
     }
 }

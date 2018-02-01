@@ -98,43 +98,12 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:stretchColumns="*"/>
-
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <TextView
-                    android:id="@+id/notesLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerHorizontal="true"
-                    android:text="Notes: "
-                    android:textAppearance="@style/TextAppearance.AppCompat.Headline"/>
-
-                <EditText
-                    android:id="@+id/notes"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/notesLabel"
-                    android:layout_centerHorizontal="true"/>
-                <!--
-                   <Button
-                       android:id="@+id/sendConfigurationButton"
-                       android:layout_width="match_parent"
-                       android:layout_height="100dp"
-                       android:layout_centerHorizontal="true"
-                       android:layout_below="@id/notes"
-                       android:padding="15dp"
-                       android:text="Send"/>
-                   -->
-                </RelativeLayout>
             </LinearLayout>
         </ScrollView>
 
         <android.support.design.widget.FloatingActionButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/notes"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:src="@drawable/ic_right"
@@ -146,7 +115,6 @@
         <android.support.design.widget.FloatingActionButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/notes"
             android:layout_alignParentLeft="true"
             android:id="@+id/prevMatchButton"
             android:src="@drawable/ic_left"
