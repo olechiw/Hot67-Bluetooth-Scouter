@@ -48,7 +48,7 @@ public final class SchemaHandler
     {
         List<SchemaVariable> variables = GetVariables(schema);
         List<View> views = new ArrayList<>();
-
+        variables.remove(null);
         // Obtain the final list of views to organize
         for (SchemaVariable v : variables)
         {
@@ -260,6 +260,12 @@ public final class SchemaHandler
     public static List<SchemaVariable> GetVariables(String schema)
     {
         List<SchemaVariable> vars = new ArrayList<>();
+
+        if (schema == null || schema.trim().isEmpty())
+            return vars;
+
+        l("Loading schema: " + schema);
+
         try
         {
             List<String> vals = Arrays.asList(schema.split(","));

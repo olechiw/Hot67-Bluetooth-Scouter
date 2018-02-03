@@ -126,11 +126,23 @@ public class SchemaActivity extends AppCompatActivity {
         numberButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                GetString("Value Label:", new StringInputEvent() {
+                GetString("Value Label: ", new StringInputEvent() {
                     @Override
                     public void Run(String input) {
                         schema += "," + input + Constants.TYPE_INTEGER;
-                        SchemaHandler.Setup(tableLayout, schema, c);
+                        GetString("Minimum:", new StringInputEvent() {
+                            @Override
+                            public void Run(String input) {
+                                schema += "," + input;
+                                GetString("Maximum:", new StringInputEvent() {
+                                    @Override
+                                    public void Run(String input) {
+                                        schema += "," + input;
+                                        SchemaHandler.Setup(tableLayout, schema, c);
+                                    }
+                                });
+                            }
+                        });
                     }
                 });
             }

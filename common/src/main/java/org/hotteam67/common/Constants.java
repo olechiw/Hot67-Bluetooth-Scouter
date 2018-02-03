@@ -20,7 +20,7 @@ public class Constants
 
     public static String getScouterInputTag(String input)
     {
-        return input.substring(0, SCOUTER_TAG_LENGTH - 1);
+        return input.substring(0, SCOUTER_TAG_LENGTH);
     }
 
     public static String getScouterInputWithoutTag(String input)

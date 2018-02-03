@@ -1,5 +1,6 @@
 package org.hotteam67.bluetoothserver;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
@@ -35,37 +36,23 @@ import com.cpjd.main.TBA;
 import com.cpjd.models.Event;
 import com.cpjd.models.Match;
 import com.example.bluetoothserver.R;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.gson.Gson;
 
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.protocol.HTTP;
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
 import org.json.JSONException;
-import org.json.simple.JSONObject;
+import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import java.io.DataOutput;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -102,13 +89,13 @@ public class ServerActivity extends AppCompatActivity {
     public synchronized void MSG(int msg) { m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget(); }
 
     // Number of active and allowed devices
-    private int allowedDevices = 6;
+    private int allowedDevices = 7;
+
+    // Current database in json format
+    private JSONObject jsonDatabase;
 
     // Bluetooth hardware adapter
     protected BluetoothAdapter m_bluetoothAdapter;
-
-    // List of matches in memory, stored as they are received, just a bunch of lines
-    private List<String> serverMatches = new ArrayList<>();
 
     // Display a popup box (not a toast, LOL)
     protected void toast(String text)
@@ -151,13 +138,9 @@ public class ServerActivity extends AppCompatActivity {
             }
         };
 
-        // Load contents of matches file
-        String file = FileHandler.LoadContents(FileHandler.SERVER_DATABASE);
-        if (file != null && !file.trim().isEmpty())
-            for (String s : file.split("\n"))
-                serverMatches.add(s);
-
         setupPermissions();
+
+        loadJsonDatabase();
     }
 
 
@@ -305,7 +288,7 @@ public class ServerActivity extends AppCompatActivity {
                 l("Fetching");
                 try
                 {
-                    String s = "";
+                    StringBuilder s = new StringBuilder();
                     Event e = tba.getEvent(matchKeyInput.getText().toString(),
                             Integer.valueOf(new SimpleDateFormat("yyyy", Locale.US).format(new Date())));
                     toast(e.matches.length + " Matches Loaded");
@@ -318,18 +301,18 @@ public class ServerActivity extends AppCompatActivity {
                         {
                             for (String t : m.redTeams)
                             {
-                                s += t.replace("frc", "") + ",";
+                                s.append(t.replace("frc", "")).append(",");
                             }
                             for (int t = 0; t < m.blueTeams.length; ++t)
                             {
-                                s += m.blueTeams[t].replace("frc", "");
+                                s.append(m.blueTeams[t].replace("frc", ""));
                                 if (t + 1 != m.blueTeams.length)
-                                    s += ",";
+                                    s.append(",");
                             }
-                            s += "\n";
+                            s.append("\n");
                         }
                     }
-                    FileHandler.Write(FileHandler.SERVER_MATCHES, s);
+                    FileHandler.Write(FileHandler.SERVER_MATCHES, s.toString());
                 }
                 catch (Exception e)
                 {
@@ -502,6 +485,7 @@ public class ServerActivity extends AppCompatActivity {
     }
 
     // Handle an input message from one of the bluetooth threads
+    @SuppressLint("SetTextI18n")
     protected synchronized void handle(Message msg) {
         switch (msg.what) {
             case MESSAGE_INPUT:
@@ -515,7 +499,7 @@ public class ServerActivity extends AppCompatActivity {
                 try
                 {
                     // Send on the connected thread
-                    connectedThreads.get(id).write(Constants.SERVER_TEAMS_RECEIVED_TAG.getBytes());
+                    connectedThreads.get(id - 1).write(Constants.SERVER_TEAMS_RECEIVED_TAG.getBytes());
                 }
                 catch (IndexOutOfBoundsException e)
                 {
@@ -529,9 +513,8 @@ public class ServerActivity extends AppCompatActivity {
                 }
                 //m_sendButton.setText(message);
 
-                serverMatches.add(message);
                 try {
-                    UploadJson((JSONObject) new JSONParser().parse(message));
+                    saveJsonObject(new JSONObject(message));
                 } catch (Exception e) {
                     l("Failed to load and send input json, most likely not logged in:" + message);
                     e.printStackTrace();
@@ -546,6 +529,7 @@ public class ServerActivity extends AppCompatActivity {
                 break;
             case MESSAGE_CONNECTED:
                 l("Received Connect");
+                l("Size of connected threads: " + connectedThreads.size());
                 VisualLog("Device Connected!");
                 connectedDevicesText.setText("Connected Devices: " + String.valueOf(connectedThreads.size()));
 
@@ -554,12 +538,40 @@ public class ServerActivity extends AppCompatActivity {
                 //toast("DISCONNECTED FROM DEVICE");
                 l("Received Disconnect");
                 VisualLog("Device Disconnected!");
+                l("Size of connected threads: " + connectedThreads.size());
                 connectedDevicesText.setText("Connected Devices: " + String.valueOf(connectedThreads.size()));
                 break;
+            default:
+                l("Received Message: " + msg.what);
         }
     }
 
-    private void UploadJson(JSONObject json) throws JSONException, IOException
+    private void loadJsonDatabase()
+    {
+        String fileContents = FileHandler.LoadContents(FileHandler.SERVER_DATABASE);
+        if (fileContents == null || fileContents.trim().isEmpty()) {
+            jsonDatabase = new JSONObject();
+            return;
+        }
+        else
+        {
+            try
+            {
+                jsonDatabase = new JSONObject(fileContents);
+            }
+            catch (Exception e)
+            {
+                jsonDatabase = new JSONObject();
+            }
+        }
+    }
+
+    private void saveJsonDatabase()
+    {
+        FileHandler.Write(FileHandler.SERVER_DATABASE, jsonDatabase.toString());
+    }
+
+    private void saveJsonObject(JSONObject json) throws JSONException, IOException
     {
         AsyncUploadTask uploadTask = new AsyncUploadTask();
         uploadTask.execute(json);
@@ -580,6 +592,7 @@ public class ServerActivity extends AppCompatActivity {
                 String tag =
                         json[0].get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
                                 json[0].get(Constants.MATCH_NUMBER_JSON_TAG).toString();
+
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
                 String eventname = (String) prefs.getAll().get(Constants.PREF_EVENTNAME);
                 String eventUrl = (String) prefs.getAll().get(Constants.PREF_DATABASEURL);
@@ -588,9 +601,9 @@ public class ServerActivity extends AppCompatActivity {
                 if (!eventUrl.endsWith("/")) eventUrl += "/";
 
                 JSONObject outputObject = json[0];
-                JSONObject tmpObject = new JSONObject();
-                tmpObject.put(tag, outputObject);
-                outputObject = tmpObject;
+                JSONObject taglessObject = new JSONObject();
+                taglessObject.put(tag, outputObject);
+                outputObject = taglessObject;
 
                 String url;
 
@@ -612,7 +625,7 @@ public class ServerActivity extends AppCompatActivity {
 
                 url = eventUrl + eventname + ".json?auth=" + apiKey;
 
-                String jsonString = outputObject.toJSONString();
+                String jsonString = outputObject.toString();
                 Log.d("BluetoothScouter", "Outputting json: " + jsonString);
 
                 HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
@@ -626,6 +639,10 @@ public class ServerActivity extends AppCompatActivity {
                 {
                     e.printStackTrace();
                 }
+
+                // Save locally
+                jsonDatabase.put(tag, taglessObject);
+                saveJsonDatabase();
 
 
                 Log.d("BLUETOOTH_SCOUTER", "Sending request to url: "
@@ -644,10 +661,16 @@ public class ServerActivity extends AppCompatActivity {
 
         protected void onPostExecute(JSONObject j)
         {
-            VisualLog("Received Match Number: "
-                    + j.get(Constants.MATCH_NUMBER_JSON_TAG)
-                    + " For Team Number: "
-                    + j.get(Constants.TEAM_NUMBER_JSON_TAG));
+            try {
+                VisualLog("Received Match Number: "
+                        + j.get(Constants.MATCH_NUMBER_JSON_TAG)
+                        + " For Team Number: "
+                        + j.get(Constants.TEAM_NUMBER_JSON_TAG));
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -710,14 +733,16 @@ public class ServerActivity extends AppCompatActivity {
 
     private void connectSocket(BluetoothSocket connection)
     {
+
         if (connectedThreads.size() < allowedDevices)
         {
-            l("Received a connection, adding a new thread: " + connectedThreads.size() + 1);
+            l("Received a connection, adding a new thread: " + connectedThreads.size());
             ConnectedThread thread = new ConnectedThread(connection);
             thread.setId(connectedThreads.size() + 1);
             thread.start();
             connectedThreads.add(thread);
         }
+
     }
 
     //
@@ -866,8 +891,9 @@ public class ServerActivity extends AppCompatActivity {
     // Disconnect a specific connected device, usually called from the thread itself
     private synchronized void disconnect(int id)
     {
-        if (id < allowedDevices)
+        if ((id - 1) < allowedDevices)
         {
+            l("Removing thread with id: " + id);
             connectedThreads.get(id - 1).close();
             connectedThreads.get(id - 1).interrupt();
             connectedThreads.remove(id - 1);
@@ -898,12 +924,14 @@ public class ServerActivity extends AppCompatActivity {
             thread.interrupt();
         }
 
+        /*
         // Save server matches
-        String matchesFileContent = "";
+        StringBuilder matchesFileContent = new StringBuilder();
         for (String match : serverMatches)
-            matchesFileContent += match + "\n";
-        FileHandler.Write(FileHandler.SERVER_DATABASE, matchesFileContent);
+            matchesFileContent.append(match).append("\n");
+        FileHandler.Write(FileHandler.SERVER_DATABASE, matchesFileContent.toString());
+        */
 
-
+        saveJsonDatabase();
     }
 }

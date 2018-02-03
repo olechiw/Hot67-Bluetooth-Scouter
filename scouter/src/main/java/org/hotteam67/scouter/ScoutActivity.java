@@ -176,20 +176,24 @@ public class ScoutActivity extends BluetoothActivity
             {
                 // toast("Matches sending: " + matches.size());
 
-                if (!(matches.size() > 1))
-                    return;
+                Constants.OnConfirm("Send All Matches?", c, new Runnable() {
+                    @Override
+                    public void run() {
+                        if (!(matches.size() > 1))
+                            return;
 
-                if (matches.size() == 1) {
-                    bluetoothSendMatch(queuedMatchesToSend.get(0));
-                    toast("Sent 1 match");
-                }
-                else
-                {
-                    queuedMatchesToSend = new ArrayList<>(matches.subList(1, matches.size() - 1));
-                    bluetoothSendMatch(matches.get(0));
-                    toast("Sent 1 match, queued " + queuedMatchesToSend.size() + " matches");
-                }
-
+                        if (matches.size() == 1) {
+                            bluetoothSendMatch(matches.get(0));
+                            toast("Sent 1 match");
+                        }
+                        else
+                        {
+                            queuedMatchesToSend = new ArrayList<>(matches.subList(1, matches.size() - 1));
+                            bluetoothSendMatch(matches.get(0));
+                            toast("Sent 1 match, queued " + queuedMatchesToSend.size() + " matches");
+                        }
+                    }
+                });
             }
         });
 
@@ -569,10 +573,11 @@ public class ScoutActivity extends BluetoothActivity
             final String tag =
                     Constants.getScouterInputTag((String) msg.obj);
 
-            if (message.equals(Constants.SERVER_TEAMS_RECEIVED_TAG)
+            if (tag.equals(Constants.SERVER_TEAMS_RECEIVED_TAG)
                     &&
                     (queuedMatchesToSend.size() > 0))
             {
+                l("Server received last, sending again");
                 bluetoothSendMatch(queuedMatchesToSend.get(0));
                 queuedMatchesToSend.remove(0);
             }
@@ -589,6 +594,10 @@ public class ScoutActivity extends BluetoothActivity
                                     inputTable, // Table to setup the new schema on
                                     SchemaHandler.LoadSchemaFromFile(), // Schema text
                                     c); // Context
+                            FileHandler.Write(FileHandler.SCOUTER_DATABASE, "");
+                            matches = new ArrayList<>();
+                            teams = new ArrayList<>();
+                            displayMatch(1);
                         }
                     });
                     break;
