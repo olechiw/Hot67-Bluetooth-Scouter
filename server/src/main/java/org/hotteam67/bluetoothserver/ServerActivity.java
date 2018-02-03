@@ -91,6 +91,9 @@ public class ServerActivity extends AppCompatActivity {
     // Number of active and allowed devices
     private int allowedDevices = 7;
 
+    String lastMatchNumber = "0";
+    int lastMatchReceived = 0;
+
     // Current database in json format
     private JSONObject jsonDatabase;
 
@@ -589,6 +592,7 @@ public class ServerActivity extends AppCompatActivity {
                 // or 204815 for team 2048 match 15
                 //
                 // This is simply to make sure no duplicate matches are recorded for any team
+
                 String tag =
                         json[0].get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
                                 json[0].get(Constants.MATCH_NUMBER_JSON_TAG).toString();
@@ -601,9 +605,9 @@ public class ServerActivity extends AppCompatActivity {
                 if (!eventUrl.endsWith("/")) eventUrl += "/";
 
                 JSONObject outputObject = json[0];
-                JSONObject taglessObject = new JSONObject();
-                taglessObject.put(tag, outputObject);
-                outputObject = taglessObject;
+                JSONObject taggedObject = new JSONObject();
+                taggedObject.put(tag, outputObject);
+                // outputObject = taglessObject;
 
                 String url;
 
@@ -623,7 +627,7 @@ public class ServerActivity extends AppCompatActivity {
                     url = eventUrl + eventname;
                 }*/
 
-                url = eventUrl + eventname + ".json?auth=" + apiKey;
+                url = eventUrl + eventname + "/" + tag + ".json?auth=" + apiKey;
 
                 String jsonString = outputObject.toString();
                 Log.d("BluetoothScouter", "Outputting json: " + jsonString);
@@ -641,7 +645,7 @@ public class ServerActivity extends AppCompatActivity {
                 }
 
                 // Save locally
-                jsonDatabase.put(tag, taglessObject);
+                jsonDatabase.put(tag, outputObject);
                 saveJsonDatabase();
 
 
@@ -662,10 +666,29 @@ public class ServerActivity extends AppCompatActivity {
         protected void onPostExecute(JSONObject j)
         {
             try {
+                /*
                 VisualLog("Received Match Number: "
                         + j.get(Constants.MATCH_NUMBER_JSON_TAG)
                         + " For Team Number: "
                         + j.get(Constants.TEAM_NUMBER_JSON_TAG));
+                        */
+                String matchNumber = (String) j.get(Constants.MATCH_NUMBER_JSON_TAG);
+
+                if (matchNumber.equals(lastMatchNumber))
+                {
+                    lastMatchReceived++;
+                    serverLogText.setText(
+                            "Last Match: " + lastMatchNumber + " Received: " + lastMatchReceived + "\n"
+                    );
+                }
+                else
+                {
+                    lastMatchNumber = matchNumber;
+                    lastMatchReceived = 1;
+                    serverLogText.setText(
+                            "Last Match: " + matchNumber + " Received: " + lastMatchReceived + "\n"
+                    );
+                }
             }
             catch (Exception e)
             {
