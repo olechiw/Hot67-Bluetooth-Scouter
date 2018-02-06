@@ -10,4 +10,7 @@
     <item
         android:id="@+id/menuItemSendMatches"
         android:title="Send Matches"/>
+    <item
+        android:id="@+id/menuItemSendMessage"
+        android:title="Send Message"/>
 </menu>

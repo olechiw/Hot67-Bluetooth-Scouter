@@ -613,6 +613,10 @@ public class ScoutActivity extends BluetoothActivity
                         }
                     });
                     break;
+                case Constants.SERVER_MESSAGE_TAG:
+                    //Shows the message received from the server
+                    toast(message);
+                    break;
                 default:
                     l("Received unknown tag: " + tag);
             }

@@ -23,6 +23,10 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputFilter;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -179,6 +183,38 @@ public class ServerActivity extends AppCompatActivity {
         return true;
     }
 
+    private void GetString(final String prompt, final SchemaActivity.StringInputEvent onInput) {
+        InputFilter filter = new InputFilter() {
+            @Override
+            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                boolean keepOriginal = true;
+                StringBuilder sb = new StringBuilder(end - start);
+                for (int i = start; i < end; i++) {
+                    char c = source.charAt(i);
+                    if (isCharAllowed(c)) // put your condition here
+                        sb.append(c);
+                    else
+                        keepOriginal = false;
+                }
+                if (keepOriginal)
+                    return null;
+                else {
+                    if (source instanceof Spanned) {
+                        SpannableString sp = new SpannableString(sb);
+                        TextUtils.copySpansFrom((Spanned) source, start, sb.length(), null, sp, 0);
+                        return sp;
+                    } else {
+                        return sb;
+                    }
+                }
+            }
+
+            private boolean isCharAllowed(char c) {
+                return Character.isLetterOrDigit(c) || Character.isSpaceChar(c);
+            }
+        };
+    }
+
     @Override
     public synchronized boolean onOptionsItemSelected(MenuItem item)
     {
@@ -201,7 +237,8 @@ public class ServerActivity extends AppCompatActivity {
                 // Obtain schema
                 String schema = SchemaHandler.LoadSchemaFromFile();
 
-                try {
+                try
+                {
                     // Send to each device
                     for (ConnectedThread device : connectedThreads) {
                         device.write((Constants.SCOUTER_SCHEMA_TAG + schema).getBytes());
@@ -220,6 +257,21 @@ public class ServerActivity extends AppCompatActivity {
                 sendEventMatches();
                 break;
             }
+            case R.id.menuItemSendMessage:
+            {
+                GetString("Enter Message:", new SchemaActivity.StringInputEvent()
+                {
+                    @Override
+                    public void Run(String input)
+                    {
+                        for (ConnectedThread device : connectedThreads)
+                        {
+                            device.write((Constants.SERVER_MESSAGE_TAG + input).getBytes());
+                        }
+                    }
+                });
+            }
+
         }
 
         return true;
