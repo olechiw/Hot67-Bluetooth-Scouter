@@ -186,8 +186,14 @@ public class ServerActivity extends AppCompatActivity {
         {
             case R.id.menuItemSetupSchema:
             {
-                Intent launchSchemaActivityIntent = new Intent(this, SchemaActivity.class);
-                startActivity(launchSchemaActivityIntent);
+                final Context c = this;
+                Constants.OnConfirm("Send Schema and delete existing Matches?", this, new Runnable() {
+                    @Override
+                    public void run() {
+                        Intent launchSchemaActivityIntent = new Intent(c, SchemaActivity.class);
+                        startActivity(launchSchemaActivityIntent);
+                    }
+                });
                 break;
             }
             case R.id.menuItemSendSchema:
