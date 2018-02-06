@@ -57,8 +57,6 @@ public class ScoutActivity extends BluetoothActivity
 
     List<String> queuedMatchesToSend = new ArrayList<>();
 
-    String matchValuesOnLoad;
-
     /*
     GridView scoutLayout;
     org.hotteam67.bluetoothscouter.ScoutInputAdapter scoutInputAdapter;
@@ -297,7 +295,6 @@ public class ScoutActivity extends BluetoothActivity
         if (matches.size() >= match) // Currently existing match
         {
             String val = matches.get(match - 1);
-            matchValuesOnLoad = val;
             String[] vals = val.split(",");
             // List<String> subList = Arrays.asList(vals).subList(2, vals.length - 1);
             try {
@@ -377,20 +374,20 @@ public class ScoutActivity extends BluetoothActivity
 
         // Store all matches locally
         clearMatchesDatabase();
-        String output = "";
+        StringBuilder output = new StringBuilder();
         int i = 1;
         for (String s : matches)
         {
-            output += s;
+            output.append(s);
             if (i < matches.size())
-                output += "\n";
+                output.append("\n");
             i++;
         }
         // l("Writing output to matches file: " + output);
-        FileHandler.Write(FileHandler.SCOUTER_DATABASE, output);
+        FileHandler.Write(FileHandler.SCOUTER_DATABASE, output.toString());
 
         // Check if something actually changed since the value was loaded
-        if (matches.get(getCurrentMatchNumber() - 1).equals(matchValuesOnLoad))
+        if (matches.get(getCurrentMatchNumber() - 1).equals(SchemaHandler.GetLastValuesBeforeChange()))
             return;
 
         bluetoothSendMatch(matches.get(getCurrentMatchNumber() - 1));

@@ -27,6 +27,12 @@ import java.util.List;
 
 public final class SchemaHandler
 {
+    private static String lastValuesBeforeChange = "";
+    public static String GetLastValuesBeforeChange()
+    {
+        return lastValuesBeforeChange;
+    }
+
     public static String GetHeader(String schema)
     {
         String scheme = "";
@@ -209,10 +215,19 @@ public final class SchemaHandler
             }
             ++val;
         }
+        lastValuesBeforeChange = "";
     }
 
     public static void SetCurrentValues(TableLayout table, List<String> values)
     {
+        StringBuilder builder = new StringBuilder();
+        for (String s : values)
+        {
+            builder.append(s).append(",");
+        }
+        lastValuesBeforeChange = builder.toString();
+
+
         int val = 0;
         for (View v : getViews(table))
         {
