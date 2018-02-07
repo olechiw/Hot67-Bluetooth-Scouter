@@ -17,6 +17,7 @@ public class Constants
     public static final String SCOUTER_TEAMS_TAG =          ":TEAM:,,,,";
     public static final String SCOUTER_SCHEMA_TAG =         ":SCHEMA:,,";
     public static final String SERVER_TEAMS_RECEIVED_TAG =  ":HEARD:,,,";
+    public static final String SERVER_MESSAGE_TAG =         ":MESSAGE,,";
 
     public static String getScouterInputTag(String input)
     {
