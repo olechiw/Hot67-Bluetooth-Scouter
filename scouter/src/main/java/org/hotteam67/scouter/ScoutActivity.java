@@ -131,6 +131,7 @@ public class ScoutActivity extends BluetoothActivity
 
         teamNumber = (EditText) toolbar.findViewById(R.id.teamNumberText);
 
+        /*
         InputFilter filter = new InputFilter() {
 
             @Override
@@ -142,6 +143,7 @@ public class ScoutActivity extends BluetoothActivity
                 return null;
             }
         };
+        */
 
         matchNumber = (EditText) findViewById(R.id.matchNumberText);
 
