@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -270,6 +271,43 @@ public class ServerActivity extends AppCompatActivity {
                         }
                     }
                 });
+            }
+            case R.id.menuItemSyncAll:
+            {
+                Iterator<?> sizeIterator = jsonDatabase.keys();
+                int size = 0;
+                while (sizeIterator.hasNext())
+                {
+                    size++;
+                    sizeIterator.next();
+                }
+                JSONObject[] objects = new JSONObject[size];
+
+                Iterator<?> iterator = jsonDatabase.keys();
+                int i = 0;
+                while (iterator.hasNext())
+                {
+                    try
+                    {
+                        String key = (String) iterator.next();
+                        JSONObject object = (JSONObject) jsonDatabase.get(key);
+                        objects[i] = object;
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                    ++i;
+                }
+
+                try
+                {
+                    saveJsonObject(objects);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
             }
 
         }
@@ -632,7 +670,7 @@ public class ServerActivity extends AppCompatActivity {
         FileHandler.Write(FileHandler.SERVER_DATABASE, jsonDatabase.toString());
     }
 
-    private void saveJsonObject(JSONObject json) throws JSONException, IOException
+    private void saveJsonObject(JSONObject... json) throws JSONException, IOException
     {
         AsyncUploadTask uploadTask = new AsyncUploadTask();
         uploadTask.execute(json);
@@ -651,25 +689,26 @@ public class ServerActivity extends AppCompatActivity {
                 //
                 // This is simply to make sure no duplicate matches are recorded for any team
 
-                String tag =
-                        json[0].get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
-                                json[0].get(Constants.MATCH_NUMBER_JSON_TAG).toString();
+                for (JSONObject aJson : json) {
+                    String tag =
+                            aJson.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
+                                    aJson.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
 
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                String eventname = (String) prefs.getAll().get(Constants.PREF_EVENTNAME);
-                String eventUrl = (String) prefs.getAll().get(Constants.PREF_DATABASEURL);
-                String apiKey = (String) prefs.getAll().get(Constants.PREF_APIKEY);
-                l(tag);
-                if (!eventUrl.endsWith("/")) eventUrl += "/";
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+                    String eventname = (String) prefs.getAll().get(Constants.PREF_EVENTNAME);
+                    String eventUrl = (String) prefs.getAll().get(Constants.PREF_DATABASEURL);
+                    String apiKey = (String) prefs.getAll().get(Constants.PREF_APIKEY);
+                    l(tag);
+                    if (!eventUrl.endsWith("/")) eventUrl += "/";
 
-                JSONObject outputObject = json[0];
-                JSONObject taggedObject = new JSONObject();
-                taggedObject.put(tag, outputObject);
-                // outputObject = taglessObject;
+                    JSONObject outputObject = json[0];
+                    JSONObject taggedObject = new JSONObject();
+                    taggedObject.put(tag, outputObject);
+                    // outputObject = taglessObject;
 
-                String url;
+                    String url;
 
-                // Test for eventName
+                    // Test for eventName
                 /*
                 HttpURLConnection testConn = (HttpURLConnection) new URL(eventUrl + eventname)
                         .openConnection();
@@ -685,33 +724,32 @@ public class ServerActivity extends AppCompatActivity {
                     url = eventUrl + eventname;
                 }*/
 
-                url = eventUrl + eventname + "/" + tag + ".json?auth=" + apiKey;
+                    url = eventUrl + eventname + "/" + tag + ".json?auth=" + apiKey;
 
-                String jsonString = outputObject.toString();
-                Log.d("BluetoothScouter", "Outputting json: " + jsonString);
+                    String jsonString = outputObject.toString();
+                    Log.d("BluetoothScouter", "Outputting json: " + jsonString);
 
-                HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-                conn.setRequestMethod("PUT");
-                conn.setDoOutput(true);
+                    HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+                    conn.setRequestMethod("PUT");
+                    conn.setDoOutput(true);
 
-                try{
-                    conn.getOutputStream().write(jsonString.getBytes());
+                    try {
+                        conn.getOutputStream().write(jsonString.getBytes());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    // Save locally
+                    jsonDatabase.put(tag, outputObject);
+                    saveJsonDatabase();
+
+
+                    Log.d("BLUETOOTH_SCOUTER", "Sending request to url: "
+                            + url + "\n Received response code: " + conn.getResponseCode());
+
+                    String resp = conn.getResponseMessage();
+                    Log.d("BLUETOOTH_SCOUTER", "Response: " + resp);
                 }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-
-                // Save locally
-                jsonDatabase.put(tag, outputObject);
-                saveJsonDatabase();
-
-
-                Log.d("BLUETOOTH_SCOUTER", "Sending request to url: "
-                        + url + "\n Received response code: " + conn.getResponseCode());
-
-                String resp = conn.getResponseMessage();
-                Log.d("BLUETOOTH_SCOUTER", "Response: " + resp);
             }
             catch (Exception e)
             {
