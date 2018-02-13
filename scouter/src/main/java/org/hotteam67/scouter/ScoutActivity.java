@@ -337,7 +337,7 @@ public class ScoutActivity extends BluetoothActivity {
 
     private void saveAllMatches()
     {
-        saveAllMatches(false, false);
+        saveAllMatches(true, false);
     }
 
     private void saveAllMatches(boolean localOnly, boolean saveDuplicates)
@@ -588,9 +588,8 @@ public class ScoutActivity extends BluetoothActivity {
                         @Override
                         public void run() {
                             matches = new ArrayList<>(Arrays.asList(message.split(",")));
-                            SchemaHandler.ClearCurrentValues(inputTable);
-                            saveAllMatches();
                             displayMatch(1);
+                            saveAllMatches(true, true);
                         }
                     });
                     break;

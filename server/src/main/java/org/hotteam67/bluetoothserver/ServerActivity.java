@@ -224,33 +224,33 @@ public class ServerActivity extends AppCompatActivity {
             case R.id.menuItemSetupSchema:
             {
                 final Context c = this;
-                Constants.OnConfirm("Send Schema and delete existing Matches?", this, new Runnable() {
-                    @Override
-                    public void run() {
-                        Intent launchSchemaActivityIntent = new Intent(c, SchemaActivity.class);
-                        startActivity(launchSchemaActivityIntent);
-                    }
-                });
+                Intent launchSchemaActivityIntent = new Intent(c, SchemaActivity.class);
+                startActivity(launchSchemaActivityIntent);
                 break;
             }
             case R.id.menuItemSendSchema:
             {
-                // Obtain schema
-                String schema = SchemaHandler.LoadSchemaFromFile();
+                Constants.OnConfirm("Send Schema?", this, new Runnable() {
+                    @Override
+                    public void run() {
+                        // Obtain schema
+                        String schema = SchemaHandler.LoadSchemaFromFile();
 
-                try
-                {
-                    // Send to each device
-                    for (ConnectedThread device : connectedThreads) {
-                        device.write((Constants.SCOUTER_SCHEMA_TAG + schema).getBytes());
+                        try
+                        {
+                            // Send to each device
+                            for (ConnectedThread device : connectedThreads) {
+                                device.write((Constants.SCOUTER_SCHEMA_TAG + schema).getBytes());
+                            }
+                            VisualLog("Wrote schema to " + connectedThreads.size() + " devices");
+                        }
+                        catch (Exception e)
+                        {
+                            VisualLog("Failed to send schema to devices: " + e.getMessage());
+                            e.printStackTrace();
+                        }
                     }
-                    VisualLog("Wrote schema to " + connectedThreads.size() + " devices");
-                }
-                catch (Exception e)
-                {
-                    VisualLog("Failed to send schema to devices: " + e.getMessage());
-                    e.printStackTrace();
-                }
+                });
                 break;
             }
             case R.id.menuItemSendMatches:
@@ -271,43 +271,49 @@ public class ServerActivity extends AppCompatActivity {
                         }
                     }
                 });
+                break;
             }
             case R.id.menuItemSyncAll:
             {
-                Iterator<?> sizeIterator = jsonDatabase.keys();
-                int size = 0;
-                while (sizeIterator.hasNext())
-                {
-                    size++;
-                    sizeIterator.next();
-                }
-                JSONObject[] objects = new JSONObject[size];
+                Constants.OnConfirm("Sync All Matches?", this, new Runnable() {
+                    @Override
+                    public void run() {
+                        Iterator<?> sizeIterator = jsonDatabase.keys();
+                        int size = 0;
+                        while (sizeIterator.hasNext())
+                        {
+                            size++;
+                            sizeIterator.next();
+                        }
+                        JSONObject[] objects = new JSONObject[size];
 
-                Iterator<?> iterator = jsonDatabase.keys();
-                int i = 0;
-                while (iterator.hasNext())
-                {
-                    try
-                    {
-                        String key = (String) iterator.next();
-                        JSONObject object = (JSONObject) jsonDatabase.get(key);
-                        objects[i] = object;
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-                    ++i;
-                }
+                        Iterator<?> iterator = jsonDatabase.keys();
+                        int i = 0;
+                        while (iterator.hasNext())
+                        {
+                            try
+                            {
+                                String key = (String) iterator.next();
+                                JSONObject object = (JSONObject) jsonDatabase.get(key);
+                                objects[i] = object;
+                            }
+                            catch (Exception e)
+                            {
+                                e.printStackTrace();
+                            }
+                            ++i;
+                        }
 
-                try
-                {
-                    saveJsonObject(objects);
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
+                        try
+                        {
+                            saveJsonObject(objects);
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
 
         }
@@ -462,15 +468,15 @@ public class ServerActivity extends AppCompatActivity {
                         String[] teams = matches.get(m).split(",");
                         // Has to have six teams
                         if (teams.length != deviceTeams.size()) {
-                            VisualLog("Dropping match: " + matches.get(m));
+                            //VisualLog("Dropping match: " + matches.get(m));
                             ++failed;
                         } else {
-                            for (int i = 0; i < teams.length; ++i) {
+                            for (int i = 0; i < deviceTeams.size(); ++i) {
                                 // Append to keep the match tag, and all previous iterations
-                                deviceTeams.set(m, deviceTeams.get(i) + teams[i]);
+                                deviceTeams.set(i, deviceTeams.get(i) + teams[i]);
                                 // If not the last match, add a comma
                                 if (m + 1 < matches.size())
-                                    deviceTeams.set(m, deviceTeams.get(i) + ",");
+                                    deviceTeams.set(i, deviceTeams.get(i) + ",");
                             }
                         }
                     }
