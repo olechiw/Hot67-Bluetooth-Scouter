@@ -926,7 +926,7 @@ public class ServerActivity extends AppCompatActivity {
                 }
             }
             l("Connected Thread Ended!!!");
-            disconnect(id);
+            disconnect(this);
             MSG(MESSAGE_DISCONNECTED);
         }
 
@@ -973,7 +973,7 @@ public class ServerActivity extends AppCompatActivity {
             catch (Exception e)
             {
                 Log.e("[Bluetooth]", "Failed to send data", e);
-                disconnect(id);
+                disconnect(this);
             }
         }
 
@@ -1014,15 +1014,11 @@ public class ServerActivity extends AppCompatActivity {
     }
 
     // Disconnect a specific connected device, usually called from the thread itself
-    private synchronized void disconnect(int id)
+    private synchronized void disconnect(ConnectedThread thread)
     {
-        if ((id - 1) < allowedDevices)
-        {
-            l("Removing thread with id: " + id);
-            connectedThreads.get(id - 1).close();
-            connectedThreads.get(id - 1).interrupt();
-            connectedThreads.remove(id - 1);
-        }
+        thread.close();
+        thread.interrupt();
+        connectedThreads.remove(thread);
     }
 
     // When the activity is finished, clean up all of the bluetooth elements

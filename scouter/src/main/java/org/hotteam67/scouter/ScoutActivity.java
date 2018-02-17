@@ -376,7 +376,7 @@ public class ScoutActivity extends BluetoothActivity {
 
         if (!localOnly)
         {
-            if (matches.get(getCurrentMatchNumber()).split(",").length > 1) // Make sure actual matches are there
+            if (matches.get(getCurrentMatchNumber() - 1).split(",").length > 1) // Make sure actual matches are there
                 bluetoothSendMatch(matches.get(getCurrentMatchNumber() - 1));
             else
                 l("Saving local only due to missing match data");
