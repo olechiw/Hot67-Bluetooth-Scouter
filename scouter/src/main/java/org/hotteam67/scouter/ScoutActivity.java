@@ -13,12 +13,15 @@ import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
+import android.text.method.KeyListener;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ScrollView;
@@ -51,6 +54,9 @@ public class ScoutActivity extends BluetoothActivity {
     EditText matchNumber;
 
     Toolbar toolbar;
+
+    Button unlockButton;
+    int unlockCount = 0;
 
     GestureDetectorCompat gestureDetectorCompat;
 
@@ -230,6 +236,23 @@ public class ScoutActivity extends BluetoothActivity {
                 return gestureDetectorCompat.onTouchEvent(event);
             }
         });
+
+        unlockButton = (Button) findViewById(R.id.unlockButton);
+        unlockButton.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                unlockCount++;
+                if (unlockCount >= 2) {
+                    syncAllButton.setEnabled(true);
+                    teamNumber.setInputType(InputType.TYPE_CLASS_NUMBER);
+                    return true;
+                }
+                else
+                    return false;
+            }
+        });
+        syncAllButton.setEnabled(false);
+        teamNumber.setInputType(InputType.TYPE_NULL);
     }
 
     private void loadNextMatch() {
