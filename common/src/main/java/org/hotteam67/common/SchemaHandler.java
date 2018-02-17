@@ -85,7 +85,7 @@ public final class SchemaHandler
 
             while (currentColumn < maxColumns &&
                     totalViews < views.size() &&
-                    variables.get(totalViews).Type != Constants.TYPE_HEADER)
+                    (variables.get(totalViews) != null && variables.get(totalViews).Type != Constants.TYPE_HEADER))
             {
                 SetParams(views.get(totalViews), columnWidth);
                 row.addView(views.get(totalViews));

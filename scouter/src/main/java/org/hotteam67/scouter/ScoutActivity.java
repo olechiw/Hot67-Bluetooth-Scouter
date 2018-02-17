@@ -178,7 +178,7 @@ public class ScoutActivity extends BluetoothActivity {
                         } else {
                             queuedMatchesToSend = new ArrayList<>(matches.subList(1, matches.size() - 1));
                             bluetoothSendMatch(matches.get(0));
-                            toast("Sent 1 match, queued " + queuedMatchesToSend.size() + " matches");
+                            toast("Sent Matches");
                         }
                     }
                 });
@@ -337,14 +337,16 @@ public class ScoutActivity extends BluetoothActivity {
 
     private void saveAllMatches()
     {
-        saveAllMatches(true, false);
+        saveAllMatches(false, false);
     }
 
     private void saveAllMatches(boolean localOnly, boolean saveDuplicates)
     {
         // Check if something actually changed since the value was loaded
-        if (getCurrentMatchValues().equals(lastValuesBeforeChange) && !saveDuplicates)
+        if (getCurrentMatchValues().equals(lastValuesBeforeChange) && !saveDuplicates) {
+            l("nothing changed, not saving: " + getCurrentMatchValues());
             return;
+        }
 
         // Existing match
         if (matches.size() >= getCurrentMatchNumber())
@@ -373,7 +375,12 @@ public class ScoutActivity extends BluetoothActivity {
         FileHandler.Write(FileHandler.SCOUTER_DATABASE, output.toString());
 
         if (!localOnly)
-            bluetoothSendMatch(matches.get(getCurrentMatchNumber() - 1));
+        {
+            if (matches.get(getCurrentMatchNumber()).split(",").length > 1) // Make sure actual matches are there
+                bluetoothSendMatch(matches.get(getCurrentMatchNumber() - 1));
+            else
+                l("Saving local only due to missing match data");
+        }
     }
 
     private void bluetoothSendMatch(String match)
