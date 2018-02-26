@@ -315,7 +315,23 @@ public class ServerActivity extends AppCompatActivity {
                     }
                 });
             }
-
+            case R.id.menuItemClearDatabase:
+            {
+                Constants.OnConfirm("Clear Local Database?", this, new Runnable() {
+                    @Override
+                    public void run() {
+                        jsonDatabase = new JSONObject();
+                        try
+                        {
+                            FileHandler.Write(FileHandler.SERVER_DATABASE, "");
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
         }
 
         return true;
@@ -365,8 +381,6 @@ public class ServerActivity extends AppCompatActivity {
                 return true;
             }
         });
-
-        refreshFirebaseAuth();
     }
 
 
@@ -556,10 +570,6 @@ public class ServerActivity extends AppCompatActivity {
         }
     }
 
-    private void refreshFirebaseAuth()
-    {
-    }
-
     // Initialize the accept bluetooth connections thread
     private void setupThreads()
     {
@@ -699,6 +709,7 @@ public class ServerActivity extends AppCompatActivity {
                     String tag =
                             aJson.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
                                     aJson.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
+                    l("Uploading match: " + tag);
 
                     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
                     String eventname = (String) prefs.getAll().get(Constants.PREF_EVENTNAME);
@@ -706,11 +717,14 @@ public class ServerActivity extends AppCompatActivity {
                     String apiKey = (String) prefs.getAll().get(Constants.PREF_APIKEY);
                     l(tag);
                     if (!eventUrl.endsWith("/")) eventUrl += "/";
+                    // http results in a 404 https does not
+                    if (eventUrl.startsWith("http://"))
+                        eventUrl = eventUrl.replace("http://", "https://");
 
-                    JSONObject outputObject = json[0];
+                    JSONObject outputObject = aJson;
                     JSONObject taggedObject = new JSONObject();
                     taggedObject.put(tag, outputObject);
-                    // outputObject = taglessObject;
+                    //outputObject = taggedObject;
 
                     String url;
 

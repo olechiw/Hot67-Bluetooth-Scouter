@@ -16,10 +16,10 @@ import java.io.FileWriter;
 
 public final class FileHandler
 {
-    private static final String SERVER_FILE = "serverDatabase.csv";
-    private static final String SCHEMA_FILE = "schema.csv";
-    private static final String SCOUTER_FILE = "scouterDatabase.csv";
-    private static final String MATCHES_FILE = "serverMatches.csv";
+    private static final String SERVER_FILE = "serverDatabase.json"; // Server scouted matches database
+    private static final String SCHEMA_FILE = "schema.csv"; // Server/scouter schema
+    private static final String SCOUTER_FILE = "scouterDatabase.csv"; // Scouter scouted/unscouted matches database
+    private static final String MATCHES_FILE = "serverMatches.csv"; // Server unscouted matches datbase (match schedule)
     private static final String DIRECTORY =
             Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
 
@@ -53,11 +53,11 @@ public final class FileHandler
         return f;
     }
 
-    public static final BufferedReader GetReader(int FILE)
+    public static BufferedReader GetReader(int FILE)
     {
         try
         {
-            return  new BufferedReader(new FileReader(file(FILE)));
+            return new BufferedReader(new FileReader(file(FILE)));
         }
         catch (FileNotFoundException e)
         {
@@ -82,7 +82,7 @@ public final class FileHandler
         return null;
     }
 
-    public static final FileWriter GetWriter(int FILE)
+    private static FileWriter GetWriter(int FILE)
     {
         String f = file(FILE);
 
@@ -114,7 +114,7 @@ public final class FileHandler
         return null;
     }
 
-    public static final String LoadContents(int file)
+    public static String LoadContents(int file)
     {
         String content = "";
         BufferedReader r = GetReader(file);
@@ -135,13 +135,16 @@ public final class FileHandler
         return content;
     }
 
-    public static final void Write(int FILE, String s)
+    public static void Write(int FILE, String s)
     {
         try
         {
             FileWriter w = GetWriter(FILE);
-            w.write(s);
-            w.close();
+            if (w != null)
+            {
+                w.write(s);
+                w.close();
+            }
         }
         catch (Exception e)
         {
