@@ -46,7 +46,6 @@ import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,7 +55,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -97,6 +95,7 @@ public class ServerActivity extends AppCompatActivity {
     private int allowedDevices = 7;
 
     String lastMatchNumber = "0";
+    List<String> lastMatchTeamNumbers = new ArrayList<>();
     int lastMatchReceived = 0;
 
     // Current database in json format
@@ -314,6 +313,7 @@ public class ServerActivity extends AppCompatActivity {
                         }
                     }
                 });
+                break;
             }
             case R.id.menuItemClearDatabase:
             {
@@ -776,11 +776,16 @@ public class ServerActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            return json[0];
+            if (json.length > 0)
+                return json[0];
+            else
+                return null;
         }
 
         protected void onPostExecute(JSONObject j)
         {
+            if (j == null)
+                return;
             try {
                 /*
                 VisualLog("Received Match Number: "
@@ -792,7 +797,11 @@ public class ServerActivity extends AppCompatActivity {
 
                 if (matchNumber.equals(lastMatchNumber))
                 {
-                    lastMatchReceived++;
+                    if (!lastMatchTeamNumbers.contains(j.get(Constants.TEAM_NUMBER_JSON_TAG)))
+                    {
+                        lastMatchReceived++;
+                        lastMatchTeamNumbers.add((String) j.get(Constants.TEAM_NUMBER_JSON_TAG));
+                    }
                     serverLogText.setText(
                             "Last Match: " + lastMatchNumber + " Received: " + lastMatchReceived + "\n"
                     );
@@ -801,6 +810,8 @@ public class ServerActivity extends AppCompatActivity {
                 {
                     lastMatchNumber = matchNumber;
                     lastMatchReceived = 1;
+                    lastMatchTeamNumbers = new ArrayList<>();
+                    lastMatchTeamNumbers.add((String) j.get(Constants.TEAM_NUMBER_JSON_TAG));
                     serverLogText.setText(
                             "Last Match: " + matchNumber + " Received: " + lastMatchReceived + "\n"
                     );

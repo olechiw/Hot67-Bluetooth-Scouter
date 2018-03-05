@@ -519,6 +519,7 @@ public class ScoutActivity extends BluetoothActivity {
         @Override
         public boolean onFling(MotionEvent event1, MotionEvent event2,
                                float velocityX, float velocityY) {
+            /*
             float sens = 500;
             if (
                     Math.abs(velocityX) > Math.abs(velocityY)
@@ -534,6 +535,8 @@ public class ScoutActivity extends BluetoothActivity {
                 }
                 return true;
             }
+            return false;
+            */
             return false;
         }
     }
