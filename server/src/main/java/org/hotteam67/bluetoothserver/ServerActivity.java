@@ -277,40 +277,7 @@ public class ServerActivity extends AppCompatActivity {
                 Constants.OnConfirm("Sync All Matches?", this, new Runnable() {
                     @Override
                     public void run() {
-                        Iterator<?> sizeIterator = jsonDatabase.keys();
-                        int size = 0;
-                        while (sizeIterator.hasNext())
-                        {
-                            size++;
-                            sizeIterator.next();
-                        }
-                        JSONObject[] objects = new JSONObject[size];
-
-                        Iterator<?> iterator = jsonDatabase.keys();
-                        int i = 0;
-                        while (iterator.hasNext())
-                        {
-                            try
-                            {
-                                String key = (String) iterator.next();
-                                JSONObject object = (JSONObject) jsonDatabase.get(key);
-                                objects[i] = object;
-                            }
-                            catch (Exception e)
-                            {
-                                e.printStackTrace();
-                            }
-                            ++i;
-                        }
-
-                        try
-                        {
-                            saveJsonObject(objects);
-                        }
-                        catch (Exception e)
-                        {
-                            e.printStackTrace();
-                        }
+                        saveJsonObject(jsonDatabase, true);
                     }
                 });
                 break;
@@ -686,14 +653,99 @@ public class ServerActivity extends AppCompatActivity {
         FileHandler.Write(FileHandler.SERVER_DATABASE, jsonDatabase.toString());
     }
 
-    private void saveJsonObject(JSONObject... json) throws JSONException, IOException
+    private void saveJsonObject(JSONObject json)
     {
-        AsyncUploadTask uploadTask = new AsyncUploadTask();
-        uploadTask.execute(json);
+        saveJsonObject(json, false);
+    }
+    private void saveJsonObject(final JSONObject json, boolean useRootUrl)
+    {
+        try {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            String eventName = (String) prefs.getAll().get(Constants.PREF_EVENTNAME);
+            String eventUrl = (String) prefs.getAll().get(Constants.PREF_DATABASEURL);
+            String apiKey = (String) prefs.getAll().get(Constants.PREF_APIKEY);
+            if (!eventName.endsWith("/"))
+                eventUrl += "/";
+            if (!eventUrl.startsWith("https://"))
+                try {
+                    eventUrl = eventUrl.replace("http://", "https://");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            String finalUrl = eventUrl + eventName;
+            if (useRootUrl)
+                finalUrl += ".json?auth=" + apiKey;
+            else {
+                String tag =
+                        json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
+                                json.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
+                finalUrl += "/" + tag + ".json?auth=" + apiKey;
+            }
+
+            AsyncUploadTask uploadTask = new AsyncUploadTask(finalUrl, json, new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                /*
+                VisualLog("Received Match Number: "
+                        + j.get(Constants.MATCH_NUMBER_JSON_TAG)
+                        + " For Team Number: "
+                        + j.get(Constants.TEAM_NUMBER_JSON_TAG));
+                        */
+                        String matchNumber = (String) json.get(Constants.MATCH_NUMBER_JSON_TAG);
+
+                        if (matchNumber.equals(lastMatchNumber))
+                        {
+                            if (!lastMatchTeamNumbers.contains(json.get(Constants.TEAM_NUMBER_JSON_TAG)))
+                            {
+                                lastMatchReceived++;
+                                lastMatchTeamNumbers.add((String) json.get(Constants.TEAM_NUMBER_JSON_TAG));
+                            }
+                            serverLogText.setText(
+                                    "Last Match: " + lastMatchNumber + " Received: " + lastMatchReceived + "\n"
+                            );
+                        }
+                        else
+                        {
+                            lastMatchNumber = matchNumber;
+                            lastMatchReceived = 1;
+                            lastMatchTeamNumbers = new ArrayList<>();
+                            lastMatchTeamNumbers.add((String) json.get(Constants.TEAM_NUMBER_JSON_TAG));
+                            serverLogText.setText(
+                                    "Last Match: " + matchNumber + " Received: " + lastMatchReceived + "\n"
+                            );
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            // Save locally
+            saveJsonDatabase();
+            uploadTask.execute(json);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     private final Context context = this;
     private class AsyncUploadTask extends AsyncTask<JSONObject, Void, JSONObject> {
+
+        private String uploadUrl;
+        private JSONObject jsonData;
+        private Runnable onCompleteEvent;
+        public AsyncUploadTask(String url, JSONObject data, Runnable onComplete)
+        {
+            uploadUrl = url;
+            jsonData = data;
+            onCompleteEvent = onComplete;
+        }
+
         protected JSONObject doInBackground(JSONObject... json)
         {
             try {
@@ -704,52 +756,12 @@ public class ServerActivity extends AppCompatActivity {
                 // or 204815 for team 2048 match 15
                 //
                 // This is simply to make sure no duplicate matches are recorded for any team
-
-                for (JSONObject aJson : json) {
-                    String tag =
-                            aJson.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
-                                    aJson.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
-                    l("Uploading match: " + tag);
-
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                    String eventname = (String) prefs.getAll().get(Constants.PREF_EVENTNAME);
-                    String eventUrl = (String) prefs.getAll().get(Constants.PREF_DATABASEURL);
-                    String apiKey = (String) prefs.getAll().get(Constants.PREF_APIKEY);
-                    l(tag);
-                    if (!eventUrl.endsWith("/")) eventUrl += "/";
-                    // http results in a 404 https does not
-                    if (eventUrl.startsWith("http://"))
-                        eventUrl = eventUrl.replace("http://", "https://");
-
-                    JSONObject outputObject = aJson;
-                    JSONObject taggedObject = new JSONObject();
-                    taggedObject.put(tag, outputObject);
-                    //outputObject = taggedObject;
-
-                    String url;
-
-                    // Test for eventName
-                /*
-                HttpURLConnection testConn = (HttpURLConnection) new URL(eventUrl + eventname)
-                        .openConnection();
-                if (testConn.getResponseCode() != HttpURLConnection.HTTP_OK)
+                if (json != null && json.length > 0)
                 {
-                    JSONObject tmp = new JSONObject();
-                    tmp.put(eventname, outputObject);
-                    outputObject = tmp;
-                    url = eventUrl;
-                }
-                else
-                {
-                    url = eventUrl + eventname;
-                }*/
-
-                    url = eventUrl + eventname + "/" + tag + ".json?auth=" + apiKey;
-
-                    String jsonString = outputObject.toString();
+                    String jsonString = json[0].toString();
                     Log.d("BluetoothScouter", "Outputting json: " + jsonString);
 
-                    HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+                    HttpURLConnection conn = (HttpURLConnection) new URL(uploadUrl).openConnection();
                     conn.setRequestMethod("PUT");
                     conn.setDoOutput(true);
 
@@ -759,13 +771,9 @@ public class ServerActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
 
-                    // Save locally
-                    jsonDatabase.put(tag, outputObject);
-                    saveJsonDatabase();
-
 
                     Log.d("BLUETOOTH_SCOUTER", "Sending request to url: "
-                            + url + "\n Received response code: " + conn.getResponseCode());
+                            + uploadUrl + "\n Received response code: " + conn.getResponseCode());
 
                     String resp = conn.getResponseMessage();
                     Log.d("BLUETOOTH_SCOUTER", "Response: " + resp);
@@ -784,43 +792,6 @@ public class ServerActivity extends AppCompatActivity {
 
         protected void onPostExecute(JSONObject j)
         {
-            if (j == null)
-                return;
-            try {
-                /*
-                VisualLog("Received Match Number: "
-                        + j.get(Constants.MATCH_NUMBER_JSON_TAG)
-                        + " For Team Number: "
-                        + j.get(Constants.TEAM_NUMBER_JSON_TAG));
-                        */
-                String matchNumber = (String) j.get(Constants.MATCH_NUMBER_JSON_TAG);
-
-                if (matchNumber.equals(lastMatchNumber))
-                {
-                    if (!lastMatchTeamNumbers.contains(j.get(Constants.TEAM_NUMBER_JSON_TAG)))
-                    {
-                        lastMatchReceived++;
-                        lastMatchTeamNumbers.add((String) j.get(Constants.TEAM_NUMBER_JSON_TAG));
-                    }
-                    serverLogText.setText(
-                            "Last Match: " + lastMatchNumber + " Received: " + lastMatchReceived + "\n"
-                    );
-                }
-                else
-                {
-                    lastMatchNumber = matchNumber;
-                    lastMatchReceived = 1;
-                    lastMatchTeamNumbers = new ArrayList<>();
-                    lastMatchTeamNumbers.add((String) j.get(Constants.TEAM_NUMBER_JSON_TAG));
-                    serverLogText.setText(
-                            "Last Match: " + matchNumber + " Received: " + lastMatchReceived + "\n"
-                    );
-                }
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
         }
     }
 
