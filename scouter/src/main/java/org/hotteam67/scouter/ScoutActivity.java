@@ -295,7 +295,7 @@ public class ScoutActivity extends BluetoothActivity {
             String[] vals = val.split(",");
             // List<String> subList = Arrays.asList(vals).subList(2, vals.length - 1);
             try {
-                SchemaHandler.SetCurrentValues(inputTable, Arrays.asList(vals).subList(2, vals.length - 1));
+                SchemaHandler.SetCurrentValues(inputTable, Arrays.asList(vals).subList(2, vals.length));
             } catch (Exception e) {
                 l("Failed to load match, corrupted, out of sync, or doesn't exist " + e.getMessage());
                 // e.printStackTrace();

@@ -752,8 +752,8 @@ public class ServerActivity extends AppCompatActivity {
                 // Each individual match gets a tag, with the team number then match number,
                 // so unique for every team's match. For instance:
                 //
-                // 671 for team 67 match one,
-                // or 204815 for team 2048 match 15
+                // 67_1 for team 67 match one,
+                // or 2048_15 for team 2048 match 15
                 //
                 // This is simply to make sure no duplicate matches are recorded for any team
                 if (json != null && json.length > 0)
@@ -792,6 +792,7 @@ public class ServerActivity extends AppCompatActivity {
 
         protected void onPostExecute(JSONObject j)
         {
+            onCompleteEvent.run();
         }
     }
 
