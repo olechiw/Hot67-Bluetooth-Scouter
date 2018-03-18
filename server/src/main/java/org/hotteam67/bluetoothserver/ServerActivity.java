@@ -39,7 +39,7 @@ import com.cpjd.main.Settings;
 import com.cpjd.main.TBA;
 import com.cpjd.models.Event;
 import com.cpjd.models.Match;
-import com.example.bluetoothserver.R;
+import org.hotteam67.bluetoothserver.R;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;

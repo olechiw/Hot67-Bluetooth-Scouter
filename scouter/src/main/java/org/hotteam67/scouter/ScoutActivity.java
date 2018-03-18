@@ -306,13 +306,9 @@ public class ScoutActivity extends BluetoothActivity {
             teamNumber.setText(getTeamNumber(match - 1));
         } else // New match
         {
-
-            teamNumber.setText(getTeamNumber(match - 1));
-
-            SchemaHandler.ClearCurrentValues(inputTable);
-
             saveAllMatches(true, false);
-
+            teamNumber.setText(getTeamNumber(match - 1));
+            SchemaHandler.ClearCurrentValues(inputTable);
         }
 
         if (changeMatchText) {
