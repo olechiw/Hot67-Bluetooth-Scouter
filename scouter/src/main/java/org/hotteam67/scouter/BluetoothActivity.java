@@ -66,8 +66,8 @@ public class BluetoothActivity extends AppCompatActivity {
         setupBluetooth();
     }
 
-    // Display a popup box (not a toast, LOL)
-    protected void toast(String text)
+    // MessageBox
+    protected void MessageBox(String text)
     {
         try {
             AlertDialog.Builder dlg = new AlertDialog.Builder(this);
@@ -389,12 +389,12 @@ public class BluetoothActivity extends AppCompatActivity {
 
                 l("TOASTING: " + t);
 
-                //toast(t);
+                //MessageBox(t);
 
                 sendMessageEvent.call(t);
                 break;
             case MESSAGE_DISCONNECTED:
-                //toast("DISCONNECTED FROM DEVICE");
+                //MessageBox("DISCONNECTED FROM DEVICE");
                 disconnectEvent.call("");
                 break;
         }

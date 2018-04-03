@@ -23,10 +23,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.InputFilter;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,12 +35,10 @@ import com.cpjd.main.Settings;
 import com.cpjd.main.TBA;
 import com.cpjd.models.Event;
 import com.cpjd.models.Match;
-import org.hotteam67.bluetoothserver.R;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -56,7 +50,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -104,8 +97,8 @@ public class ServerActivity extends AppCompatActivity {
     // Bluetooth hardware adapter
     protected BluetoothAdapter m_bluetoothAdapter;
 
-    // Display a popup box (not a toast, LOL)
-    protected void toast(String text)
+    // Display a popup box (not a MessageBox, LOL)
+    protected void MessageBox(String text)
     {
         try {
             AlertDialog.Builder dlg = new AlertDialog.Builder(this);
@@ -184,35 +177,26 @@ public class ServerActivity extends AppCompatActivity {
     }
 
     private void GetString(final String prompt, final SchemaActivity.StringInputEvent onInput) {
-        InputFilter filter = new InputFilter() {
-            @Override
-            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-                boolean keepOriginal = true;
-                StringBuilder sb = new StringBuilder(end - start);
-                for (int i = start; i < end; i++) {
-                    char c = source.charAt(i);
-                    if (isCharAllowed(c)) // put your condition here
-                        sb.append(c);
-                    else
-                        keepOriginal = false;
-                }
-                if (keepOriginal)
-                    return null;
-                else {
-                    if (source instanceof Spanned) {
-                        SpannableString sp = new SpannableString(sb);
-                        TextUtils.copySpansFrom((Spanned) source, start, sb.length(), null, sp, 0);
-                        return sp;
-                    } else {
-                        return sb;
-                    }
-                }
-            }
+        final EditText input = new EditText(this);
 
-            private boolean isCharAllowed(char c) {
-                return Character.isLetterOrDigit(c) || Character.isSpaceChar(c);
-            }
-        };
+        try {
+            AlertDialog.Builder dlg = new AlertDialog.Builder(this);
+            dlg.setTitle("");
+            dlg.setMessage(prompt);
+            dlg.setView(input);
+            dlg.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    onInput.Run(input.getText().toString());
+                }
+            });
+            dlg.setCancelable(true);
+            dlg.create();
+            dlg.show();
+        }
+        catch (Exception e)
+        {
+            l("Failed to create dialog: " + e.getMessage());
+        }
     }
 
     @Override
@@ -377,7 +361,7 @@ public class ServerActivity extends AppCompatActivity {
                     StringBuilder s = new StringBuilder();
                     Event e = tba.getEvent(matchKeyInput.getText().toString(),
                             Integer.valueOf(new SimpleDateFormat("yyyy", Locale.US).format(new Date())));
-                    toast(e.matches.length + " Matches Loaded");
+                    MessageBox(e.matches.length + " Matches Loaded");
                     l("Obtained event: " + e.name);
                     l("Year: " + new SimpleDateFormat("yyyy", Locale.US).format(new Date()));
                     l("Matches: " + e.matches.length);
@@ -402,7 +386,7 @@ public class ServerActivity extends AppCompatActivity {
                 }
                 catch (Exception e)
                 {
-                    toast("Failed to load matches");
+                    MessageBox("Failed to load matches");
                     Log.e("[Matches Fetcher]", "Failed to get event: " + e.getMessage(), e);
                 }
             }
@@ -476,7 +460,7 @@ public class ServerActivity extends AppCompatActivity {
 
                     if (failed > 0)
                         s += " Dropped " + failed + " matches";
-                    toast(s);
+                    MessageBox(s);
                 }
                 catch (Exception e)
                 {
@@ -617,7 +601,7 @@ public class ServerActivity extends AppCompatActivity {
 
                 break;
             case MESSAGE_DISCONNECTED:
-                //toast("DISCONNECTED FROM DEVICE");
+                //MessageBox("DISCONNECTED FROM DEVICE");
                 l("Received Disconnect");
                 VisualLog("Device Disconnected!");
                 l("Size of connected threads: " + connectedThreads.size());

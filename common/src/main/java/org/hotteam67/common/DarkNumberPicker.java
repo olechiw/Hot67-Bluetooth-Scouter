@@ -96,9 +96,7 @@ public class DarkNumberPicker extends LinearLayout
 
                 //android.util.Log.d("[DarkPicker]", "Integer value: " + i);
 
-                if ((i >= minimum && i <= maximum)) {
-                }
-                else if (i < minimum)
+                if (i < minimum)
                 {
                     mainText.setText(String.valueOf(minimum));
                 }
@@ -106,8 +104,6 @@ public class DarkNumberPicker extends LinearLayout
                 {
                     mainText.setText(String.valueOf(maximum));
                 }
-                else
-                    mainText.setText(String.valueOf(minimum));
             }
         });
 
@@ -134,11 +130,7 @@ public class DarkNumberPicker extends LinearLayout
             @Override
             public void onClick(View v)
             {
-                int i = getValue() - 1;
-                if (i < minimum)
-                    setValue(maximum);
-                else
-                    setValue(i);
+                setValue(getValue() - 1);
             }
         });
         downButton.setText("-");

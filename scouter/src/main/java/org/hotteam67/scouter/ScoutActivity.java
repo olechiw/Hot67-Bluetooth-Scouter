@@ -15,7 +15,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.text.method.KeyListener;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -37,8 +36,6 @@ import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.xml.validation.Schema;
 
 
 public class ScoutActivity extends BluetoothActivity {
@@ -170,7 +167,7 @@ public class ScoutActivity extends BluetoothActivity {
         syncAllButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // toast("Matches sending: " + matches.size());
+                // MessageBox("Matches sending: " + matches.size());
 
                 Constants.OnConfirm("Send All Matches?", c, new Runnable() {
                     @Override
@@ -180,11 +177,11 @@ public class ScoutActivity extends BluetoothActivity {
 
                         if (matches.size() == 1) {
                             bluetoothSendMatch(matches.get(0));
-                            toast("Sent 1 match");
+                            MessageBox("Sent 1 match");
                         } else {
                             queuedMatchesToSend = new ArrayList<>(matches.subList(1, matches.size() - 1));
                             bluetoothSendMatch(matches.get(0));
-                            toast("Sent Matches");
+                            MessageBox("Sent Matches");
                         }
                     }
                 });
@@ -624,7 +621,7 @@ public class ScoutActivity extends BluetoothActivity {
                     break;
                 case Constants.SERVER_MESSAGE_TAG:
                     //Shows the message received from the server
-                    toast(message);
+                    MessageBox(message);
                     break;
                 default:
                     l("Received unknown tag: " + tag);
