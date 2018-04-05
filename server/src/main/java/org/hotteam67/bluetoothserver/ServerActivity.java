@@ -85,7 +85,7 @@ public class ServerActivity extends AppCompatActivity {
     public synchronized void MSG(int msg) { m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget(); }
 
     // Number of active and allowed devices
-    private int allowedDevices = 7;
+    private static final int allowedDevices = 7;
 
     String lastMatchNumber = "0";
     List<String> lastMatchTeamNumbers = new ArrayList<>();
