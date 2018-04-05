@@ -11,7 +11,7 @@
     <android.support.v7.widget.Toolbar
         android:layout_width="fill_parent"
         android:layout_height="70dp"
-        android:background="?attr/colorPrimary"
+        android:background="@color/colorPrimary"
         android:elevation="4dp"
         android:id="@+id/toolBar"
         android:minHeight="70dp"
@@ -55,7 +55,7 @@
                 android:src="@drawable/ic_network_off"
                 android:id="@+id/connectButton"
                 android:layout_gravity="start"
-                android:background="?attr/colorPrimary"/>
+                android:background="@color/colorPrimary"/>
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -64,7 +64,7 @@
             android:src="@drawable/ic_sync"
             android:id="@+id/syncAllButton"
             android:layout_gravity="end"
-            android:background="?attr/colorPrimary"/>
+            android:background="@color/colorPrimary"/>
         <!-- </RelativeLayout> -->
 
     </android.support.v7.widget.Toolbar>
@@ -104,6 +104,17 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:stretchColumns="*"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Notes:"
+                android:textAppearance="@style/TextAppearance.AppCompat.Title"/>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lines="4"
+                android:id="@+id/notesText"/>
             </LinearLayout>
         </ScrollView>
 
@@ -116,7 +127,7 @@
             android:id="@+id/nextMatchButton"
             android:layout_margin="24dp"
             app:layout_anchorGravity="bottom|end"
-            app:backgroundTint="?attr/colorPrimary"
+            app:backgroundTint="@color/colorPrimary"
             app:layout_anchor="@id/scrollView"/>
         <android.support.design.widget.FloatingActionButton
             android:layout_width="wrap_content"
@@ -126,7 +137,7 @@
             android:src="@drawable/ic_left"
             android:layout_margin="24dp"
             app:layout_anchorGravity="bottom|left"
-            app:backgroundTint="?attr/colorPrimary"
+            app:backgroundTint="@color/colorPrimary"
             app:layout_anchor="@id/scrollView"/>
     </android.support.design.widget.CoordinatorLayout>
 </RelativeLayout>

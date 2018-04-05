@@ -49,6 +49,7 @@ public class ScoutActivity extends BluetoothActivity {
 
     EditText teamNumber;
     EditText matchNumber;
+    EditText notes;
 
     Toolbar toolbar;
 
@@ -148,6 +149,8 @@ public class ScoutActivity extends BluetoothActivity {
 
         nextMatchButton = (FloatingActionButton) findViewById(R.id.nextMatchButton);
         prevMatchButton = (FloatingActionButton) findViewById(R.id.prevMatchButton);
+
+        notes = (EditText) findViewById(R.id.notesText);
 
         nextMatchButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -301,10 +304,12 @@ public class ScoutActivity extends BluetoothActivity {
             }
 
             teamNumber.setText(getTeamNumber(match - 1));
+            notes.setText(getNotes(match - 1));
         } else // New match
         {
             saveAllMatches(true, false);
             teamNumber.setText(getTeamNumber(match - 1));
+            notes.setText("");
             SchemaHandler.ClearCurrentValues(inputTable);
         }
 
@@ -314,6 +319,23 @@ public class ScoutActivity extends BluetoothActivity {
         }
 
         lastValuesBeforeChange = getCurrentMatchValues();
+    }
+
+    private String getNotes(int i) {
+        if (matches.size() > i)
+        {
+            // Split doesn't catch the end if there are no notes, so check for no notes
+            if (matches.get(i).endsWith(","))
+                return "";
+            else
+                try {
+                    String[] match = matches.get(i).split(",");
+                    return match[match.length - 1];
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+        }
+        return "";
     }
 
     private String getCurrentTeamNumber() {
@@ -478,8 +500,7 @@ public class ScoutActivity extends BluetoothActivity {
         }
 
 
-        if (values.length() > 0)
-            values = new StringBuilder(values.substring(0, values.length() - 1));
+        values.append(notes.getText().toString().replace(",", ""));
 
         // l("Current Values: " + values);
 
