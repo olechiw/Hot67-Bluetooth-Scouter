@@ -327,7 +327,7 @@ public final class SchemaHandler
                 */
                 v = getInflater(c).inflate(R.layout.layout_boolean, null);
                 LinearLayout l = (LinearLayout)v;
-                CheckBox check = ((CheckBox)l.findViewById(R.id.checkBox1));
+                CheckBox check = l.findViewById(R.id.checkBox1);
                 check.setEnabled(true);
                 check.setText(variable.Tag);
                 check.setVisibility(View.VISIBLE);
@@ -338,7 +338,7 @@ public final class SchemaHandler
                 break;
             case Constants.TYPE_STRING:
                 v = getInflater(c).inflate(R.layout.layout_edittext, null);
-                TextView text = ((TextView) v.findViewById(R.id.textLabel));
+                TextView text = v.findViewById(R.id.textLabel);
                 text.setText(variable.Tag);
                 /*
                 v.setTag(R.string.variable_type, Constants.TYPE_STRING);
@@ -356,11 +356,11 @@ public final class SchemaHandler
                 v.setTag(R.string.variable_name, variable.Tag);
                 */
                 TextViewCompat.setTextAppearance(
-                        ((TextView) v.findViewById(R.id.numberLabel)),
+                        v.findViewById(R.id.numberLabel),
                         android.R.style.TextAppearance_DeviceDefault);
 
 
-                DarkNumberPicker picker = (DarkNumberPicker) v.findViewById(R.id.numberPicker);
+                DarkNumberPicker picker = v.findViewById(R.id.numberPicker);
                 picker.setMinimum(variable.Min);
                 picker.setMaximum(variable.Max);
                 break;

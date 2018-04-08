@@ -41,6 +41,7 @@ public class Constants
 
     public static String MATCH_NUMBER_JSON_TAG = "Match Number";
     public static String TEAM_NUMBER_JSON_TAG = "Team Number";
+    public static String NOTES_JSON_TAG = "Notes";
 
     public static String getTag(String s)
     {

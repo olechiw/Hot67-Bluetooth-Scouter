@@ -290,10 +290,10 @@ public class ServerActivity extends AppCompatActivity {
 
     private void setupUI()
     {
-        connectedDevicesText = (TextView) findViewById(R.id.connectedDevicesText);
-        serverLogText = (EditText) findViewById(R.id.serverLog);
+        connectedDevicesText = findViewById(R.id.connectedDevicesText);
+        serverLogText = findViewById(R.id.serverLog);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolBar);
+        Toolbar toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
         if (ab != null)
@@ -307,7 +307,7 @@ public class ServerActivity extends AppCompatActivity {
             }
         });
 
-        downloadMatchesButton = (ImageButton) findViewById(R.id.matchesDownloadButton);
+        downloadMatchesButton = findViewById(R.id.matchesDownloadButton);
         downloadMatchesButton.setOnClickListener(new View.OnClickListener()
         {
             @Override

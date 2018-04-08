@@ -50,7 +50,7 @@ public class SchemaActivity extends AppCompatActivity {
                     public void run() {
                         schema = "";
                         SchemaHandler.Setup(
-                                (TableLayout) findViewById(R.id.scoutLayout),
+                                findViewById(R.id.scoutLayout),
                                 schema,
                                 c);
                     }
@@ -94,7 +94,7 @@ public class SchemaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schema);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -104,7 +104,7 @@ public class SchemaActivity extends AppCompatActivity {
         Button headerButton;
         Button deleteButton;
 
-        ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView);
+        ScrollView scrollView = findViewById(R.id.scrollView);
         scrollView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
         scrollView.setFocusable(true);
         scrollView.setFocusableInTouchMode(true);
@@ -116,11 +116,11 @@ public class SchemaActivity extends AppCompatActivity {
             }
         });
 
-        final TableLayout tableLayout = (TableLayout) findViewById(R.id.scoutLayout);
+        final TableLayout tableLayout = findViewById(R.id.scoutLayout);
 
         final Context c = this;
 
-        numberButton = (Button) findViewById(R.id.numberButton);
+        numberButton = findViewById(R.id.numberButton);
         numberButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -146,7 +146,7 @@ public class SchemaActivity extends AppCompatActivity {
             }
         });
 
-        booleanButton = (Button) findViewById(R.id.booleanButton);
+        booleanButton = findViewById(R.id.booleanButton);
         booleanButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -159,7 +159,7 @@ public class SchemaActivity extends AppCompatActivity {
                 });
             }
         });
-        headerButton = (Button) findViewById(R.id.headerButton);
+        headerButton = findViewById(R.id.headerButton);
         headerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -172,7 +172,7 @@ public class SchemaActivity extends AppCompatActivity {
                 });
             }
         });
-        deleteButton = (Button) findViewById(R.id.deleteButton);
+        deleteButton = findViewById(R.id.deleteButton);
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -198,7 +198,7 @@ public class SchemaActivity extends AppCompatActivity {
 
         SchemaHandler.Setup(tableLayout, schema, this);
 
-        ImageButton saveButton = (ImageButton) findViewById(R.id.saveButton);
+        ImageButton saveButton = findViewById(R.id.saveButton);
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

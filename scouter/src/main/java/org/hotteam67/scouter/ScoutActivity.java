@@ -109,7 +109,7 @@ public class ScoutActivity extends BluetoothActivity {
     }
 
     private void setupPostBluetooth() {
-        toolbar = (Toolbar) findViewById(R.id.toolBar);
+        toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
         //ab.setDisplayHomeAsUpEnabled(true);
@@ -117,7 +117,7 @@ public class ScoutActivity extends BluetoothActivity {
 
         // setRequestedOrientation(getResources().getConfiguration().orientation);
 
-        connectButton = (ImageButton) toolbar.findViewById(R.id.connectButton);
+        connectButton = toolbar.findViewById(R.id.connectButton);
         connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -127,7 +127,7 @@ public class ScoutActivity extends BluetoothActivity {
             }
         });
 
-        teamNumber = (EditText) toolbar.findViewById(R.id.teamNumberText);
+        teamNumber = toolbar.findViewById(R.id.teamNumberText);
 
         /*
         InputFilter filter = new InputFilter() {
@@ -143,14 +143,14 @@ public class ScoutActivity extends BluetoothActivity {
         };
         */
 
-        matchNumber = (EditText) findViewById(R.id.matchNumberText);
+        matchNumber = findViewById(R.id.matchNumberText);
 
-        inputTable = (TableLayout) findViewById(R.id.scoutLayout);
+        inputTable = findViewById(R.id.scoutLayout);
 
-        nextMatchButton = (FloatingActionButton) findViewById(R.id.nextMatchButton);
-        prevMatchButton = (FloatingActionButton) findViewById(R.id.prevMatchButton);
+        nextMatchButton = findViewById(R.id.nextMatchButton);
+        prevMatchButton = findViewById(R.id.prevMatchButton);
 
-        notes = (EditText) findViewById(R.id.notesText);
+        notes = findViewById(R.id.notesText);
 
         nextMatchButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -166,7 +166,7 @@ public class ScoutActivity extends BluetoothActivity {
         });
 
         final Context c = this;
-        syncAllButton = (ImageButton) findViewById(R.id.syncAllButton);
+        syncAllButton = findViewById(R.id.syncAllButton);
         syncAllButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -226,30 +226,16 @@ public class ScoutActivity extends BluetoothActivity {
             }
         });
 
-        gestureDetectorCompat = new GestureDetectorCompat(this, new GestureListener());
-
-        ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView);
-        // scrollView.requestDisallowInterceptTouchEvent(true);
-        scrollView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return gestureDetectorCompat.onTouchEvent(event);
+        unlockButton = findViewById(R.id.unlockButton);
+        unlockButton.setOnLongClickListener(v -> {
+            unlockCount++;
+            if (unlockCount >= 2) {
+                syncAllButton.setEnabled(true);
+                teamNumber.setInputType(InputType.TYPE_CLASS_NUMBER);
+                return true;
             }
-        });
-
-        unlockButton = (Button) findViewById(R.id.unlockButton);
-        unlockButton.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                unlockCount++;
-                if (unlockCount >= 2) {
-                    syncAllButton.setEnabled(true);
-                    teamNumber.setInputType(InputType.TYPE_CLASS_NUMBER);
-                    return true;
-                }
-                else
-                    return false;
-            }
+            else
+                return false;
         });
         syncAllButton.setEnabled(false);
         teamNumber.setInputType(InputType.TYPE_NULL);
@@ -326,6 +312,8 @@ public class ScoutActivity extends BluetoothActivity {
         {
             // Split doesn't catch the end if there are no notes, so check for no notes
             if (matches.get(i).endsWith(","))
+                return "";
+            else if (matches.get(i).split(",").length < 2)
                 return "";
             else
                 try {
@@ -431,24 +419,30 @@ public class ScoutActivity extends BluetoothActivity {
 
             List<String> values = new ArrayList<>(Arrays.asList(
                     match.split(",")));
-            List<String> headers = new ArrayList<>(Arrays.asList(
+
+            // Add blank notes because split doesn't catch those
+            if (match.endsWith(",")) values.add("");
+
+            List<String> jsonTags = new ArrayList<>(Arrays.asList(
                     SchemaHandler.GetHeader(
                             SchemaHandler.LoadSchemaFromFile()).split(",")));
-            headers.removeAll(Arrays.asList("", null));
-            headers.add(0, Constants.TEAM_NUMBER_JSON_TAG);
-            headers.add(1, Constants.MATCH_NUMBER_JSON_TAG);
-            if (headers.size() != values.size())
+            jsonTags.removeAll(Arrays.asList("", null));
+            jsonTags.add(0, Constants.TEAM_NUMBER_JSON_TAG);
+            jsonTags.add(1, Constants.MATCH_NUMBER_JSON_TAG);
+            jsonTags.add(Constants.NOTES_JSON_TAG);
+            if (jsonTags.size() != values.size())
             {
-                l("Failed to load schema into json, values out of sync!");
-                l(String.valueOf(headers.size()));
+                l("Failed to load schema into json, values/tags out of sync!");
+                l(String.valueOf(jsonTags.size()));
                 l(String.valueOf(values.size()));
             } else
             {
                 try
                 {
-                    for (int i = 0; i < headers.size(); ++i)
+                    // Everything including notes
+                    for (int i = 0; i < jsonTags.size(); ++i)
                     {
-                        outputObject.put(headers.get(i), values.get(i));
+                        outputObject.put(jsonTags.get(i), values.get(i));
                     }
 
                     Write(outputObject.toString());
@@ -470,9 +464,6 @@ public class ScoutActivity extends BluetoothActivity {
 
     private String getCurrentMatchValues()
     {
-                /*
-        l("Sending values:\n" + "67,1");
-        */
         StringBuilder values = new StringBuilder();
         String div = ",";
 
@@ -521,40 +512,6 @@ public class ScoutActivity extends BluetoothActivity {
                     REQUEST_ENABLE_PERMISSION);
         }
     }
-
-    private class GestureListener extends GestureDetector.SimpleOnGestureListener {
-
-        @Override
-        public boolean onDown(MotionEvent event) {
-            // l("onDown: " + event.toString());
-            return false; // Allow scrollview work
-        }
-
-        @Override
-        public boolean onFling(MotionEvent event1, MotionEvent event2,
-                               float velocityX, float velocityY) {
-            /*
-            float sens = 500;
-            if (
-                    Math.abs(velocityX) > Math.abs(velocityY)
-                    && Math.abs(velocityX) > sens)
-            {
-                if (velocityX > 0)
-                {
-                    loadPreviousMatch();
-                }
-                else
-                {
-                    loadNextMatch();
-                }
-                return true;
-            }
-            return false;
-            */
-            return false;
-        }
-    }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
