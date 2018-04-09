@@ -16,6 +16,7 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -172,6 +173,7 @@ public class ScoutActivity extends BluetoothActivity {
             }
         });
 
+        // Button locks syncing and team-number changing, three long clicks to unlock
         unlockButton = findViewById(R.id.unlockButton);
         unlockButton.setOnLongClickListener(v -> {
             unlockCount++;
@@ -257,12 +259,12 @@ public class ScoutActivity extends BluetoothActivity {
                 SchemaHandler.ClearCurrentValues(inputTable);
             }
 
-            teamNumber.setText(GetMatchTeamNumber(match - 1));
+            teamNumber.setText(GetMatchTeamNumber(match));
             notes.setText(GetNotes(match - 1));
         } else // New match
         {
             SaveAllMatches(true, false);
-            teamNumber.setText(GetMatchTeamNumber(match - 1));
+            teamNumber.setText(GetMatchTeamNumber(match));
             notes.setText("");
             SchemaHandler.ClearCurrentValues(inputTable);
         }
@@ -313,7 +315,7 @@ public class ScoutActivity extends BluetoothActivity {
     {
         try
         {
-            return matches.get(m).split(",")[0];
+            return matches.get(m - 1).split(",")[0];
         }
         catch (Exception e)
         {
@@ -368,9 +370,11 @@ public class ScoutActivity extends BluetoothActivity {
         // l("Writing output to matches file: " + output);
         FileHandler.Write(FileHandler.SCOUTER_DATABASE, output.toString());
 
+        // Write to bluetooth
         if (!localOnly)
         {
-            if (matches.get(GetCurrentMatchNumber() - 1).split(",").length > 1) // Make sure actual matches are there
+            // Make sure actual match is there
+            if (matches.get(GetCurrentMatchNumber() - 1).split(",").length > 1)
                 SendMatch(matches.get(GetCurrentMatchNumber() - 1));
             else
                 l("Saving local only due to missing match data");
@@ -441,19 +445,10 @@ public class ScoutActivity extends BluetoothActivity {
         StringBuilder values = new StringBuilder();
         String div = ",";
 
-        /*
-        if (teamNumber.getText().toString().trim().isEmpty())
-            values += "0" + div;
-        else
-            values += teamNumber.getText().toString() + div;
-            */
-        values.append(GetCurrentTeamNumber()).append(div);
-/*
-        if (matchNumber.getText().toString().trim().isEmpty())
-            values += "0" + div;
-        else
-            values += matchNumber.getText() + div;
-            */
+
+        values.append(teamNumber.getText().toString()).append(div);
+
+
         values.append(GetCurrentMatchNumber()).append(div);
 
         List<String> currentValues = SchemaHandler.GetCurrentValues(inputTable);
@@ -519,29 +514,25 @@ public class ScoutActivity extends BluetoothActivity {
                 case Constants.SCOUTER_SCHEMA_TAG:
                     final Context c = this;
                     // Show a confirmation dialog
-                    Constants.OnConfirm("Received new schema, clear local schema?", this, new Runnable() {
-                        @Override
-                        public void run() {
-                            FileHandler.Write(FileHandler.SCHEMA, message);
-                            SchemaHandler.Setup(
-                                    inputTable, // Table to setup the new schema on
-                                    SchemaHandler.LoadSchemaFromFile(), // Schema text
-                                    c); // Context
-                            FileHandler.Write(FileHandler.SCOUTER_DATABASE, "");
-                            matches = new ArrayList<>();
-                            ShowMatch(1);
-                        }
+                    Constants.OnConfirm("Received new schema, clear local schema?", this, () ->
+                    {
+                        FileHandler.Write(FileHandler.SCHEMA, message);
+                        SchemaHandler.Setup(
+                                inputTable, // Table to setup the new schema on
+                                SchemaHandler.LoadSchemaFromFile(), // Schema text
+                                c); // Context
+                        FileHandler.Write(FileHandler.SCOUTER_DATABASE, "");
+                        matches = new ArrayList<>();
+                        ShowMatch(1);
                     });
                     break;
                 case Constants.SCOUTER_TEAMS_TAG:
                     // Show a confirmation dialog
-                    Constants.OnConfirm("Received new teams, clear local database?", this, new Runnable() {
-                        @Override
-                        public void run() {
-                            matches = new ArrayList<>(Arrays.asList(message.split(",")));
-                            ShowMatch(1);
-                            SaveAllMatches(true, true);
-                        }
+                    Constants.OnConfirm("Received new teams, clear local database?", this, () ->
+                    {
+                        matches = new ArrayList<>(Arrays.asList(message.split(",")));
+                        ShowMatch(1);
+                        SaveAllMatches(true, true);
                     });
                     break;
                 case Constants.SERVER_MESSAGE_TAG:

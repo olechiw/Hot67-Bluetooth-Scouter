@@ -14,7 +14,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.StrictMode;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -26,19 +25,14 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.cpjd.main.Settings;
-import com.cpjd.main.TBA;
-import com.cpjd.models.Event;
-import com.cpjd.models.Match;
-
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
+import org.hotteam67.common.TBAHandler;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -46,12 +40,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 
 
 public class ServerActivity extends AppCompatActivity {
@@ -184,11 +176,8 @@ public class ServerActivity extends AppCompatActivity {
             dlg.setTitle("");
             dlg.setMessage(prompt);
             dlg.setView(input);
-            dlg.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    onInput.Run(input.getText().toString());
-                }
-            });
+            dlg.setPositiveButton("Ok", (dialog, which) ->
+                    onInput.Run(input.getText().toString()));
             dlg.setCancelable(true);
             dlg.create();
             dlg.show();
@@ -243,43 +232,33 @@ public class ServerActivity extends AppCompatActivity {
             }
             case R.id.menuItemSendMessage:
             {
-                GetString("Enter Message:", new SchemaActivity.StringInputEvent()
+                GetString("Enter Message:", input ->
                 {
-                    @Override
-                    public void Run(String input)
+                    for (ConnectedThread device : connectedThreads)
                     {
-                        for (ConnectedThread device : connectedThreads)
-                        {
-                            device.write((Constants.SERVER_MESSAGE_TAG + input).getBytes());
-                        }
+                        device.write((Constants.SERVER_MESSAGE_TAG + input).getBytes());
                     }
                 });
                 break;
             }
             case R.id.menuItemSyncAll:
             {
-                Constants.OnConfirm("Sync All Matches?", this, new Runnable() {
-                    @Override
-                    public void run() {
-                        saveJsonObject(jsonDatabase, true);
-                    }
-                });
+                Constants.OnConfirm("Sync All Matches?", this, () ->
+                        saveJsonObject(jsonDatabase, true));
                 break;
             }
             case R.id.menuItemClearDatabase:
             {
-                Constants.OnConfirm("Clear Local Database?", this, new Runnable() {
-                    @Override
-                    public void run() {
-                        jsonDatabase = new JSONObject();
-                        try
-                        {
-                            FileHandler.Write(FileHandler.SERVER_DATABASE, "");
-                        }
-                        catch (Exception e)
-                        {
-                            e.printStackTrace();
-                        }
+                Constants.OnConfirm("Clear Local Database?", this, () ->
+                {
+                    jsonDatabase = new JSONObject();
+                    try
+                    {
+                        FileHandler.Write(FileHandler.SERVER_DATABASE, "");
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
                     }
                 });
             }
@@ -300,104 +279,66 @@ public class ServerActivity extends AppCompatActivity {
             ab.setDisplayShowTitleEnabled(false);
 
         configureButton = toolbar.findViewById(R.id.configureButton);
-        configureButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                configure();
-            }
-        });
+        configureButton.setOnClickListener(view -> configure());
 
         downloadMatchesButton = findViewById(R.id.matchesDownloadButton);
-        downloadMatchesButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                downloadEventMatches();
-            }
-        });
+        downloadMatchesButton.setOnClickListener(view -> DownloadEventMatches());
 
 
         // Classic useless feature
-        downloadMatchesButton.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
+        downloadMatchesButton.setOnLongClickListener(view ->
+        {
 
-                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                // Vibrate for 500 milliseconds
-                v.vibrate(500);
+            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            // Vibrate for 500 milliseconds
+            v.vibrate(500);
 
-                sendEventMatches();
+            sendEventMatches();
 
-                return true;
-            }
+            return true;
         });
     }
 
 
-    private void downloadEventMatches()
+    private void DownloadEventMatches()
     {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        final EditText matchKeyInput = new EditText(this);
-
-        final Context c = this;
-
-        builder.setView(matchKeyInput);
-        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i)
-            {
-                TBA.setID("HOT67", "BluetoothScouter", "V1");
-                TBA tba = new TBA();
-                Settings.GET_EVENT_MATCHES = true;
-
-                StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
-                StrictMode.setThreadPolicy(policy);
-
-                l("Fetching");
-                try
+        final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        GetString("Enter Event Key:", eventKey ->
+                TBAHandler.Matches(currentYear + eventKey, result ->
                 {
-                    StringBuilder s = new StringBuilder();
-                    Event e = tba.getEvent(matchKeyInput.getText().toString(),
-                            Integer.valueOf(new SimpleDateFormat("yyyy", Locale.US).format(new Date())));
-                    MessageBox(e.matches.length + " Matches Loaded");
-                    l("Obtained event: " + e.name);
-                    l("Year: " + new SimpleDateFormat("yyyy", Locale.US).format(new Date()));
-                    l("Matches: " + e.matches.length);
-                    for (Match m : e.matches)
+                    try
                     {
-                        if (m.comp_level.equals("qm"))
-                        {
-                            for (String t : m.redTeams)
-                            {
-                                s.append(t.replace("frc", "")).append(",");
-                            }
-                            for (int t = 0; t < m.blueTeams.length; ++t)
-                            {
-                                s.append(m.blueTeams[t].replace("frc", ""));
-                                if (t + 1 != m.blueTeams.length)
-                                    s.append(",");
-                            }
-                            s.append("\n");
-                        }
-                    }
-                    FileHandler.Write(FileHandler.SERVER_MATCHES, s.toString());
-                }
-                catch (Exception e)
-                {
-                    MessageBox("Failed to load matches");
-                    Log.e("[Matches Fetcher]", "Failed to get event: " + e.getMessage(), e);
-                }
-            }
-        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i)
-            {
+                        StringBuilder matchesBuilder = new StringBuilder();
 
-            }
-        }).setTitle("Enter Match Key:").create().show();
+                        for (List<List<String>> match : result)
+                        {
+                            List<String> redTeams = match.get(0);
+                            List<String> blueTeams = match.get(1);
+                            StringBuilder rowBuilder = new StringBuilder();
+
+                            for (int t = 0; t < redTeams.size(); ++t)
+                            {
+                                rowBuilder.append(redTeams.get(t));
+                                rowBuilder.append(",");
+                            }
+                            for (int t = 0; t < blueTeams.size(); ++t)
+                            {
+                                rowBuilder.append(blueTeams.get(t));
+                                if (t + 1 < blueTeams.size())
+                                    rowBuilder.append(",");
+                            }
+                            rowBuilder.append("\n");
+                            matchesBuilder.append(rowBuilder.toString());
+                        }
+                        MessageBox("Downloaded Matches: " +
+                                        matchesBuilder.toString().split("\n").length);
+                        FileHandler.Write(FileHandler.SERVER_MATCHES, matchesBuilder.toString());
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }));
     }
 
 
