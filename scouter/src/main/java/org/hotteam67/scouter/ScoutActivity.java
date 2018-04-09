@@ -9,17 +9,13 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -56,92 +52,64 @@ public class ScoutActivity extends BluetoothActivity {
     Button unlockButton;
     int unlockCount = 0;
 
-    GestureDetectorCompat gestureDetectorCompat;
-
     List<String> queuedMatchesToSend = new ArrayList<>();
 
-    /*
-    GridView scoutLayout;
-    org.hotteam67.bluetoothscouter.ScoutInputAdapter scoutInputAdapter;
-    */
     TableLayout inputTable;
 
     List<String> matches = new ArrayList<>();
 
     String lastValuesBeforeChange = "";
 
+    /*
+    When the activity is born
+     */
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                confirmActivityEnd();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-            android.util.Log.d(this.getClass().getName(), "back button pressed");
-            confirmActivityEnd();
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-
-    private void confirmActivityEnd() {
-        Constants.OnConfirm("Are you sure you want to quit?", this, new Runnable() {
-            @Override
-            public void run() {
-                finish();
-            }
-        });
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scout);
 
-        setupPreBluetooth();
+        SetupPreBluetooth();
 
     }
 
-    private void setupPostBluetooth() {
+    /*
+    Setup operations before bluetooth is turned on/given permission etc
+     */
+    private void SetupPreBluetooth()
+    {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            l("Permission granted");
+            SetupPostBluetooth();
+        }
+        else
+        {
+            l("Permission requested!");
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    REQUEST_ENABLE_PERMISSION);
+        }
+    }
+
+    /*
+    Setup operations after bluetooth is turned on/given permission etc
+     */
+    private void SetupPostBluetooth()
+    {
         toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
-        //ab.setDisplayHomeAsUpEnabled(true);
-        ab.setDisplayShowTitleEnabled(false);
-
-        // setRequestedOrientation(getResources().getConfiguration().orientation);
+        if (ab != null)
+            ab.setDisplayShowTitleEnabled(false);
 
         connectButton = toolbar.findViewById(R.id.connectButton);
-        connectButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                l("Triggered Connect!");
-                connectButton.setImageResource(R.drawable.ic_network_check);
-                Connect();
-            }
+        connectButton.setOnClickListener(v -> {
+            l("Triggered Connect!");
+            connectButton.setImageResource(R.drawable.ic_network_check);
+            Connect();
         });
 
         teamNumber = toolbar.findViewById(R.id.teamNumberText);
-
-        /*
-        InputFilter filter = new InputFilter() {
-
-            @Override
-            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-
-                if (source != null && ",".contains(("" + source))) {
-                    return "";
-                }
-                return null;
-            }
-        };
-        */
 
         matchNumber = findViewById(R.id.matchNumberText);
 
@@ -152,72 +120,50 @@ public class ScoutActivity extends BluetoothActivity {
 
         notes = findViewById(R.id.notesText);
 
-        nextMatchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loadNextMatch();
-            }
-        });
-        prevMatchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loadPreviousMatch();
-            }
-        });
+        nextMatchButton.setOnClickListener(v -> OnNextMatch());
+        prevMatchButton.setOnClickListener(v -> OnPreviousMatch());
 
         final Context c = this;
         syncAllButton = findViewById(R.id.syncAllButton);
-        syncAllButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // MessageBox("Matches sending: " + matches.size());
+        syncAllButton.setOnClickListener(v -> {
 
-                Constants.OnConfirm("Send All Matches?", c, new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!(matches.size() > 1))
-                            return;
+            Constants.OnConfirm("Send All Matches?", c, () -> {
+                if (!(matches.size() > 1))
+                    return;
 
-                        if (matches.size() == 1) {
-                            bluetoothSendMatch(matches.get(0));
-                            MessageBox("Sent 1 match");
-                        } else {
-                            queuedMatchesToSend = new ArrayList<>(matches.subList(1, matches.size() - 1));
-                            bluetoothSendMatch(matches.get(0));
-                            MessageBox("Sent Matches");
-                        }
-                    }
-                });
-            }
+                queuedMatchesToSend = new ArrayList<>(matches.subList(1, matches.size() - 1));
+                SendMatch(matches.get(0));
+                MessageBox("Sent Matches");
+            });
         });
 
 
         // Build the input table's rows and columns.
         SchemaHandler.Setup(
-                inputTable, // Table
-                SchemaHandler.LoadSchemaFromFile(), // Text schema
-                this); // Context
+                inputTable,
+                SchemaHandler.LoadSchemaFromFile(),
+                this);
 
-        loadDatabase();
+        LoadMatches();
 
         matchNumber.clearFocus();
         matchNumber.setText("1");
         if (!matches.isEmpty()) {
             l("Loading first match!");
-            teamNumber.setText(getCurrentTeamNumber());
-            displayMatch(1);
+            teamNumber.setText(GetCurrentTeamNumber());
+            ShowMatch(1);
         }
 
         matchNumber.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 if (getCurrentFocus() == matchNumber)
-                    saveAllMatches();
+                    SaveAllMatches();
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                displayMatch(getCurrentMatchNumber(), false);
+                ShowMatch(GetCurrentMatchNumber(), false);
             }
 
             @Override
@@ -241,23 +187,36 @@ public class ScoutActivity extends BluetoothActivity {
         teamNumber.setInputType(InputType.TYPE_NULL);
     }
 
-    private void loadNextMatch() {
-        saveAllMatches();
+    /*
+    When the right button is clicked
+     */
+    private void OnNextMatch()
+    {
+        SaveAllMatches();
         l("Loading Next Match");
-        displayMatch(getCurrentMatchNumber() + 1);
+        ShowMatch(GetCurrentMatchNumber() + 1);
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
     }
 
-    private void loadPreviousMatch() {
-        saveAllMatches();
-        if (getCurrentMatchNumber() > 1) {
+    /*
+    When the left button is clicked
+     */
+    private void OnPreviousMatch()
+    {
+        SaveAllMatches();
+        if (GetCurrentMatchNumber() > 1)
+        {
             l("Loading Previous Match");
-            displayMatch(getCurrentMatchNumber() - 1);
+            ShowMatch(GetCurrentMatchNumber() - 1);
         }
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
     }
 
-    int getCurrentMatchNumber() {
+    /*
+    Get the current matchNumber
+     */
+    private int GetCurrentMatchNumber()
+    {
         try {
             int i = Integer.valueOf(matchNumber.getText().toString());
             if (i <= 0)
@@ -268,11 +227,20 @@ public class ScoutActivity extends BluetoothActivity {
         }
     }
 
-    private void displayMatch(int match) {
-        displayMatch(match, true);
+    /*
+    Display a match in the UI
+     */
+    private void ShowMatch(int match)
+    {
+        ShowMatch(match, true);
     }
 
-    private void displayMatch(int match, boolean changeMatchText) {
+    /*
+    Display a match in the UI
+    changeMatchText: whether to update match number also
+     */
+    private void ShowMatch(int match, boolean changeMatchText)
+    {
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
 
         if (matches.size() >= match) // Currently existing match
@@ -289,12 +257,12 @@ public class ScoutActivity extends BluetoothActivity {
                 SchemaHandler.ClearCurrentValues(inputTable);
             }
 
-            teamNumber.setText(getTeamNumber(match - 1));
-            notes.setText(getNotes(match - 1));
+            teamNumber.setText(GetMatchTeamNumber(match - 1));
+            notes.setText(GetNotes(match - 1));
         } else // New match
         {
-            saveAllMatches(true, false);
-            teamNumber.setText(getTeamNumber(match - 1));
+            SaveAllMatches(true, false);
+            teamNumber.setText(GetMatchTeamNumber(match - 1));
             notes.setText("");
             SchemaHandler.ClearCurrentValues(inputTable);
         }
@@ -304,10 +272,14 @@ public class ScoutActivity extends BluetoothActivity {
             matchNumber.setText(String.valueOf(match));
         }
 
-        lastValuesBeforeChange = getCurrentMatchValues();
+        lastValuesBeforeChange = GetCurrentMatchValuesCSV();
     }
 
-    private String getNotes(int i) {
+    /*
+    Get the value of notes from memory for the current match
+     */
+    private String GetNotes(int i)
+    {
         if (matches.size() > i)
         {
             // Split doesn't catch the end if there are no notes, so check for no notes
@@ -326,20 +298,22 @@ public class ScoutActivity extends BluetoothActivity {
         return "";
     }
 
-    private String getCurrentTeamNumber() {
-        String s = teamNumber.getText().toString();
-        if (!s.trim().isEmpty())
-            return s;
-        else
-            return "0";
+    /*
+    Get the team number for this match number
+     */
+    private String GetCurrentTeamNumber()
+    {
+        return GetMatchTeamNumber(GetCurrentMatchNumber());
     }
 
-    private String getTeamNumber(int m)
+    /*
+    Get the team number for a specific match number
+     */
+    private String GetMatchTeamNumber(int m)
     {
         try
         {
-            String match = matches.get(m).split(",")[0];
-            return match;
+            return matches.get(m).split(",")[0];
         }
         catch (Exception e)
         {
@@ -348,46 +322,40 @@ public class ScoutActivity extends BluetoothActivity {
         }
     }
 
-    private void clearMatchesDatabase()
+    /*
+    Save all matches and send the current one over bluetooth
+    Localonly: No sending. SaveDuplicates: Save/send even if nothing changed
+     */
+    private void SaveAllMatches()
     {
-        try
-        {
-            FileHandler.Write(FileHandler.SCOUTER_DATABASE, "");
-        }
-        catch (Exception e)
-        {
-            l("Failed to clear file for re-write: " + e.getMessage());
-            e.printStackTrace();
-        }
+        SaveAllMatches(false, false);
     }
 
-    private void saveAllMatches()
-    {
-        saveAllMatches(false, false);
-    }
-
-    private void saveAllMatches(boolean localOnly, boolean saveDuplicates)
+    /*
+    Save all matches and send the current one over bluetooth
+    Localonly: No sending. SaveDuplicates: Save/send even if nothing changed
+     */
+    private void SaveAllMatches(boolean localOnly, boolean saveDuplicates)
     {
         // Check if something actually changed since the value was loaded
-        if (getCurrentMatchValues().equals(lastValuesBeforeChange) && !saveDuplicates) {
-            l("nothing changed, not saving: " + getCurrentMatchValues());
+        if (GetCurrentMatchValuesCSV().equals(lastValuesBeforeChange) && !saveDuplicates) {
+            l("nothing changed, not saving: " + GetCurrentMatchValuesCSV());
             return;
         }
 
         // Existing match
-        if (matches.size() >= getCurrentMatchNumber())
+        if (matches.size() >= GetCurrentMatchNumber())
         {
-            // l("Setting value: " + getCurrentMatchValues());
-            matches.set(getCurrentMatchNumber() - 1, getCurrentMatchValues());
+            // l("Setting value: " + GetCurrentMatchValuesCSV());
+            matches.set(GetCurrentMatchNumber() - 1, GetCurrentMatchValuesCSV());
         }
         // New match
-        else if (matches.size() + 1 == getCurrentMatchNumber())
+        else if (matches.size() + 1 == GetCurrentMatchNumber())
         {
-            matches.add(getCurrentMatchValues());
+            matches.add(GetCurrentMatchValuesCSV());
         }
 
         // Store all matches locally
-        clearMatchesDatabase();
         StringBuilder output = new StringBuilder();
         int i = 1;
         for (String s : matches)
@@ -402,14 +370,17 @@ public class ScoutActivity extends BluetoothActivity {
 
         if (!localOnly)
         {
-            if (matches.get(getCurrentMatchNumber() - 1).split(",").length > 1) // Make sure actual matches are there
-                bluetoothSendMatch(matches.get(getCurrentMatchNumber() - 1));
+            if (matches.get(GetCurrentMatchNumber() - 1).split(",").length > 1) // Make sure actual matches are there
+                SendMatch(matches.get(GetCurrentMatchNumber() - 1));
             else
                 l("Saving local only due to missing match data");
         }
     }
 
-    private void bluetoothSendMatch(String match)
+    /*
+    Send a match over bluetooth
+     */
+    private void SendMatch(String match)
     {
         if (match == null || match.split(",").length <= 1) return;
 
@@ -462,7 +433,10 @@ public class ScoutActivity extends BluetoothActivity {
         }
     }
 
-    private String getCurrentMatchValues()
+    /*
+    Get current match values as csv
+     */
+    private String GetCurrentMatchValuesCSV()
     {
         StringBuilder values = new StringBuilder();
         String div = ",";
@@ -473,14 +447,14 @@ public class ScoutActivity extends BluetoothActivity {
         else
             values += teamNumber.getText().toString() + div;
             */
-        values.append(getCurrentTeamNumber()).append(div);
+        values.append(GetCurrentTeamNumber()).append(div);
 /*
         if (matchNumber.getText().toString().trim().isEmpty())
             values += "0" + div;
         else
             values += matchNumber.getText() + div;
             */
-        values.append(getCurrentMatchNumber()).append(div);
+        values.append(GetCurrentMatchNumber()).append(div);
 
         List<String> currentValues = SchemaHandler.GetCurrentValues(inputTable);
         for (int i = 0; i < currentValues.size(); ++i)
@@ -498,40 +472,10 @@ public class ScoutActivity extends BluetoothActivity {
         return values.toString();
     }
 
-    private void setupPreBluetooth()
-    {
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            l("Permission granted");
-            setupPostBluetooth();
-        }
-        else
-        {
-            l("Permission requested!");
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    REQUEST_ENABLE_PERMISSION);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
-        if (requestCode == REQUEST_ENABLE_PERMISSION)
-        {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-            {
-                l("Permission granted");
-                setupPostBluetooth();
-            }
-            else
-            {
-                setupPreBluetooth();
-            }
-        }
-    }
-
-
-    private void loadDatabase()
+    /*
+    Load matches from the file into memory
+     */
+    private void LoadMatches()
     {
         try
         {
@@ -551,7 +495,10 @@ public class ScoutActivity extends BluetoothActivity {
         }
     }
 
-    private synchronized void bluetoothProcessInput(Message msg)
+    /*
+    Decide what to do with received bluetooth message
+     */
+    private synchronized void ProcessBluetoothInput(Message msg)
     {
         try {
             final String message =
@@ -564,7 +511,7 @@ public class ScoutActivity extends BluetoothActivity {
                     (queuedMatchesToSend.size() > 0))
             {
                 l("Server received last, sending again");
-                bluetoothSendMatch(queuedMatchesToSend.get(0));
+                SendMatch(queuedMatchesToSend.get(0));
                 queuedMatchesToSend.remove(0);
             }
 
@@ -582,7 +529,7 @@ public class ScoutActivity extends BluetoothActivity {
                                     c); // Context
                             FileHandler.Write(FileHandler.SCOUTER_DATABASE, "");
                             matches = new ArrayList<>();
-                            displayMatch(1);
+                            ShowMatch(1);
                         }
                     });
                     break;
@@ -592,8 +539,8 @@ public class ScoutActivity extends BluetoothActivity {
                         @Override
                         public void run() {
                             matches = new ArrayList<>(Arrays.asList(message.split(",")));
-                            displayMatch(1);
-                            saveAllMatches(true, true);
+                            ShowMatch(1);
+                            SaveAllMatches(true, true);
                         }
                     });
                     break;
@@ -612,13 +559,16 @@ public class ScoutActivity extends BluetoothActivity {
         }
     }
 
+    /*
+    Handle messages from other threads
+     */
     @Override
     protected synchronized void handle(Message msg)
     {
         switch (msg.what)
         {
             case MESSAGE_INPUT: // Input received through bluetooth
-                bluetoothProcessInput(msg);
+                ProcessBluetoothInput(msg);
                 break;
             case MESSAGE_CONNECTED: // A device has connected
                 connectButton.setImageResource(R.drawable.ic_network_wifi);
@@ -626,6 +576,54 @@ public class ScoutActivity extends BluetoothActivity {
             case MESSAGE_DISCONNECTED: // A device has disconnected
                 connectButton.setImageResource(R.drawable.ic_network_off);
                 break;
+        }
+    }
+
+    /*
+    Confirmation box to prevent unnecessary disconnects
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                Constants.OnConfirm("Are you sure you want to quit?", this, this::finish);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    /*
+    Confirmation box to prevent unnecessary disconnects
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+            android.util.Log.d(this.getClass().getName(), "back button pressed");
+            Constants.OnConfirm("Are you sure you want to quit?", this, this::finish);
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    /*
+    Run Post-Bluetooth setup once perms are authorized
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
+        if (requestCode == REQUEST_ENABLE_PERMISSION)
+        {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                l("Permission granted");
+                SetupPostBluetooth();
+            }
+            else
+            {
+                SetupPreBluetooth();
+            }
         }
     }
 }

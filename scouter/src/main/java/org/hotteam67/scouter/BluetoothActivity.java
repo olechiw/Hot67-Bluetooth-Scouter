@@ -99,8 +99,8 @@ public class BluetoothActivity extends AppCompatActivity {
         {
             connectedDevices = devices;
 
-            connectedSockets = new ArrayList<BluetoothSocket>();
-            BluetoothSocket connectionSocket = null;
+            connectedSockets = new ArrayList<>();
+            BluetoothSocket connectionSocket;
             for (BluetoothDevice device : connectedDevices) {
                 connectionSocket = null;
                 try {
