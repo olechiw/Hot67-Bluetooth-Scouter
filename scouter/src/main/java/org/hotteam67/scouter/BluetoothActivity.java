@@ -73,11 +73,7 @@ public class BluetoothActivity extends AppCompatActivity {
             AlertDialog.Builder dlg = new AlertDialog.Builder(this);
             dlg.setTitle("");
             dlg.setMessage(text);
-            dlg.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
+            dlg.setPositiveButton("Ok", (dialog, which) -> dialog.dismiss());
             dlg.setCancelable(true);
             dlg.create();
             dlg.show();
