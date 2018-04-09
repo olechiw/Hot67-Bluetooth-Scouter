@@ -249,7 +249,8 @@ public class ScoutActivity extends BluetoothActivity {
         {
             String val = matches.get(match - 1);
             String[] vals = val.split(",");
-            // List<String> subList = Arrays.asList(vals).subList(2, vals.length - 1);
+
+
             try {
                 SchemaHandler.SetCurrentValues(inputTable, Arrays.asList(vals).subList(2, vals.length));
             } catch (Exception e) {
