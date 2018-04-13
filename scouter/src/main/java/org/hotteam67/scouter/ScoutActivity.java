@@ -461,7 +461,10 @@ public class ScoutActivity extends BluetoothActivity {
         }
 
 
-        values.append(notes.getText().toString().replace(",", ""));
+        String notesText = notes.getText().toString().replace(",", "");
+        notesText = notesText.replace("\r\n", "");
+        notesText = notesText.replace("\n", "");
+        values.append(notesText);
 
         // l("Current Values: " + values);
 

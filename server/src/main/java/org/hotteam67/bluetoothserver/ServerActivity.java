@@ -608,49 +608,51 @@ public class ServerActivity extends AppCompatActivity {
                 finalUrl += "/" + tag + ".json?auth=" + apiKey;
             }
 
-            AsyncUploadTask uploadTask = new AsyncUploadTask(finalUrl, json, new Runnable() {
-                @Override
-                public void run() {
-                    try {
+            AsyncUploadTask uploadTask = new AsyncUploadTask(finalUrl, json, () -> { });
+            uploadTask.execute(json);
+            // Save locally
+            try {
                 /*
                 VisualLog("Received Match Number: "
                         + j.get(Constants.MATCH_NUMBER_JSON_TAG)
                         + " For Team Number: "
                         + j.get(Constants.TEAM_NUMBER_JSON_TAG));
                         */
-                        String matchNumber = (String) json.get(Constants.MATCH_NUMBER_JSON_TAG);
+                String matchNumber = (String) json.get(Constants.MATCH_NUMBER_JSON_TAG);
 
-                        if (matchNumber.equals(lastMatchNumber))
-                        {
-                            if (!lastMatchTeamNumbers.contains(json.get(Constants.TEAM_NUMBER_JSON_TAG)))
-                            {
-                                lastMatchReceived++;
-                                lastMatchTeamNumbers.add((String) json.get(Constants.TEAM_NUMBER_JSON_TAG));
-                            }
-                            serverLogText.setText(
-                                    "Last Match: " + lastMatchNumber + " Received: " + lastMatchReceived + "\n"
-                            );
-                        }
-                        else
-                        {
-                            lastMatchNumber = matchNumber;
-                            lastMatchReceived = 1;
-                            lastMatchTeamNumbers = new ArrayList<>();
-                            lastMatchTeamNumbers.add((String) json.get(Constants.TEAM_NUMBER_JSON_TAG));
-                            serverLogText.setText(
-                                    "Last Match: " + matchNumber + " Received: " + lastMatchReceived + "\n"
-                            );
-                        }
-                    }
-                    catch (Exception e)
+                if (matchNumber.equals(lastMatchNumber))
+                {
+                    if (!lastMatchTeamNumbers.contains(json.get(Constants.TEAM_NUMBER_JSON_TAG)))
                     {
-                        e.printStackTrace();
+                        lastMatchReceived++;
+                        lastMatchTeamNumbers.add((String) json.get(Constants.TEAM_NUMBER_JSON_TAG));
                     }
+                    serverLogText.setText(
+                            "Last Match: " + lastMatchNumber + " Received: " + lastMatchReceived + "\n"
+                    );
                 }
-            });
-            // Save locally
+                else
+                {
+                    lastMatchNumber = matchNumber;
+                    lastMatchReceived = 1;
+                    lastMatchTeamNumbers = new ArrayList<>();
+                    lastMatchTeamNumbers.add((String) json.get(Constants.TEAM_NUMBER_JSON_TAG));
+                    serverLogText.setText(
+                            "Last Match: " + matchNumber + " Received: " + lastMatchReceived + "\n"
+                    );
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+            if (!useRootUrl) {
+                String tag =
+                        json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
+                                json.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
+                jsonDatabase.put(tag, json);
+            }
             saveJsonDatabase();
-            uploadTask.execute(json);
         }
         catch (Exception e)
         {
@@ -690,15 +692,15 @@ public class ServerActivity extends AppCompatActivity {
                     conn.setRequestMethod("PUT");
                     conn.setDoOutput(true);
 
+                    Log.d("BLUETOOTH_SCOUTER", "Sending request to url: "
+                            + uploadUrl);
                     try {
                         conn.getOutputStream().write(jsonString.getBytes());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
 
-
-                    Log.d("BLUETOOTH_SCOUTER", "Sending request to url: "
-                            + uploadUrl + "\n Received response code: " + conn.getResponseCode());
+                    Log.d("BLUETOOTH_SCOUTER", "Received response code:" + conn.getResponseCode());
 
                     String resp = conn.getResponseMessage();
                     Log.d("BLUETOOTH_SCOUTER", "Response: " + resp);
