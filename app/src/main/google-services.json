@@ -1,0 +1,134 @@
+{
+  "project_info": {
+    "project_number": "852882565660",
+    "firebase_url": "https://hot-67-scouting.firebaseio.com",
+    "project_id": "hot-67-scouting",
+    "storage_bucket": "hot-67-scouting.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:852882565660:android:5ddee0d4ead530ce",
+        "android_client_info": {
+          "package_name": "com.example.bluetoothserver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "852882565660-cnkgtc5221vukm6b38p0r67tni04psnv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bluetoothserver",
+            "certificate_hash": "74f201809835d5de55925d94044bc1761d26acc7"
+          }
+        },
+        {
+          "client_id": "852882565660-62h31c3dub5bjf95ls4geeonjqk7p2ia.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bluetoothserver",
+            "certificate_hash": "0e0a9d717fa1910ec0d2e3c1a9e329590196d0e4"
+          }
+        },
+        {
+          "client_id": "852882565660-vts05c3keice9lk6v2sq5hp9rvmr57ph.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBusdChrR-kbA-9lEY-YDV4tZT2xY4OOe0"
+        },
+        {
+          "current_key": "AIzaSyBYownd8_9w7AP_gr99RQ5DKxaii0N96uE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "852882565660-vts05c3keice9lk6v2sq5hp9rvmr57ph.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:852882565660:android:641ce8b77e718d73",
+        "android_client_info": {
+          "package_name": "org.hotteam67.bluetoothserver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "852882565660-vts05c3keice9lk6v2sq5hp9rvmr57ph.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBusdChrR-kbA-9lEY-YDV4tZT2xY4OOe0"
+        },
+        {
+          "current_key": "AIzaSyBYownd8_9w7AP_gr99RQ5DKxaii0N96uE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:852882565660:android:47255b05dd6a5984",
+        "android_client_info": {
+          "package_name": "com.hotteam67.firebasescouter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "852882565660-vts05c3keice9lk6v2sq5hp9rvmr57ph.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBusdChrR-kbA-9lEY-YDV4tZT2xY4OOe0"
+        },
+        {
+          "current_key": "AIzaSyBYownd8_9w7AP_gr99RQ5DKxaii0N96uE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

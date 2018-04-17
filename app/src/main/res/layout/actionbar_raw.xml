@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="70dp">
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#000000"
+            android:src="@drawable/ic_back"
+            android:layout_centerVertical="true"
+            android:padding="10dp"
+            android:scaleX=".9"
+            android:scaleY=".9"
+            android:id="@+id/backButton"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:layout_centerInParent="true"
+            android:background="#000000"
+            android:text="Raw Data for Team: "
+            android:textColor="#ffffff"
+            android:id="@+id/teamNumberTextView"/>
+</RelativeLayout>

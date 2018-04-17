@@ -1,20 +1,28 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'mainkey'
+            keyPassword '@pianist1119'
+            storeFile file('C:/Users/Jakob/Documents/Android/Keys/key.jks')
+            storePassword '@pianist1119'
+        }
+    }
     compileSdkVersion 27
-    buildToolsVersion '27.0.3'
-
     defaultConfig {
-        applicationId "org.hotteam67.bluetoothserver"
-        minSdkVersion 19
+        applicationId "com.hotteam67.firebaseviewer"
+        minSdkVersion 22
         targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
-
+        versionName '8'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
         vectorDrawables.useSupportLibrary = true
-        multiDexEnabled = true
+        multiDexEnabled true
+        versionCode 8
+    }
+    dexOptions {
+        javaMaxHeapSize "4g"
+        preDexLibraries = false
     }
     buildTypes {
         release {
@@ -36,15 +44,27 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    productFlavors {
+    }
+    configurations {
+        all {
+            exclude module: 'httpclient'
+            exclude module: 'json'
+            exclude module: 'commons-logging'
+        }
+    }
 }
+
+
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation project(':common')
-    implementation files('src/TBA-API.jar')
-    implementation files('src/json-simple-1.1.1.jar')
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.android.support:recyclerview-v7:27.1.1'
-    implementation project (':common')
+    implementation 'com.android.support:support-v4:27.1.1'
+    implementation 'com.android.volley:volley:1.0.0'
+    implementation 'com.evrencoskun.library:tableview:0.8.6'
+    implementation 'org.fabiomsr:moneytextview:1.1.0'
+    implementation 'com.annimon:stream:1.1.9'
+    implementation 'com.androidplot:androidplot-core:1.5.4'
+    implementation project(':common')
 }
