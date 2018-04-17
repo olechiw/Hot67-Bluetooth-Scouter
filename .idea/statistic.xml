@@ -14,6 +14,8 @@
         <option value="$PROJECT_DIR$/server/build" />
         <option value="$PROJECT_DIR$/common/build" />
         <option value="$PROJECT_DIR$/common/libs" />
+        <option value="$PROJECT_DIR$/app/build" />
+        <option value="$PROJECT_DIR$/app/release" />
       </list>
     </option>
   </component>
