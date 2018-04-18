@@ -57,8 +57,8 @@ public final class Sort {
         return new DataTable(columns, cells, rows);
     }
 
-    public static DataTable BubbleSortByColumn(DataTable input, int column,
-                                               boolean ascending)
+    public static DataTable SortByColumn(DataTable input, int column,
+                                         boolean ascending)
     {
 
 
@@ -90,7 +90,7 @@ public final class Sort {
         return input;
     }
 
-    public static int Compare(String item1, String item2)
+    private static int Compare(String item1, String item2)
     {
         if (item1.equals(item2))
             return 0;

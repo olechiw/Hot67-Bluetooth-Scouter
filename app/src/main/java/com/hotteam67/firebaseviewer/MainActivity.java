@@ -297,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
 
                 DataTable newProcessor = new DataTable(columnHeaderModels, outputCells, rowHeaders);
 
-                tableAdapter.setAllItems(Sort.BubbleSortByColumn(newProcessor, 0, false), rawData); // Sort by alliance
+                tableAdapter.setAllItems(Sort.SortByColumn(newProcessor, 0, false), rawData); // Sort by alliance
             }
             else
             {
@@ -319,17 +319,17 @@ public class MainActivity extends AppCompatActivity {
         switch (calculationState)
         {
             case DataTableBuilder.Calculation.AVERAGE:
+                SyncOrder();
                 calculationState = DataTableBuilder.Calculation.MAXIMUM;
                 ((Button)v).setText(AVG);
-                SyncOrder();
                 Update();
                 if (!matchSearchView.getText().toString().isEmpty())
                     matchSearchView.setText(matchSearchView.getText());
                 break;
             case DataTableBuilder.Calculation.MAXIMUM:
+                SyncOrder();
                 calculationState = DataTableBuilder.Calculation.AVERAGE;
                 ((Button)v).setText(MAX);
-                SyncOrder();
                 Update();
                 if (!matchSearchView.getText().toString().isEmpty())
                     matchSearchView.setText(matchSearchView.getText());
@@ -343,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
     private void SyncOrder()
     {
         DataTable currentTable = GetActiveTable();
-        DataTable inactiveTable = (GetActiveTable() == calculatedDataMaximums.GetTable()) ?
+        DataTable inactiveTable = (calculationState == DataTableBuilder.Calculation.MAXIMUM) ?
                 calculatedDataAverages.GetTable() : calculatedDataMaximums.GetTable();
 
         List<RowHeaderModel> inactiveRowHeaders = inactiveTable.GetRowHeaders();

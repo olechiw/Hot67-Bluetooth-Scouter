@@ -112,18 +112,18 @@ public class MainTableViewListener implements ITableViewListener {
             p_nXPosition) {
         Log.d("HotTeam67", "Sorting column: " + p_nXPosition);
         MainTableAdapter adapter = (MainTableAdapter) mTableView.getAdapter();
-        DataTable processor = adapter.GetCalculatedData();
+        DataTable calculatedData = adapter.GetCalculatedData();
 
-        if (processor == null || processor.GetCells() == null || processor.GetCells().size() == 0)
+        if (calculatedData == null || calculatedData.GetCells() == null || calculatedData.GetCells().size() == 0)
             return;
 
         if (lastColumnClicked != p_nXPosition) {
-            adapter.setAllItems(Sort.BubbleSortByColumn(processor, p_nXPosition, false), adapter.GetRawData());
+            adapter.setAllItems(Sort.SortByColumn(calculatedData, p_nXPosition, false), adapter.GetRawData());
             lastColumnClicked = p_nXPosition;
         }
         else
         {
-            adapter.setAllItems(Sort.BubbleSortByColumn(processor, p_nXPosition, true), adapter.GetRawData());
+            adapter.setAllItems(Sort.SortByColumn(calculatedData, p_nXPosition, true), adapter.GetRawData());
             lastColumnClicked = -1;
         }
 
