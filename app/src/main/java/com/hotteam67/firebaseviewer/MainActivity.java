@@ -2,6 +2,7 @@ package com.hotteam67.firebaseviewer;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -468,6 +469,7 @@ public class MainActivity extends AppCompatActivity {
         if (values == null)
         {
             Log.d("HotTeam67", "Couldn't load connection string");
+            EndProgressAnimation();
             return;
         }
 
@@ -499,12 +501,7 @@ public class MainActivity extends AppCompatActivity {
         String[] values = connectionString.split(";");
         if (values.length != 4)
         {
-            new AlertDialog.Builder(this).setTitle("Invalid connection string! Use:\n" +
-                    "Firebase Url\n" +
-                    "Firebase Key\n" +
-                    "Firebase API Key\n" +
-                    "TBA Event Key\n" +
-                    "-> separated by semicolons").create().show();
+            runOnUiThread(this::EndProgressAnimation);
             return null;
         }
 
@@ -585,6 +582,9 @@ public class MainActivity extends AppCompatActivity {
         String[] values = GetConnectionProperties();
         if (values == null || values.length != 4)
         {
+            new AlertDialog.Builder(this).setTitle("Invalid connection string!")
+                    .setPositiveButton("Ok", (dialogInterface, i) -> dialogInterface.dismiss())
+                    .create().show();
             return;
         }
         String eventKey = values[3];

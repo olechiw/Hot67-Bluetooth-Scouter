@@ -6,14 +6,15 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -96,11 +97,7 @@ public class ServerActivity extends AppCompatActivity {
             AlertDialog.Builder dlg = new AlertDialog.Builder(this);
             dlg.setTitle("");
             dlg.setMessage(text);
-            dlg.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
+            dlg.setPositiveButton("Ok", (dialog, which) -> dialog.dismiss());
             dlg.setCancelable(true);
             dlg.create();
             dlg.show();
@@ -202,25 +199,23 @@ public class ServerActivity extends AppCompatActivity {
             }
             case R.id.menuItemSendSchema:
             {
-                Constants.OnConfirm("Send Schema?", this, new Runnable() {
-                    @Override
-                    public void run() {
-                        // Obtain schema
-                        String schema = SchemaHandler.LoadSchemaFromFile();
+                Constants.OnConfirm("Send Schema?", this, () ->
+                {
+                    // Obtain schema
+                    String schema = SchemaHandler.LoadSchemaFromFile();
 
-                        try
-                        {
-                            // Send to each device
-                            for (ConnectedThread device : connectedThreads) {
-                                device.write((Constants.SCOUTER_SCHEMA_TAG + schema).getBytes());
-                            }
-                            VisualLog("Wrote schema to " + connectedThreads.size() + " devices");
+                    try
+                    {
+                        // Send to each device
+                        for (ConnectedThread device : connectedThreads) {
+                            device.write((Constants.SCOUTER_SCHEMA_TAG + schema).getBytes());
                         }
-                        catch (Exception e)
-                        {
-                            VisualLog("Failed to send schema to devices: " + e.getMessage());
-                            e.printStackTrace();
-                        }
+                        VisualLog("Wrote schema to " + connectedThreads.size() + " devices");
+                    }
+                    catch (Exception e)
+                    {
+                        VisualLog("Failed to send schema to devices: " + e.getMessage());
+                        e.printStackTrace();
                     }
                 });
                 break;
@@ -254,7 +249,7 @@ public class ServerActivity extends AppCompatActivity {
                     jsonDatabase = new JSONObject();
                     try
                     {
-                        FileHandler.Write(FileHandler.SERVER_DATABASE, "");
+                        FileHandler.Write(FileHandler.SERVER_FILE, "");
                     }
                     catch (Exception e)
                     {
@@ -291,7 +286,13 @@ public class ServerActivity extends AppCompatActivity {
 
             Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             // Vibrate for 500 milliseconds
-            v.vibrate(500);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+            }else
+            {
+                //deprecated in API 26
+                v.vibrate(500);
+            }
 
             sendEventMatches();
 
@@ -332,7 +333,7 @@ public class ServerActivity extends AppCompatActivity {
                         }
                         MessageBox("Downloaded Matches: " +
                                         matchesBuilder.toString().split("\n").length);
-                        FileHandler.Write(FileHandler.SERVER_MATCHES, matchesBuilder.toString());
+                        FileHandler.Write(FileHandler.MATCHES_FILE, matchesBuilder.toString());
                     }
                     catch (Exception e)
                     {
@@ -362,7 +363,7 @@ public class ServerActivity extends AppCompatActivity {
                     List<String> matches =
                             new ArrayList<>(
                                     Arrays.asList(
-                                            FileHandler.LoadContents(FileHandler.SERVER_MATCHES)
+                                            FileHandler.LoadContents(FileHandler.MATCHES_FILE)
                                                     .split("\n")
                                     )
                             );
@@ -555,10 +556,9 @@ public class ServerActivity extends AppCompatActivity {
 
     private void loadJsonDatabase()
     {
-        String fileContents = FileHandler.LoadContents(FileHandler.SERVER_DATABASE);
+        String fileContents = FileHandler.LoadContents(FileHandler.SERVER_FILE);
         if (fileContents == null || fileContents.trim().isEmpty()) {
             jsonDatabase = new JSONObject();
-            return;
         }
         else
         {
@@ -575,7 +575,7 @@ public class ServerActivity extends AppCompatActivity {
 
     private void saveJsonDatabase()
     {
-        FileHandler.Write(FileHandler.SERVER_DATABASE, jsonDatabase.toString());
+        FileHandler.Write(FileHandler.SERVER_FILE, jsonDatabase.toString());
     }
 
     private void saveJsonObject(JSONObject json)
@@ -666,7 +666,7 @@ public class ServerActivity extends AppCompatActivity {
         private String uploadUrl;
         private JSONObject jsonData;
         private Runnable onCompleteEvent;
-        public AsyncUploadTask(String url, JSONObject data, Runnable onComplete)
+        AsyncUploadTask(String url, JSONObject data, Runnable onComplete)
         {
             uploadUrl = url;
             jsonData = data;
@@ -727,8 +727,8 @@ public class ServerActivity extends AppCompatActivity {
     // Accept incoming bluetooth connections thread, actual member and the definition
     AcceptThread acceptThread;
     private class AcceptThread extends Thread {
-        public final BluetoothServerSocket connectionSocket;
-        public AcceptThread()
+        final BluetoothServerSocket connectionSocket;
+        AcceptThread()
         {
             BluetoothServerSocket tmp = null;
             try
@@ -807,12 +807,12 @@ public class ServerActivity extends AppCompatActivity {
 
         private void setId(int i ) { id = i; }
 
-        public ConnectedThread(BluetoothSocket sockets)
+        ConnectedThread(BluetoothSocket sockets)
         {
             connectedSocket = sockets;
         }
 
-        public void close()
+        void close()
         {
             try
             {
@@ -901,28 +901,6 @@ public class ServerActivity extends AppCompatActivity {
             }
         }
 
-        /*
-        public void write(byte[] bytes, int device)
-        {
-            l("Writing " + new String(bytes));
-            l("Bytes length: " + bytes.length);
-            OutputStream out = null;
-            try
-            {
-                out = connectedSockets.get(device).getOutputStream();
-                out.write(bytes);
-            }
-            catch (IndexOutOfBoundsException e)
-            {
-                l("Failed to write, device not found at index: " + device);
-            }
-            catch (IOException e)
-            {
-                l("Failed to write. IOException." + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-        */
 
         public void cancel()
         {
@@ -969,13 +947,6 @@ public class ServerActivity extends AppCompatActivity {
             thread.interrupt();
         }
 
-        /*
-        // Save server matches
-        StringBuilder matchesFileContent = new StringBuilder();
-        for (String match : serverMatches)
-            matchesFileContent.append(match).append("\n");
-        FileHandler.Write(FileHandler.SERVER_DATABASE, matchesFileContent.toString());
-        */
 
         saveJsonDatabase();
     }

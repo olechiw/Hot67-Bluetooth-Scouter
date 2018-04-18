@@ -1,11 +1,9 @@
 package org.hotteam67.bluetoothserver;
 
 import android.content.Context;
-import android.content.DialogInterface;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
 import android.text.SpannableString;
@@ -14,7 +12,6 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -22,7 +19,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
-import android.widget.TextView;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
@@ -45,15 +41,13 @@ public class SchemaActivity extends AppCompatActivity {
                 return true;
             case R.id.menuItemDeleteAll:
                 final Context c = this;
-                Constants.OnConfirm("Delete All?", this, new Runnable() {
-                    @Override
-                    public void run() {
-                        schema = "";
-                        SchemaHandler.Setup(
-                                findViewById(R.id.scoutLayout),
-                                schema,
-                                c);
-                    }
+                Constants.OnConfirm("Delete All?", this, () ->
+                {
+                    schema = "";
+                    SchemaHandler.Setup(
+                            findViewById(R.id.scoutLayout),
+                            schema,
+                            c);
                 });
                 return true;
             default:
@@ -108,12 +102,10 @@ public class SchemaActivity extends AppCompatActivity {
         scrollView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
         scrollView.setFocusable(true);
         scrollView.setFocusableInTouchMode(true);
-        scrollView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                v.requestFocusFromTouch();
-                return false;
-            }
+        scrollView.setOnTouchListener((v, event) ->
+        {
+            v.requestFocusFromTouch();
+            return false;
         });
 
         final TableLayout tableLayout = findViewById(R.id.scoutLayout);
@@ -121,80 +113,49 @@ public class SchemaActivity extends AppCompatActivity {
         final Context c = this;
 
         numberButton = findViewById(R.id.numberButton);
-        numberButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                GetString("Value Label: ", new StringInputEvent() {
-                    @Override
-                    public void Run(String input) {
-                        schema += "," + input + Constants.TYPE_INTEGER;
-                        GetString("Minimum:", new StringInputEvent() {
-                            @Override
-                            public void Run(String input) {
-                                schema += "," + input;
-                                GetString("Maximum:", new StringInputEvent() {
-                                    @Override
-                                    public void Run(String input) {
-                                        schema += "," + input;
-                                        SchemaHandler.Setup(tableLayout, schema, c);
-                                    }
-                                });
-                            }
-                        });
-                    }
+        numberButton.setOnClickListener(view ->
+                GetString("Value Label: ", input ->
+        {
+            schema += "," + input + Constants.TYPE_INTEGER;
+            GetString("Minimum:", input12 ->
+            {
+                schema += "," + input12;
+                GetString("Maximum:", input1 ->
+                {
+                    schema += "," + input1;
+                    SchemaHandler.Setup(tableLayout, schema, c);
                 });
-            }
-        });
+            });
+        }));
 
         booleanButton = findViewById(R.id.booleanButton);
-        booleanButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                GetString("Value Label:", new StringInputEvent() {
-                    @Override
-                    public void Run(String input) {
-                        schema += "," + input + Constants.TYPE_BOOLEAN;
-                        SchemaHandler.Setup(tableLayout, schema, c);
-                    }
-                });
-            }
-        });
+        booleanButton.setOnClickListener(view -> GetString("Value Label:", input ->
+        {
+            schema += "," + input + Constants.TYPE_BOOLEAN;
+            SchemaHandler.Setup(tableLayout, schema, c);
+        }));
         headerButton = findViewById(R.id.headerButton);
-        headerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                GetString("Value Label:", new StringInputEvent() {
-                    @Override
-                    public void Run(String input) {
-                        schema += "," + input + Constants.TYPE_HEADER;
-                        SchemaHandler.Setup(tableLayout, schema, c);
-                    }
-                });
-            }
-        });
+        headerButton.setOnClickListener(view -> GetString("Value Label:", input ->
+        {
+            schema += "," + input + Constants.TYPE_HEADER;
+            SchemaHandler.Setup(tableLayout, schema, c);
+        }));
         deleteButton = findViewById(R.id.deleteButton);
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Constants.OnConfirm("Are You Sure?", c, new Runnable() {
-                    @Override
-                    public void run() {
-                        List<String> values = new ArrayList<>(Arrays.asList(schema.split(",")));
-                        if (values.size() <= 0) return;
+        deleteButton.setOnClickListener(view -> Constants.OnConfirm("Are You Sure?", c, () ->
+        {
+            List<String> values = new ArrayList<>(Arrays.asList(schema.split(",")));
+            if (values.size() <= 0) return;
 
-                        values.remove(values.size() - 1);
+            values.remove(values.size() - 1);
 
-                        schema = "";
-                        for (int i = 0; i < values.size(); ++i)
-                        {
-                            schema += values.get(i);
-                            if (i + 1 < values.size()) schema += ",";
-                        }
-                        SchemaHandler.Setup(tableLayout, schema, c);
-                    }
-                });
+            schema = "";
+            for (int i = 0; i < values.size(); ++i)
+            {
+                schema += values.get(i);
+                if (i + 1 < values.size()) schema += ",";
             }
-        });
+            SchemaHandler.Setup(tableLayout, schema, c);
+        }));
 
         SchemaHandler.Setup(tableLayout, schema, this);
 
@@ -202,7 +163,7 @@ public class SchemaActivity extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                FileHandler.Write(FileHandler.SCHEMA, schema);
+                FileHandler.Write(FileHandler.SCHEMA_FILE, schema);
             }
         });
     }
@@ -249,23 +210,17 @@ public class SchemaActivity extends AppCompatActivity {
         final AlertDialog.Builder builder =  new AlertDialog.Builder(this);
         final EditText view = new EditText(this);
         view.setFilters(new InputFilter[] { filter });
-        builder.setView(view).setTitle(prompt).setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                onInput.Run(view.getText().toString());
-            }
-        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
+        builder.setView(view).setTitle(prompt).setPositiveButton("Ok", (dialogInterface, i) ->
+                onInput.Run(view.getText().toString())).setNegativeButton("Cancel", (dialogInterface, i) ->
+        {
 
-            }
         }).create().show();
     }
 
     @Override
     public void onDestroy()
     {
-        FileHandler.Write(FileHandler.SCHEMA, schema);
+        FileHandler.Write(FileHandler.SCHEMA_FILE, schema);
 
         super.onDestroy();
     }

@@ -16,44 +16,25 @@ import java.io.FileWriter;
 
 public final class FileHandler
 {
-    private static final String SERVER_FILE = "serverDatabase.json"; // Server scouted matches database
-    private static final String SCHEMA_FILE = "schema.csv"; // Server/scouter schema
-    private static final String SCOUTER_FILE = "scouterDatabase.csv"; // Scouter scouted/unscouted matches database
-    private static final String MATCHES_FILE = "serverMatches.csv"; // Server unscouted matches datbase (match schedule)
+    public static final String SERVER_FILE = "serverDatabase.json"; // Server scouted matches database
+    public static final String SCHEMA_FILE = "schema.csv"; // Server/scouter schema
+    public static final String SCOUTER_FILE = "scouterDatabase.csv"; // Scouter scouted/unscouted matches database
+    public static final String MATCHES_FILE = "serverMatches.csv"; // Server unscouted matches datbase (match schedule)
+    public static final String TEAMS_FILE = "teamNames.json";
+    public static final String RANKS_FILE = "teamRanks.json";
+    public static final String AVERAGES_FILE = "averagesCache";
+    public static final String MAXIMUMS_FILE = "maximumsCache";
+    public static final String CACHE_FILE = "matchesCache";
     private static final String DIRECTORY =
             Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
 
 
-    public static final int SERVER_DATABASE = 1;
-    public static final int SCHEMA = 2;
-    public static final int SCOUTER_DATABASE = 3;
-    public static final int SERVER_MATCHES = 4;
-
-
-    private static String file(int FILE)
+    private static String file(String file)
     {
-        String f = DIRECTORY;
-        switch (FILE)
-        {
-            case SERVER_DATABASE:
-                f += SERVER_FILE;
-                break;
-            case SCHEMA:
-                f += SCHEMA_FILE;
-                break;
-            case SCOUTER_DATABASE:
-                f += SCOUTER_FILE;
-                break;
-            case SERVER_MATCHES:
-                f += MATCHES_FILE;
-                break;
-            default:
-                return null;
-        }
-        return f;
+        return DIRECTORY + file;
     }
 
-    public static BufferedReader GetReader(int FILE)
+    public static BufferedReader GetReader(String FILE)
     {
         try
         {
@@ -82,7 +63,7 @@ public final class FileHandler
         return null;
     }
 
-    private static FileWriter GetWriter(int FILE)
+    private static FileWriter GetWriter(String FILE)
     {
         String f = file(FILE);
 
@@ -114,7 +95,7 @@ public final class FileHandler
         return null;
     }
 
-    public static String LoadContents(int file)
+    public static String LoadContents(String file)
     {
         String content = "";
         BufferedReader r = GetReader(file);
@@ -135,7 +116,7 @@ public final class FileHandler
         return content;
     }
 
-    public static void Write(int FILE, String s)
+    public static void Write(String FILE, String s)
     {
         try
         {

@@ -152,7 +152,7 @@ public final class SchemaHandler
     {
         try
         {
-            BufferedReader reader = FileHandler.GetReader(FileHandler.SCHEMA);
+            BufferedReader reader = FileHandler.GetReader(FileHandler.SCHEMA_FILE);
             String line = reader.readLine();
             reader.close();
             if (line != null)

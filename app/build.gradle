@@ -14,11 +14,11 @@ android {
         applicationId "com.hotteam67.firebaseviewer"
         minSdkVersion 22
         targetSdkVersion 27
-        versionName '8'
+        versionName '9'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
-        versionCode 8
+        versionCode 9
     }
     dexOptions {
         javaMaxHeapSize "4g"
@@ -28,6 +28,10 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
         }
     }
     packagingOptions {

@@ -369,7 +369,7 @@ public class ScoutActivity extends BluetoothActivity {
             i++;
         }
         // l("Writing output to matches file: " + output);
-        FileHandler.Write(FileHandler.SCOUTER_DATABASE, output.toString());
+        FileHandler.Write(FileHandler.SCOUTER_FILE, output.toString());
 
         // Write to bluetooth
         if (!localOnly)
@@ -478,7 +478,7 @@ public class ScoutActivity extends BluetoothActivity {
     {
         try
         {
-            BufferedReader r = FileHandler.GetReader(FileHandler.SCOUTER_DATABASE);
+            BufferedReader r = FileHandler.GetReader(FileHandler.SCOUTER_FILE);
             String line = r.readLine();
             while (line != null)
             {
@@ -520,12 +520,12 @@ public class ScoutActivity extends BluetoothActivity {
                     // Show a confirmation dialog
                     Constants.OnConfirm("Received new schema, clear local schema?", this, () ->
                     {
-                        FileHandler.Write(FileHandler.SCHEMA, message);
+                        FileHandler.Write(FileHandler.SCHEMA_FILE, message);
                         SchemaHandler.Setup(
                                 inputTable, // Table to setup the new schema on
                                 SchemaHandler.LoadSchemaFromFile(), // Schema text
                                 c); // Context
-                        FileHandler.Write(FileHandler.SCOUTER_DATABASE, "");
+                        FileHandler.Write(FileHandler.SCOUTER_FILE, "");
                         matches = new ArrayList<>();
                         ShowMatch(1);
                     });
