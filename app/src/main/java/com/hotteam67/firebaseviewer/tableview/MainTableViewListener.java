@@ -8,7 +8,6 @@ import android.util.Log;
 import com.evrencoskun.tableview.ITableView;
 import com.evrencoskun.tableview.listener.ITableViewListener;
 import com.hotteam67.firebaseviewer.data.ColumnSchema;
-import com.hotteam67.firebaseviewer.FileHandler;
 import com.hotteam67.firebaseviewer.data.ScatterPlot;
 import com.hotteam67.firebaseviewer.MainActivity;
 import com.hotteam67.firebaseviewer.RawDataActivity;
@@ -18,6 +17,7 @@ import com.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
 
+import org.hotteam67.common.FileHandler;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -196,7 +196,7 @@ public class MainTableViewListener implements ITableViewListener {
             Prep full team schedule
              */
             List<String> matchNumbers = new ArrayList<>();
-            String matches = FileHandler.LoadContents(FileHandler.VIEWER_MATCHES);
+            String matches = FileHandler.LoadContents(FileHandler.VIEWER_MATCHES_FILE);
             if (matches != null && !matches.trim().isEmpty()) {
                 List<String> matchesArray = Arrays.asList(matches.split("\n"));
                 if (matchesArray.size() > 0)

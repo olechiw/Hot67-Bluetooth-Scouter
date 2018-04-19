@@ -5,9 +5,14 @@ import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 
 /**
@@ -20,11 +25,12 @@ public final class FileHandler
     public static final String SCHEMA_FILE = "schema.csv"; // Server/scouter schema
     public static final String SCOUTER_FILE = "scouterDatabase.csv"; // Scouter scouted/unscouted matches database
     public static final String MATCHES_FILE = "serverMatches.csv"; // Server unscouted matches datbase (match schedule)
-    public static final String TEAMS_FILE = "teamNames.json";
+    public static final String TEAM_NAMES_FILE = "teamNames.json";
     public static final String RANKS_FILE = "teamRanks.json";
-    public static final String AVERAGES_FILE = "averagesCache";
-    public static final String MAXIMUMS_FILE = "maximumsCache";
-    public static final String CACHE_FILE = "matchesCache";
+    public static final String VIEWER_MATCHES_FILE = "viewerMatches.csv";
+    public static final String AVERAGES_CACHE = "averagesCache";
+    public static final String MAXIMUMS_CACHE = "maximumsCache";
+    public static final String RAW_CACHE = "matchesCache";
     private static final String DIRECTORY =
             Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
 
@@ -131,6 +137,43 @@ public final class FileHandler
         {
             l("Failed to write: " + s + ": " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    public static void Serialize(Serializable o, String file)
+    {
+        try {
+            if (file(file) == null)
+                return;
+            FileOutputStream fileOutputStream = new FileOutputStream(file(file));
+            ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
+            outputStream.writeObject(o);
+            outputStream.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static Serializable DeSerialize(String file)
+    {
+        try
+        {
+            if (file(file) == null)
+                return null;
+            FileInputStream fileInputStream = new FileInputStream(file(file));
+            ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
+            Object returnObject = inputStream.readObject();
+
+            inputStream.close();
+
+            return (Serializable)returnObject;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
         }
     }
 

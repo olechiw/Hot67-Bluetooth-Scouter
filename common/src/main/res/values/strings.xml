@@ -4,4 +4,8 @@
     <string name="variable_type">10</string>
     <string name="variable_count">15</string>
     <string name="orientation">20</string>
+    <string-array name="teamGroupTypesArray">
+        <item>Qualification Match</item>
+        <item>Alliance</item>
+    </string-array>
 </resources>

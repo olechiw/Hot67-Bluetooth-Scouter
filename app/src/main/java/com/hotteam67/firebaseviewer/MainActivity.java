@@ -38,6 +38,7 @@ import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
 import com.hotteam67.firebaseviewer.web.FirebaseHandler;
 import com.hotteam67.firebaseviewer.web.TBAHandler;
 
+import org.hotteam67.common.FileHandler;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -154,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        /*
         matchSearchView = findViewById(R.id.matchNumberSearch);
         matchSearchView.addTextChangedListener(new TextWatcher() {
             @Override
@@ -171,8 +173,13 @@ public class MainActivity extends AppCompatActivity {
                 OnMatchSearch(s);
             }
         });
+        */
+        Button teamsGroupButton = findViewById(R.id.teamsGroupButton);
+        teamsGroupButton.setOnClickListener(v -> {
 
-        TableView tableView = findViewById(R.id.mainTableView);
+        });
+
+                TableView tableView = findViewById(R.id.mainTableView);
 
         // Create TableView Adapter
         tableAdapter = new MainTableAdapter(this);
@@ -609,7 +616,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         s.append("\n");
                     }
-                    FileHandler.Write(FileHandler.VIEWER_MATCHES, s.toString());
+                    FileHandler.Write(FileHandler.VIEWER_MATCHES_FILE, s.toString());
                 }
                 catch (Exception e)
                 {
@@ -620,7 +627,7 @@ public class MainActivity extends AppCompatActivity {
             // Load into json
             try {
                 TBAHandler.TeamNames(eventKey, teamNames -> {
-                    FileHandler.Write(FileHandler.TEAM_NAMES, teamNames.toString());
+                    FileHandler.Write(FileHandler.TEAM_NAMES_FILE, teamNames.toString());
                     teamNumbersNames = teamNames;
                 });
             }
@@ -631,7 +638,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 TBAHandler.Rankings(eventKey, rankings ->
                 {
-                    FileHandler.Write(FileHandler.TEAM_RANKS, rankings.toString());
+                    FileHandler.Write(FileHandler.RANKS_FILE, rankings.toString());
                     teamNumbersRanks = rankings;
                 }
                 );
@@ -657,7 +664,7 @@ public class MainActivity extends AppCompatActivity {
         redTeams = new ArrayList<>();
         blueTeams = new ArrayList<>();
 
-        String content = FileHandler.LoadContents(FileHandler.VIEWER_MATCHES);
+        String content = FileHandler.LoadContents(FileHandler.VIEWER_MATCHES_FILE);
         if (content == null || content.trim().isEmpty())
             return;
         List<String> contents = Arrays.asList(content.split("\n"));
@@ -700,7 +707,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         try {
-            teamNumbersNames = new JSONObject(FileHandler.LoadContents(FileHandler.TEAM_NAMES));
+            teamNumbersNames = new JSONObject(FileHandler.LoadContents(FileHandler.TEAM_NAMES_FILE));
         }
         catch (Exception e)
         {
@@ -709,7 +716,7 @@ public class MainActivity extends AppCompatActivity {
         }
         try
         {
-            teamNumbersRanks = new JSONObject(FileHandler.LoadContents(FileHandler.TEAM_RANKS));
+            teamNumbersRanks = new JSONObject(FileHandler.LoadContents(FileHandler.RANKS_FILE));
         }
         catch (Exception e)
         {
