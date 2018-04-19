@@ -2,12 +2,6 @@ apply plugin: 'com.android.application'
 
 android {
     signingConfigs {
-        config {
-            keyAlias 'mainkey'
-            keyPassword '@pianist1119'
-            storeFile file('C:/Users/Jakob/Documents/Android/Keys/key.jks')
-            storePassword '@pianist1119'
-        }
     }
     compileSdkVersion 27
     defaultConfig {
@@ -28,10 +22,6 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.config
-        }
-        debug {
-            signingConfig signingConfigs.config
         }
     }
     packagingOptions {
