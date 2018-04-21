@@ -3,6 +3,7 @@ package com.hotteam67.firebaseviewer.web;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.hotteam67.common.Constants;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -21,15 +22,6 @@ import java.util.List;
  */
 
 public class TBAHandler {
-    private static final String AUTH_TOKEN =
-            "?X-TBA-Auth-Key=HisYRPfFZbTdm3uKUA6cZ2etWXymiIlM8X3XKq2T15TVZQDIc1vaWSr5rX17gHoh";
-
-    private static final String BASE_URL = "https://www.thebluealliance.com/api/v3";
-    private static final String EVENT = "/event/";
-    private static final String TEAMS = "/teams";
-    private static final String SIMPLE = "/simple";
-    private static final String MATCHES = "/matches/simple";
-    private static final String STATUSES = "/statuses";
 
     public interface OnCompleteEvent<t>{
         void run(t result);
@@ -89,9 +81,9 @@ public class TBAHandler {
     // Gets rankings as returns as jsonobjct
     public static void Rankings(String eventCode, OnCompleteEvent<JSONObject> returnEvent)
     {
-        String url = BASE_URL;
+        String url = Constants.TBA.BASE_URL;
 
-        url += EVENT + eventCode + TEAMS + STATUSES + AUTH_TOKEN;
+        url += Constants.TBA.EVENT + eventCode + Constants.TBA.TEAMS + Constants.TBA.STATUSES + Constants.AUTH_TOKEN;
         Log.d("HotTeam67", "Pulling data from url: " + url);
 
         RetreiveUrl retreiveUrl = new RetreiveUrl(result -> {
@@ -135,9 +127,9 @@ public class TBAHandler {
     // Returns lists of 3 red teams, and 3 blue teams, red first: [[r1, r2, r3], [b1, b2, b3]]
     public static void Matches(String eventCode, OnCompleteEvent<List<List<List<String>>>> returnEvent)
     {
-        String url = BASE_URL;
+        String url = Constants.TBA.BASE_URL;
 
-        url += EVENT + eventCode + MATCHES + AUTH_TOKEN;
+        url += Constants.TBA.EVENT + eventCode + Constants.TBA.MATCHES + Constants.AUTH_TOKEN;
         Log.d("HotTeam67", "Pulling data from url: " + url);
 
         RetreiveUrl retreiveUrl = new RetreiveUrl(result -> {
@@ -190,9 +182,9 @@ public class TBAHandler {
     // Gets team names and returns as jsonobject
     public static void TeamNames(String eventCode, OnCompleteEvent<JSONObject> returnEvent)
     {
-        String url = BASE_URL;
+        String url = Constants.TBA.BASE_URL;
 
-        url += EVENT + eventCode + TEAMS + AUTH_TOKEN;
+        url += Constants.TBA.EVENT + eventCode + Constants.TBA.TEAMS + Constants.AUTH_TOKEN;
         Log.d("HotTeam67", "Pulling data from url: " + url);
 
         RetreiveUrl retreiveUrl = new RetreiveUrl(result -> {
@@ -214,6 +206,42 @@ public class TBAHandler {
             }
 
             returnEvent.run(returnObject);
+        }); retreiveUrl.execute(url);
+    }
+
+    public static void Alliances(String eventCode, OnCompleteEvent<List<List<String>>> returnEvent)
+    {
+        String url = Constants.TBA.BASE_URL;
+
+        url += Constants.TBA.EVENT + eventCode + Constants.TBA.ALLIANCES + Constants.AUTH_TOKEN;
+
+        RetreiveUrl retreiveUrl = new RetreiveUrl(result -> {
+            JSONArray resultArray;
+            List<List<String>> alliances = new ArrayList<>();
+            try
+            {
+                resultArray = new JSONArray(result);
+                for (int i = 0; i < resultArray.length(); ++i)
+                {
+                    JSONObject alliance = resultArray.getJSONObject(i);
+                    if (!alliance.has("picks"))
+                        continue;
+
+                    JSONArray picks = alliance.getJSONArray("picks");
+                    List<String> currentAlliance = new ArrayList<>();
+                    for (int t = 0; t < picks.length(); ++t)
+                    {
+                        currentAlliance.add(picks.getString(t).replace("frc", ""));
+                    }
+                    alliances.add(currentAlliance);
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            returnEvent.run(alliances);
         }); retreiveUrl.execute(url);
     }
 }

@@ -8,6 +8,7 @@ import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class DataTable implements Serializable {
 
     private List<String> preferredOrder;
 
-    private final String TeamNumber = "Team Number";
+    private static final String TeamNumber = "Team Number";
 
     private List<ColumnSchema.SumColumn> sumColumns;
 
@@ -181,12 +182,15 @@ public class DataTable implements Serializable {
     }
 
 
-    public void SetTeamNumberFilter(String term)
+    public void SetTeamNumberFilter(String... term)
     {
-        teamNumberFilter = term;
+        if (term.length == 0 || term[0] == null || term[0].trim().isEmpty())
+            teamNumberFilters = new ArrayList<>();
+        else
+            teamNumberFilters = new ArrayList<>(Arrays.asList(term));
     }
 
-    private String teamNumberFilter = "";
+    private List<String> teamNumberFilters = new ArrayList<>();
 
     public List<ColumnHeaderModel> GetColumns()
     {
@@ -204,9 +208,7 @@ public class DataTable implements Serializable {
 
     public List<List<CellModel>> GetCells()
     {
-        if (teamNumberFilter == null)
-            return cellList;
-        else if (teamNumberFilter.trim().isEmpty())
+        if (teamNumberFilters == null || teamNumberFilters.size() == 0)
             return cellList;
         else
         {
@@ -233,17 +235,14 @@ public class DataTable implements Serializable {
 
     public List<RowHeaderModel> GetRowHeaders()
     {
-        if (teamNumberFilter == null)
-            return rowHeaderList;
-        if (teamNumberFilter.trim().isEmpty())
+        if (teamNumberFilters == null || teamNumberFilters.size() == 0)
             return rowHeaderList;
         List<RowHeaderModel> filteredRows = new ArrayList<>();
-        List<RowHeaderModel> unFilteredRows = new ArrayList<>();
-        unFilteredRows.addAll(rowHeaderList);
+        List<RowHeaderModel> unFilteredRows = new ArrayList<>(rowHeaderList);
 
         for (RowHeaderModel row : unFilteredRows)
         {
-            if (row.getData().equals(teamNumberFilter))
+            if (teamNumberFilters.contains(row.getData()))
             {
                 filteredRows.add(row);
             }

@@ -52,13 +52,12 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     }
 
 
-    public void setAllItems(DataTable table, DataTable rawData)
+    public void setAllItems(DataTable mainTable, DataTable rawData)
     {
-        setAllItems(table.GetColumns(), table.GetRowHeaders(), table.GetCells());
-        calculatedDataTable = table;
+        setAllItems(mainTable.GetColumns(), mainTable.GetRowHeaders(), mainTable.GetCells());
+        calculatedDataTable = mainTable;
         rawDataTable = rawData;
     }
-
 
     public DataTable GetRawData()
     {

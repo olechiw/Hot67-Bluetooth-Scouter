@@ -63,16 +63,16 @@ public final class Sort {
 
 
         List<ColumnHeaderModel> columns = input.GetColumns();
-        List<List<CellModel>> cells = input.GetCells();
+        List<List<CellModel>> newCells = input.GetCells();
         List<RowHeaderModel> rows = input.GetRowHeaders();
 
-        List<List<CellModel>> oldCells = new ArrayList<>(cells);
+        List<List<CellModel>> oldCells = new ArrayList<>(newCells);
 
-        cells = com.annimon.stream.Stream.of(cells).sorted((cells1, cells2) -> Compare(cells1.get(column).getData().toString(),
+        newCells = com.annimon.stream.Stream.of(newCells).sorted((cells1, cells2) -> Compare(cells1.get(column).getData().toString(),
                 cells2.get(column).getData().toString())).collect(com.annimon.stream.Collectors.toList());
 
         if (!ascending)
-            Collections.reverse(cells);
+            Collections.reverse(newCells);
 
         List<RowHeaderModel> newRows = new ArrayList<>();
         for (int i = 0; i < rows.size(); ++i)
@@ -81,13 +81,11 @@ public final class Sort {
         }
         for (int i = 0; i < rows.size(); ++i)
         {
-            int newIndex = cells.indexOf(oldCells.get(i));
+            int newIndex = newCells.indexOf(oldCells.get(i));
             newRows.set(newIndex, rows.get(i));
         }
 
-        input.Set(newRows, cells, columns);
-
-        return input;
+        return new DataTable(columns, newCells, newRows);
     }
 
     private static int Compare(String item1, String item2)

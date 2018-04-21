@@ -42,34 +42,32 @@ public class DarkNumberPicker extends LinearLayout
         mainText.setInputType(InputType.TYPE_CLASS_NUMBER);
 
 
-        InputFilter filter = new InputFilter()
+        InputFilter filter = (source, start, end, dest, dstart, dend) ->
         {
-            @Override
-            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend)
+            if (source.toString().trim().isEmpty())
+                return source;
+            int i;
+            try
             {
-                int i;
-                try
-                {
-                    i = Integer.valueOf(String.valueOf(source.toString()));
-                } catch (Exception e) {
-                    return String.valueOf(minimum);
-                }
-
-                //android.util.Log.d("[DarkPicker]", "Integer value: " + i);
-
-                if ((i >= minimum && i <= maximum))
-                    return String.valueOf(i);
-                else if (i < minimum)
-                {
-                    return String.valueOf(minimum);
-                }
-                else if (i > maximum)
-                {
-                    return String.valueOf(maximum);
-                }
-                else
-                    return String.valueOf(minimum);
+                i = Integer.valueOf(source.toString());
+            } catch (Exception e) {
+                return String.valueOf(minimum);
             }
+
+            //android.util.Log.d("[DarkPicker]", "Integer value: " + i);
+
+            if ((i >= minimum && i <= maximum))
+                return String.valueOf(i);
+            else if (i < minimum)
+            {
+                return String.valueOf(minimum);
+            }
+            else if (i > maximum)
+            {
+                return String.valueOf(maximum);
+            }
+            else
+                return String.valueOf(minimum);
         };
         mainText.setFilters(new InputFilter[] { filter });
 
@@ -86,6 +84,8 @@ public class DarkNumberPicker extends LinearLayout
 
             @Override
             public void afterTextChanged(Editable s) {
+                if (s.toString().trim().isEmpty())
+                    return;
                 int i = 0;
                 try
                 {

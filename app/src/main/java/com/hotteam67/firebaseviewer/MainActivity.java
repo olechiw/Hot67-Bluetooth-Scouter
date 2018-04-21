@@ -2,7 +2,6 @@ package com.hotteam67.firebaseviewer;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -16,6 +15,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
@@ -25,6 +25,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import com.annimon.stream.Stream;
 import com.evrencoskun.tableview.TableView;
 import com.hotteam67.firebaseviewer.data.DataTableBuilder;
 import com.hotteam67.firebaseviewer.data.ColumnSchema;
@@ -38,6 +39,7 @@ import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
 import com.hotteam67.firebaseviewer.web.FirebaseHandler;
 import com.hotteam67.firebaseviewer.web.TBAHandler;
 
+import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.json.JSONObject;
 
@@ -46,22 +48,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String AVG = "AVG";
-    public static final String MAX = "MAX";
-    public static final String EMPTY = "";
-    public static final String RED = "RED";
-    public static final String N_A = "N/A";
-    public static final String BLUE = "BLUE";
-    public static final String ALLIANCE = "A";
 
     private MainTableAdapter tableAdapter;
 
     private ImageButton refreshButton;
-
-    private int REQUEST_ENABLE_PERMISSION = 3;
+    private Button teamsGroupButton;
 
     private EditText teamSearchView;
-    private EditText matchSearchView;
 
     // State for which calculation is currently in the UI
     int calculationState = DataTableBuilder.Calculation.AVERAGE;
@@ -75,12 +68,15 @@ public class MainActivity extends AppCompatActivity {
     private JSONObject teamNumbersRanks;
     private JSONObject teamNumbersNames;
 
+    List<List<String>> alliances = new ArrayList<>();
+
+    // Handler for the teams group filtering
+    TeamsGroupHandler teamsGroupHandler;
+
     List<String> redTeams = new ArrayList<>();
     List<String> blueTeams = new ArrayList<>();
 
     public MainActivity() {}
-
-    public static final int RawDataRequestCode = 1;
 
     /*
     Result for raw data activity, load the match number if one was selected
@@ -88,11 +84,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        if (requestCode == RawDataRequestCode)
+        if (requestCode == Constants.RawDataRequestCode)
         {
             if (data == null) return;
-            String result = data.getStringExtra("Match Number");
-            matchSearchView.setText(result);
+            try
+            {
+                String result = data.getStringExtra("Match Number");
+                teamsGroupHandler.SetId(Integer.valueOf(result));
+                teamsGroupHandler.SetType(TeamsGroupHandler.TEAM_GROUP_QUALS);
+                UpdateTeamsGroup();
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -125,9 +130,13 @@ public class MainActivity extends AppCompatActivity {
         refreshButton.setOnClickListener(view -> RefreshTable());
 
         ImageButton clearButton = findViewById(R.id.clearButton);
-        clearButton.setOnClickListener(v -> {
-            matchSearchView.setText(EMPTY);
-            teamSearchView.setText(EMPTY);
+        clearButton.setOnClickListener(v ->
+        {
+            SetTeamNumberFilter(Constants.EMPTY);
+            teamSearchView.setText("");
+            teamsGroupHandler.SetId(0);
+            teamsGroupHandler.SetType(TeamsGroupHandler.TEAM_GROUP_QUALS);
+            UpdateTeamsGroup();
         });
 
         teamSearchView = finalView.findViewById(R.id.teamNumberSearch);
@@ -146,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {
                 try {
                     SetTeamNumberFilter(editable.toString());
-                    Update();
+                    ShowActiveTable();
                 }
                 catch (Exception e)
                 {
@@ -155,28 +164,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        /*
-        matchSearchView = findViewById(R.id.matchNumberSearch);
-        matchSearchView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                OnMatchSearch(s);
-            }
-        });
-        */
-        Button teamsGroupButton = findViewById(R.id.teamsGroupButton);
+        teamsGroupButton = findViewById(R.id.teamsGroupButton);
+        teamsGroupHandler = new TeamsGroupHandler(this);
         teamsGroupButton.setOnClickListener(v -> {
-
+            View dialogView = teamsGroupHandler.GetView();
+            new AlertDialog.Builder(this, android.R.style.Theme_Material_NoActionBar_Fullscreen)
+                    .setTitle("Team Groups").setOnDismissListener(dialogInterface ->
+            {
+                // ShowActiveTable based on contents when the view disappears
+                View view = ((AlertDialog) dialogInterface).findViewById(R.id.teamsGroupLayout);
+                teamsGroupHandler.LoadFromView(view);
+                UpdateTeamsGroup();
+            }).setView(dialogView).show();
         });
 
                 TableView tableView = findViewById(R.id.mainTableView);
@@ -200,24 +199,95 @@ public class MainActivity extends AppCompatActivity {
             Log.d("HotTeam67", "Requesting Permissions");
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                    REQUEST_ENABLE_PERMISSION);
+                    Constants.REQUEST_ENABLE_PERMISSION);
+        }
+    }
+
+    private void UpdateTeamsGroup()
+    {
+        String groupType = teamsGroupHandler.GetType();
+        Integer groupId = teamsGroupHandler.GetId();
+
+        switch (groupType)
+        {
+            case TeamsGroupHandler.TEAM_GROUP_QUALS:
+                teamsGroupButton.setText("Q" + groupId + " TEAMS");
+                ShowMatch(groupId);
+                break;
+            case TeamsGroupHandler.TEAM_GROUP_ELIMS:
+                teamsGroupButton.setText("A" + groupId + " TEAMS");
+                ShowAlliance(groupId);
+                break;
+            case TeamsGroupHandler.TEAM_GROUP_CUSTOM:
+                teamsGroupButton.setText("C Teams");
+                FileHandler.Write(FileHandler.CUSTOM_TEAMS_FILE,
+                        TextUtils.join("\n", teamsGroupHandler.GetCustomTeams()));
+                ShowTeams(teamsGroupHandler.GetCustomTeams());
+                break;
+        }
+
+    }
+
+    /*
+    Show a designated alliance's teams
+     */
+    private void ShowAlliance(Integer seatNumber)
+    {
+        try
+        {
+            if (seatNumber <= 0 || seatNumber > alliances.size())
+            {
+                SetTeamNumberFilter();
+                ShowActiveTable();
+                return;
+            }
+
+            List<String> alliance = alliances.get(seatNumber - 1);
+            SetTeamNumberFilter(Stream.of(alliance.toArray()).toArray(String[]::new));
+            ShowActiveTable();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    /*
+    Show Custom teams
+     */
+    private void ShowTeams(List<String> teams)
+    {
+        try
+        {
+            if (teams == null || teams.size() == 0)
+            {
+                SetTeamNumberFilter();
+                ShowActiveTable();
+                return;
+            }
+
+            SetTeamNumberFilter(Stream.of(teams.toArray()).toArray(String[]::new));
+            ShowActiveTable();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
         }
     }
 
     /*
     When the match search text changes
      */
-    private void OnMatchSearch(Editable s)
+    private synchronized void ShowMatch(Integer matchNumber)
     {
         try
         {
-            if (s.toString().trim().isEmpty())
+            if (matchNumber <= 0)
             {
-                SetTeamNumberFilter(EMPTY);
-                Update();
+                SetTeamNumberFilter(Constants.EMPTY);
+                ShowActiveTable();
                 return;
             }
-            int matchNumber = Integer.valueOf(matchSearchView.getText().toString());
             if (matchNumber <= redTeams.size() && matchNumber <= blueTeams.size())
             {
                 List<String> red = new ArrayList<>(
@@ -246,10 +316,10 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 DataTable processor = new DataTable(columns, cells, rows);
-                processor.SetTeamNumberFilter(EMPTY);
+                processor.SetTeamNumberFilter(Constants.EMPTY);
 
                 List<ColumnHeaderModel> columnHeaderModels = processor.GetColumns();
-                columnHeaderModels.add(0, new ColumnHeaderModel(ALLIANCE));
+                columnHeaderModels.add(0, new ColumnHeaderModel(Constants.ALLIANCE));
 
                 List<List<CellModel>> outputCells = processor.GetCells();
                 for (int i = 0; i < outputCells.size(); ++i)
@@ -258,10 +328,10 @@ public class MainActivity extends AppCompatActivity {
 
                     if (red.contains(teamNumber))
                     {
-                        outputCells.get(i).add(0, new CellModel(i + "_00", RED));
+                        outputCells.get(i).add(0, new CellModel(i + "_00", Constants.RED));
                     }
                     else {
-                        outputCells.get(i).add(0, new CellModel(i + "_00", BLUE));
+                        outputCells.get(i).add(0, new CellModel(i + "_00", Constants.BLUE));
                         blue.remove(teamNumber);
                     }
                     red.remove(teamNumber);
@@ -278,11 +348,11 @@ public class MainActivity extends AppCompatActivity {
                 for (String team : red)
                 {
                     List<CellModel> row = new ArrayList<>();
-                    row.add(new CellModel("0", RED));
+                    row.add(new CellModel("0", Constants.RED));
 
                     for (int i = 0; i < firstRowSize; ++i)
                     {
-                        row.add(new CellModel("0", N_A));
+                        row.add(new CellModel("0", Constants.N_A));
                     }
 
 
@@ -292,11 +362,11 @@ public class MainActivity extends AppCompatActivity {
                 for (String team : blue)
                 {
                     List<CellModel> row = new ArrayList<>();
-                    row.add(new CellModel("0", BLUE));
+                    row.add(new CellModel("0", Constants.BLUE));
 
                     for (int i = 0; i < firstRowSize; ++i)
                     {
-                        row.add(new CellModel("0", N_A));
+                        row.add(new CellModel("0", Constants.N_A));
                     }
 
                     outputCells.add(row);
@@ -305,12 +375,13 @@ public class MainActivity extends AppCompatActivity {
 
                 DataTable newProcessor = new DataTable(columnHeaderModels, outputCells, rowHeaders);
 
-                tableAdapter.setAllItems(Sort.SortByColumn(newProcessor, 0, false), rawData); // Sort by alliance
+                //Sort by alliance
+                tableAdapter.setAllItems(Sort.SortByColumn(newProcessor, 0, false), rawData);
             }
             else
             {
-                calculatedDataAverages.GetTable().SetTeamNumberFilter(EMPTY);
-                tableAdapter.setAllItems(calculatedDataAverages.GetTable(), rawData);
+                SetTeamNumberFilter(Constants.EMPTY);
+                ShowActiveTable();
             }
         }
         catch (Exception e)
@@ -322,68 +393,22 @@ public class MainActivity extends AppCompatActivity {
     /*
     Calculation button event handler
      */
-    private void OnCalculationButton(View v)
+    private synchronized void OnCalculationButton(View v)
     {
         switch (calculationState)
         {
             case DataTableBuilder.Calculation.AVERAGE:
-                SyncOrder();
                 calculationState = DataTableBuilder.Calculation.MAXIMUM;
-                ((Button)v).setText(AVG);
-                Update();
-                if (!matchSearchView.getText().toString().isEmpty())
-                    matchSearchView.setText(matchSearchView.getText());
+                ((Button)v).setText(Constants.AVG);
+                ShowActiveTable();
+                UpdateTeamsGroup();
                 break;
             case DataTableBuilder.Calculation.MAXIMUM:
-                SyncOrder();
                 calculationState = DataTableBuilder.Calculation.AVERAGE;
-                ((Button)v).setText(MAX);
-                Update();
-                if (!matchSearchView.getText().toString().isEmpty())
-                    matchSearchView.setText(matchSearchView.getText());
+                ((Button)v).setText(Constants.MAX);
+                ShowActiveTable();
+                UpdateTeamsGroup();
                 break;
-        }
-    }
-
-    /*
-    Sync the order so both tables have the same order
-     */
-    private void SyncOrder()
-    {
-        DataTable currentTable = GetActiveTable();
-        DataTable inactiveTable = (calculationState == DataTableBuilder.Calculation.MAXIMUM) ?
-                calculatedDataAverages.GetTable() : calculatedDataMaximums.GetTable();
-
-        List<RowHeaderModel> inactiveRowHeaders = inactiveTable.GetRowHeaders();
-        List<List<CellModel>> inactiveCells = inactiveTable.GetCells();
-        for (RowHeaderModel row : currentTable.GetRowHeaders())
-        {
-            try {
-                int rowIndex = currentTable.GetRowHeaders().indexOf(row);
-                String value = row.getData();
-                int inactiveRowIndex = -1;
-                for (RowHeaderModel potentialRow : inactiveRowHeaders) {
-                    if (potentialRow.getData().equals(value))
-                        inactiveRowIndex = inactiveRowHeaders.indexOf(potentialRow);
-                }
-                if (inactiveRowIndex == -1)
-                    continue;
-
-                // Switch the the row to where it should be and just move the other one
-                RowHeaderModel oldRow = inactiveRowHeaders.get(rowIndex);
-                List<CellModel> oldCells = inactiveCells.get(rowIndex);
-                RowHeaderModel newRow = inactiveRowHeaders.get(inactiveRowIndex);
-                List<CellModel> newCells = inactiveCells.get(inactiveRowIndex);
-
-                inactiveRowHeaders.set(rowIndex, newRow);
-                inactiveCells.set(rowIndex, newCells);
-                inactiveRowHeaders.set(inactiveRowIndex, oldRow);
-                inactiveCells.set(inactiveRowIndex, oldCells);
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -402,7 +427,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
-        if (requestCode == REQUEST_ENABLE_PERMISSION) {
+        if (requestCode == Constants.REQUEST_ENABLE_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
             {
                 LoadSerializedTables();
@@ -414,7 +439,7 @@ public class MainActivity extends AppCompatActivity {
     /*
     Serialize the three datatables and write them to disk
      */
-    private void SerializeTables()
+    private synchronized void SerializeTables()
     {
         @SuppressLint("StaticFieldLeak") AsyncTask serializeTask = new AsyncTask()
         {
@@ -453,7 +478,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected void onPostExecute(Object o) {
                 super.onPostExecute(o);
-                Update();
+
+                String customTeams = FileHandler.LoadContents(FileHandler.CUSTOM_TEAMS_FILE);
+                if (customTeams != null && !customTeams.trim().isEmpty())
+                {
+                    teamsGroupHandler.SetCustomTeams(new ArrayList<>(Arrays.asList(customTeams.split("\n"))));
+                }
+
+                ShowActiveTable();
                 EndProgressAnimation();
             }
         };
@@ -467,7 +499,7 @@ public class MainActivity extends AppCompatActivity {
     {
         StartProgressAnimation();
 
-        teamSearchView.setText(EMPTY);
+        teamSearchView.setText(Constants.EMPTY);
 
         LoadTBAData();
 
@@ -575,7 +607,7 @@ public class MainActivity extends AppCompatActivity {
         {
             runOnUiThread(() ->
             {
-                Update();
+                ShowActiveTable();
                 SerializeTables();
             });
         }
@@ -584,7 +616,7 @@ public class MainActivity extends AppCompatActivity {
     /*
     Load TBA data from the API v3
      */
-    private void LoadTBAData()
+    private synchronized void LoadTBAData()
     {
         String[] values = GetConnectionProperties();
         if (values == null || values.length != 4)
@@ -607,10 +639,10 @@ public class MainActivity extends AppCompatActivity {
                         List<String> redTeams = m.get(0);
                         List<String> blueTeams = m.get(1);
                         for (String t : redTeams) {
-                            s.append(t.replace("frc", EMPTY)).append(",");
+                            s.append(t.replace("frc", Constants.EMPTY)).append(",");
                         }
                         for (int t = 0; t < blueTeams.size(); ++t) {
-                            s.append(blueTeams.get(t).replace("frc", EMPTY));
+                            s.append(blueTeams.get(t).replace("frc", Constants.EMPTY));
                             if (t + 1 != blueTeams.size())
                                 s.append(",");
                         }
@@ -642,6 +674,23 @@ public class MainActivity extends AppCompatActivity {
                     teamNumbersRanks = rankings;
                 }
                 );
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+            try {
+                TBAHandler.Alliances(eventKey, a ->
+                {
+                    alliances = a;
+                    StringBuilder alliancesString = new StringBuilder();
+                    for (List<String> alliance : alliances)
+                    {
+                        alliancesString.append(TextUtils.join(",", alliance));
+                        alliancesString.append("\n");
+                    }
+                    FileHandler.Write(FileHandler.ALLIANCES_FILE, alliancesString.toString());
+                });
             }
             catch (Exception e)
             {
@@ -712,7 +761,6 @@ public class MainActivity extends AppCompatActivity {
         catch (Exception e)
         {
             e.printStackTrace();
-            teamNumbersNames = new JSONObject();
         }
         try
         {
@@ -721,14 +769,33 @@ public class MainActivity extends AppCompatActivity {
         catch (Exception e)
         {
             e.printStackTrace();
-            teamNumbersRanks = new JSONObject();
+        }
+
+        try
+        {
+            alliances = new ArrayList<>();
+            String[] alliancesFile = FileHandler.LoadContents(FileHandler.ALLIANCES_FILE)
+                    .split("\n");
+            for (String value : alliancesFile)
+            {
+                if (value.trim().isEmpty())
+                    continue;
+                String[] teams = value.split(",");
+                if (teams.length == 1)
+                    continue;
+                alliances.add(new ArrayList<>(Arrays.asList(teams)));
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
         }
     }
 
     /*
-    Update the UI with the currently active table
+    ShowActiveTable the UI with the currently active table
      */
-    private void Update()
+    private synchronized void ShowActiveTable()
     {
         if (calculatedDataMaximums == null || calculatedDataAverages == null)
             return;
@@ -742,7 +809,7 @@ public class MainActivity extends AppCompatActivity {
     /*
     Get the active datatable
      */
-    private DataTable GetActiveTable()
+    private synchronized DataTable GetActiveTable()
     {
         if (calculationState == DataTableBuilder.Calculation.MAXIMUM)
             return calculatedDataMaximums.GetTable();
@@ -753,8 +820,11 @@ public class MainActivity extends AppCompatActivity {
     /*
     Set the team number filter on the active table
      */
-    private void SetTeamNumberFilter(String s)
+    private synchronized void SetTeamNumberFilter(String... s)
     {
+        if (calculatedDataAverages == null || calculatedDataMaximums == null)
+            return;
+
         calculatedDataMaximums.GetTable().SetTeamNumberFilter(s);
         calculatedDataAverages.GetTable().SetTeamNumberFilter(s);
     }

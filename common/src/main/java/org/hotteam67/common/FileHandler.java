@@ -27,6 +27,8 @@ public final class FileHandler
     public static final String MATCHES_FILE = "serverMatches.csv"; // Server unscouted matches datbase (match schedule)
     public static final String TEAM_NAMES_FILE = "teamNames.json";
     public static final String RANKS_FILE = "teamRanks.json";
+    public static final String CUSTOM_TEAMS_FILE = "customTeams.csv";
+    public static final String ALLIANCES_FILE = "alliances.csv";
     public static final String VIEWER_MATCHES_FILE = "viewerMatches.csv";
     public static final String AVERAGES_CACHE = "averagesCache";
     public static final String MAXIMUMS_CACHE = "maximumsCache";

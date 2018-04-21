@@ -8,6 +8,7 @@ import android.util.Log;
 import com.evrencoskun.tableview.ITableView;
 import com.evrencoskun.tableview.listener.ITableViewListener;
 import com.hotteam67.firebaseviewer.data.ColumnSchema;
+import com.hotteam67.firebaseviewer.data.DataTableBuilder;
 import com.hotteam67.firebaseviewer.data.ScatterPlot;
 import com.hotteam67.firebaseviewer.MainActivity;
 import com.hotteam67.firebaseviewer.RawDataActivity;
@@ -17,6 +18,7 @@ import com.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
 
+import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.json.JSONObject;
 
@@ -117,17 +119,18 @@ public class MainTableViewListener implements ITableViewListener {
         if (calculatedData == null || calculatedData.GetCells() == null || calculatedData.GetCells().size() == 0)
             return;
 
-        if (lastColumnClicked != p_nXPosition) {
-            adapter.setAllItems(Sort.SortByColumn(calculatedData, p_nXPosition, false), adapter.GetRawData());
+        boolean ascending = false;
+        if (lastColumnClicked != p_nXPosition)
             lastColumnClicked = p_nXPosition;
-        }
         else
         {
-            adapter.setAllItems(Sort.SortByColumn(calculatedData, p_nXPosition, true), adapter.GetRawData());
             lastColumnClicked = -1;
+            ascending = true;
         }
 
+        adapter.setAllItems(Sort.SortByColumn(calculatedData, p_nXPosition, ascending), adapter.GetRawData());
     }
+
 
     @Override
     public void onColumnHeaderLongPressed(@NonNull RecyclerView.ViewHolder p_jColumnHeaderView,
@@ -166,7 +169,7 @@ public class MainTableViewListener implements ITableViewListener {
                 e.printStackTrace();
             }
 
-            activity.startActivityForResult(rawDataIntent, MainActivity.RawDataRequestCode);
+            activity.startActivityForResult(rawDataIntent, Constants.RawDataRequestCode);
     }
 
     private DataTable GetFormattedRawData(MainTableAdapter adapter, String teamNumber) {

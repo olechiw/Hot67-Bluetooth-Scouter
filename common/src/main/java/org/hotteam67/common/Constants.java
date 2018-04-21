@@ -18,6 +18,28 @@ public class Constants
     public static final String SCOUTER_SCHEMA_TAG =         ":SCHEMA:,,";
     public static final String SERVER_TEAMS_RECEIVED_TAG =  ":HEARD:,,,";
     public static final String SERVER_MESSAGE_TAG =         ":MESSAGE,,";
+    public static final String AVG = "AVG";
+    public static final String MAX = "MAX";
+    public static final String EMPTY = "";
+    public static final String RED = "RED";
+    public static final String N_A = "N/A";
+    public static final String BLUE = "BLUE";
+    public static final String ALLIANCE = "A";
+    public static final int RawDataRequestCode = 1;
+    public static final int REQUEST_ENABLE_PERMISSION = 3;
+    public static final String AUTH_TOKEN =
+            "?X-TBA-Auth-Key=HisYRPfFZbTdm3uKUA6cZ2etWXymiIlM8X3XKq2T15TVZQDIc1vaWSr5rX17gHoh";
+
+    public static class TBA
+    {
+        public static final String BASE_URL = "https://www.thebluealliance.com/api/v3";
+        public static final String EVENT = "/event/";
+        public static final String TEAMS = "/teams";
+        private static final String SIMPLE = "/simple";
+        public static final String MATCHES = "/matches/simple";
+        public static final String STATUSES = "/statuses";
+        public static final String ALLIANCES = "/alliances";
+    }
 
     public static String getScouterInputTag(String input)
     {
