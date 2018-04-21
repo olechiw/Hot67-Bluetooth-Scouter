@@ -168,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
         teamsGroupHandler = new TeamsGroupHandler(this);
         teamsGroupButton.setOnClickListener(v -> {
             View dialogView = teamsGroupHandler.GetView();
-            new AlertDialog.Builder(this, android.R.style.Theme_Material_NoActionBar_Fullscreen)
+            AlertDialog dialog = new AlertDialog.Builder(this, android.R.style.Theme_Material_NoActionBar_Fullscreen)
                     .setTitle("Team Groups").setOnDismissListener(dialogInterface ->
             {
                 // ShowActiveTable based on contents when the view disappears
@@ -176,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
                 teamsGroupHandler.LoadFromView(view);
                 UpdateTeamsGroup();
             }).setView(dialogView).show();
+            dialogView.findViewById(R.id.okButton).setOnClickListener(x -> dialog.dismiss());
         });
 
                 TableView tableView = findViewById(R.id.mainTableView);

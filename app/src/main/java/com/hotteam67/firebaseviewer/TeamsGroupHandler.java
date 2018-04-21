@@ -59,6 +59,7 @@ public class TeamsGroupHandler
                 android.R.layout.simple_list_item_1,
                 customTeams);
         customTeamsView.setAdapter(adapter);
+        customTeamsView.setOnItemClickListener((adapterView, view, i, l) -> adapter.remove(adapter.getItem(i)));
 
         addButton.setOnClickListener(x ->
         {

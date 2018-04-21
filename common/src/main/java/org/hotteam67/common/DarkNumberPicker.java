@@ -113,26 +113,12 @@ public class DarkNumberPicker extends LinearLayout
         mainText.setText("0");
 
         upButton = new Button(getContext());
-        upButton.setOnClickListener(new OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                setValue(getValue() + 1);
-            }
-        });
+        upButton.setOnClickListener(v -> setValue(getValue() + 1));
         upButton.setText("+");
         upButton.setLayoutParams(params);
 
         downButton = new Button(getContext());
-        downButton.setOnClickListener(new OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                setValue(getValue() - 1);
-            }
-        });
+        downButton.setOnClickListener(v -> setValue(getValue() - 1));
         downButton.setText("-");
         downButton.setLayoutParams(params);
 
@@ -154,14 +140,10 @@ public class DarkNumberPicker extends LinearLayout
 
     public int getValue()
     {
-        // Log.d("BLUETOOTH_SCOUTER_DEBUG", "Returning value: " + mainText.getText().toString());
-        return Integer.valueOf(mainText.getText().toString());
-        /*
-        if (!mainText.getText().toString().trim().isEmpty())
-
-        else
+        if (mainText.getText().toString().trim().isEmpty())
             return 0;
-            */
+
+        return Integer.valueOf(mainText.getText().toString());
     }
 
     public void setValue(Integer value)
