@@ -132,8 +132,9 @@ public class MainActivity extends AppCompatActivity {
         ImageButton clearButton = findViewById(R.id.clearButton);
         clearButton.setOnClickListener(v ->
         {
-            SetTeamNumberFilter(Constants.EMPTY);
-            teamSearchView.setText("");
+            if (!teamSearchView.getText().toString().trim().isEmpty())
+                teamSearchView.setText("");
+            SetTeamNumberFilter("");
             teamsGroupHandler.SetId(0);
             teamsGroupHandler.SetType(TeamsGroupHandler.TEAM_GROUP_QUALS);
             UpdateTeamsGroup();
@@ -396,20 +397,69 @@ public class MainActivity extends AppCompatActivity {
      */
     private synchronized void OnCalculationButton(View v)
     {
-        switch (calculationState)
+        DataTable activeTable = tableAdapter.GetCalculatedData();
+        DataTable inactiveTable = (calculationState == DataTableBuilder.Calculation.AVERAGE) ?
+                calculatedDataMaximums.GetTable() : calculatedDataAverages.GetTable();
+        SynchronizeOrder(activeTable, inactiveTable);
+
+        calculationState = (calculationState == DataTableBuilder.Calculation.AVERAGE) ?
+                DataTableBuilder.Calculation.MAXIMUM : DataTableBuilder.Calculation.AVERAGE;
+        v.setTag((calculationState == DataTableBuilder.Calculation.AVERAGE) ?
+                Constants.MAX : Constants.AVG);
+
+        if (teamSearchView.getText().toString().trim().isEmpty())
+            UpdateTeamsGroup();
+        else
         {
-            case DataTableBuilder.Calculation.AVERAGE:
-                calculationState = DataTableBuilder.Calculation.MAXIMUM;
-                ((Button)v).setText(Constants.AVG);
-                ShowActiveTable();
-                UpdateTeamsGroup();
-                break;
-            case DataTableBuilder.Calculation.MAXIMUM:
-                calculationState = DataTableBuilder.Calculation.AVERAGE;
-                ((Button)v).setText(Constants.MAX);
-                ShowActiveTable();
-                UpdateTeamsGroup();
-                break;
+            SetTeamNumberFilter(teamSearchView.getText().toString());
+            ShowActiveTable();
+        }
+    }
+
+    /*
+    Synchronize the order of teams in maximums and averages
+     */
+    private static void SynchronizeOrder(DataTable source, DataTable target)
+    {
+        if (source == null || target == null)
+            return;
+
+        List<RowHeaderModel> sourceRows = source.GetRowHeaders();
+        List<RowHeaderModel> targetRows = target.GetRowHeaders();
+
+        if (targetRows.size() != sourceRows.size())
+            return;
+
+        List<List<CellModel>> targetCells = target.GetCells();
+        for (RowHeaderModel row : sourceRows)
+        {
+            try
+            {
+                int index = -1;
+                for (RowHeaderModel r : targetRows)
+                {
+                    if (r.getData().equals(row.getData()))
+                        index = targetRows.indexOf(r);
+                }
+                if (index == -1)
+                    continue;
+
+            /*
+            Swap positions of row that shouldn't be there and row that should
+             */
+                int newIndex = sourceRows.indexOf(row);
+                List<CellModel> tmpCells = targetCells.get(newIndex);
+                RowHeaderModel tmpRow = targetRows.get(newIndex);
+                targetCells.set(newIndex, targetCells.get(index));
+                targetRows.set(newIndex, targetRows.get(index));
+
+                targetCells.set(index, tmpCells);
+                targetRows.set(index, tmpRow);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 
