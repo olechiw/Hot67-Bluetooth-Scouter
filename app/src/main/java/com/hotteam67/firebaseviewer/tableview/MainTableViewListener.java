@@ -7,13 +7,15 @@ import android.util.Log;
 
 import com.evrencoskun.tableview.ITableView;
 import com.evrencoskun.tableview.listener.ITableViewListener;
-import com.hotteam67.firebaseviewer.data.ColumnSchema;
-import com.hotteam67.firebaseviewer.data.DataTableBuilder;
-import com.hotteam67.firebaseviewer.data.ScatterPlot;
+import com.evrencoskun.tableview.sort.SortState;
 import com.hotteam67.firebaseviewer.MainActivity;
 import com.hotteam67.firebaseviewer.RawDataActivity;
+import com.hotteam67.firebaseviewer.data.ColumnSchema;
+import com.hotteam67.firebaseviewer.data.DataModel;
+import com.hotteam67.firebaseviewer.data.ScatterPlot;
 import com.hotteam67.firebaseviewer.data.DataTable;
 import com.hotteam67.firebaseviewer.data.Sort;
+import com.hotteam67.firebaseviewer.tableview.holder.ColumnHeaderViewHolder;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
@@ -32,30 +34,30 @@ import java.util.List;
 
 public class MainTableViewListener implements ITableViewListener {
 
-    private ITableView mTableView;
+    private ITableView tableView;
 
     private final String MatchNumber = "Match Number";
 
     public MainTableViewListener(ITableView pTableView) {
-        this.mTableView = pTableView;
+        this.tableView = pTableView;
     }
 
     @Override
-    public void onCellClicked(@NonNull RecyclerView.ViewHolder p_jCellView, int p_nXPosition, int
-            p_nYPosition) {
-        MainTableAdapter adapter = (MainTableAdapter)mTableView.getAdapter();
-        DataTable rawData = adapter.GetRawData();
+    public void onCellClicked(@NonNull RecyclerView.ViewHolder p_jCellView, int column, int
+            row) {
+        MainTableAdapter adapter = (MainTableAdapter) tableView.getAdapter();
+        DataTable rawData = DataModel.GetRawData();
 
         if (rawData == null)
             return;
 
         try {
-            String teamNumber = adapter.GetCalculatedData().GetRowHeaders().get(p_nYPosition).getData();
+            String teamNumber = DataModel.GetTable().GetRowHeaders().get(row).getData();
 
-            DataTable table = Sort.BubbleSortAscendingByRowHeader(GetFormattedRawData(adapter, teamNumber));
+            DataTable table = Sort.BubbleSortAscendingByRowHeader(GetFormattedRawData(teamNumber));
 
             String calculatedColumnName =
-                    adapter.GetCalculatedData().GetColumns().get(p_nXPosition).getData();
+                    DataModel.GetTable().GetColumns().get(column).getData();
 
             String rawColumnName = ColumnSchema.CalculatedColumnsRawNames().get(
                     ColumnSchema.CalculatedColumns().indexOf(calculatedColumnName)
@@ -75,9 +77,9 @@ public class MainTableViewListener implements ITableViewListener {
             List<Integer> values = new ArrayList<>();
 
             // Get each value and put in a single array
-            for (List<CellModel> row : table.GetCells())
+            for (List<CellModel> cells : table.GetCells())
             {
-                String value = (String)row.get(index).getData();
+                String value = String.valueOf(cells.get(index).getData());
                 if (value.equals("N/A"))
                     continue;
                 if (value.equals("true") || value.equals("false"))
@@ -89,13 +91,13 @@ public class MainTableViewListener implements ITableViewListener {
             }
 
             String title = teamNumber;
-            JSONObject teamNumbersNames =((MainActivity)adapter.GetContext()).GetTeamNumbersNames();
+            JSONObject teamNumbersNames = DataModel.GetTeamsNumbersNames();
             if (!(teamNumbersNames == null) && teamNumbersNames.has(teamNumber))
                 title += " - " + teamNumbersNames.get(teamNumber);
             title += ": " + rawColumnName;
 
             ScatterPlot.Show(
-                    values, ((MainTableAdapter) mTableView.getAdapter()).GetContext(), title);
+                    values, ((MainTableAdapter) tableView.getAdapter()).GetContext(), title);
         }
         catch (Exception e)
         {
@@ -110,25 +112,28 @@ public class MainTableViewListener implements ITableViewListener {
 
     private int lastColumnClicked = -1;
     @Override
-    public void onColumnHeaderClicked(@NonNull RecyclerView.ViewHolder p_jColumnHeaderView, int
-            p_nXPosition) {
-        Log.d("HotTeam67", "Sorting column: " + p_nXPosition);
-        MainTableAdapter adapter = (MainTableAdapter) mTableView.getAdapter();
-        DataTable calculatedData = adapter.GetCalculatedData();
+    public void onColumnHeaderClicked(@NonNull RecyclerView.ViewHolder columnViewHolder, int
+            column) {
 
-        if (calculatedData == null || calculatedData.GetCells() == null || calculatedData.GetCells().size() == 0)
-            return;
-
-        boolean ascending = false;
-        if (lastColumnClicked != p_nXPosition)
-            lastColumnClicked = p_nXPosition;
+        ColumnHeaderViewHolder holder = (ColumnHeaderViewHolder) columnViewHolder;
+        SortState sortState;
+        if (holder.getSortState().equals(SortState.DESCENDING))
+        {
+            sortState = SortState.ASCENDING;
+            DataModel.Sort(column, true);
+        }
         else
         {
-            lastColumnClicked = -1;
-            ascending = true;
+            sortState = SortState.DESCENDING;
+            DataModel.Sort(column, false);
         }
 
-        adapter.setAllItems(Sort.SortByColumn(calculatedData, p_nXPosition, ascending), adapter.GetRawData());
+        if (lastColumnClicked != -1 && lastColumnClicked != column)
+            tableView.sortColumn(lastColumnClicked, SortState.UNSORTED);
+
+        tableView.sortColumn(column, sortState);
+        lastColumnClicked = column;
+        tableView.scrollToRowPosition(0);
     }
 
 
@@ -140,29 +145,32 @@ public class MainTableViewListener implements ITableViewListener {
     @Override
     public void onRowHeaderClicked(@NonNull RecyclerView.ViewHolder p_jRowHeaderView, int
             p_nYPosition) {
-        MainTableAdapter adapter = (MainTableAdapter) mTableView.getAdapter();
 
-        String teamNumber = adapter.GetCalculatedData().GetRowHeaders().get(p_nYPosition).getData();
+        MainTableAdapter adapter = (MainTableAdapter) tableView.getAdapter();
 
-        DataTable rawData = adapter.GetRawData();
+        String teamNumber = DataModel.GetTable().GetRowHeaders().get(p_nYPosition).getData();
+
+        DataTable rawData = DataModel.GetRawData();
         if (rawData == null) {
             ((RawDataActivity) adapter.GetContext()).doEndWithMatchNumber(
-                    adapter.GetCalculatedData().GetRowHeaders().get(p_nYPosition).getData()
+                    DataModel.GetTable().GetRowHeaders().get(p_nYPosition).getData()
             );
             return;
         }
 
             Log.d("HotTeam67", "Set team number filter: " + teamNumber);
 
-        DataTable formattedData = GetFormattedRawData(adapter, teamNumber);
+        DataTable formattedData = GetFormattedRawData(teamNumber);
 
             Intent rawDataIntent = new Intent(adapter.GetContext(), RawDataActivity.class);
             rawDataIntent.putExtra(RawDataActivity.RAW_DATA_ATTRIBUTE, formattedData);
             rawDataIntent.putExtra(RawDataActivity.TEAM_NUMBER_ATTRIBUTE, teamNumber);
 
             MainActivity activity = (MainActivity)adapter.GetContext();
-            try {
-                rawDataIntent.putExtra(RawDataActivity.TEAM_NAME_ATTRIBUTE, (String)activity.GetTeamNumbersNames().get(teamNumber));
+            try
+            {
+                rawDataIntent.putExtra(RawDataActivity.TEAM_NAME_ATTRIBUTE, (String)DataModel
+                        .GetTeamsNumbersNames().get(teamNumber));
             }
             catch (Exception e)
             {
@@ -170,10 +178,11 @@ public class MainTableViewListener implements ITableViewListener {
             }
 
             activity.startActivityForResult(rawDataIntent, Constants.RawDataRequestCode);
+
     }
 
-    private DataTable GetFormattedRawData(MainTableAdapter adapter, String teamNumber) {
-        DataTable rawData = adapter.GetRawData();
+    private DataTable GetFormattedRawData(String teamNumber) {
+        DataTable rawData = DataModel.GetRawData();
         rawData.SetTeamNumberFilter(teamNumber);
 
         /*

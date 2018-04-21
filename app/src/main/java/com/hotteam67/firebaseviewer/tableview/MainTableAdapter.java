@@ -26,9 +26,6 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         super(p_jContext);
     }
 
-    private DataTable rawDataTable;
-    private DataTable calculatedDataTable;
-
     @Override
     public RecyclerView.ViewHolder onCreateCellViewHolder(ViewGroup parent, int viewType) {
         View layout;
@@ -52,19 +49,10 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     }
 
 
-    public void setAllItems(DataTable mainTable, DataTable rawData)
+    public void setAllItems(DataTable mainTable)
     {
         setAllItems(mainTable.GetColumns(), mainTable.GetRowHeaders(), mainTable.GetCells());
-        calculatedDataTable = mainTable;
-        rawDataTable = rawData;
     }
-
-    public DataTable GetRawData()
-    {
-        return rawDataTable;
-    }
-
-    public DataTable GetCalculatedData() { return calculatedDataTable; }
 
     public Context GetContext()
     {
@@ -108,7 +96,7 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         RowHeaderModel rowHeaderModel = (RowHeaderModel) p_jValue;
 
         RowHeaderViewHolder rowHeaderViewHolder = (RowHeaderViewHolder) holder;
-        rowHeaderViewHolder.row_header_textview.setText(rowHeaderModel.getData());
+        rowHeaderViewHolder.row_header_textview.setText(String.valueOf(rowHeaderModel.getData()));
 
     }
 

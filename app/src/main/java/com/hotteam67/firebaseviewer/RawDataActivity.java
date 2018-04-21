@@ -78,7 +78,7 @@ public class RawDataActivity extends AppCompatActivity {
                 MainTableAdapter adapter = new MainTableAdapter(this);
                 table.setAdapter(adapter);
                 table.setTableViewListener(new MainTableViewListener(table));
-                adapter.setAllItems(dataTable, null);
+                adapter.setAllItems(dataTable);
             }
         }
         catch (Exception e)

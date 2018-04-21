@@ -139,7 +139,7 @@ public class DataTableBuilder implements Serializable {
                 Double value = doCalculatedColumn(columnsNames.get(column), values, calculationType);
 
                 // Add cell to row
-                row.add(new CellModel(current_row + "_" + column, value.toString()));
+                row.add(new CellModel(current_row + "_" + column, value));
             }
 
             if (calculationType == Calculation.AVERAGE)
@@ -163,8 +163,8 @@ public class DataTableBuilder implements Serializable {
                     {
                         for (List<CellModel> match : matches)
                         {
-                            targetValues.add((String)match.get(targetIndex).getData());
-                            adjustmentValues.add((String)match.get(adjustmentIndex).getData());
+                            targetValues.add(String.valueOf(match.get(targetIndex).getData()));
+                            adjustmentValues.add(String.valueOf(match.get(adjustmentIndex).getData()));
                         }
 
                         List<String> outliers = new ArrayList<>();
@@ -209,7 +209,7 @@ public class DataTableBuilder implements Serializable {
             try {
                 String teamRank = (String)  new JSONObject(teamRanksJson).get(team);
                 calcCells.get(calcRowHeaders.indexOf(rowHeaderModel)).add(0,
-                        new CellModel("0_0", teamRank));
+                        new CellModel("0_0", Integer.valueOf(teamRank)));
             }
             catch (Exception e)
             {

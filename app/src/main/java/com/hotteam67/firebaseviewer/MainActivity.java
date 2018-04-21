@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -27,6 +28,7 @@ import android.widget.ImageButton;
 
 import com.annimon.stream.Stream;
 import com.evrencoskun.tableview.TableView;
+import com.hotteam67.firebaseviewer.data.DataModel;
 import com.hotteam67.firebaseviewer.data.DataTableBuilder;
 import com.hotteam67.firebaseviewer.data.ColumnSchema;
 import com.hotteam67.firebaseviewer.data.DataTable;
@@ -56,25 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText teamSearchView;
 
-    // State for which calculation is currently in the UI
-    int calculationState = DataTableBuilder.Calculation.AVERAGE;
-    DataTable rawData;
-
-    // Both tables loaded into memory, meaning faster switching but slower loading
-    DataTableBuilder calculatedDataAverages;
-    DataTableBuilder calculatedDataMaximums;
-
-    // TBA-Pulled data, Rankings, Nicknames, and Schedule in sequential order
-    private JSONObject teamNumbersRanks;
-    private JSONObject teamNumbersNames;
-
-    List<List<String>> alliances = new ArrayList<>();
-
-    // Handler for the teams group filtering
-    TeamsGroupHandler teamsGroupHandler;
-
-    List<String> redTeams = new ArrayList<>();
-    List<String> blueTeams = new ArrayList<>();
+    private TeamsGroupHandler teamsGroupHandler = new TeamsGroupHandler(this);
 
     public MainActivity() {}
 
@@ -98,6 +82,10 @@ public class MainActivity extends AppCompatActivity {
             {
                 e.printStackTrace();
             }
+        }
+        else if (requestCode == Constants.PreferencesRequestCode)
+        {
+            RefreshConnectionProperties();
         }
     }
 
@@ -127,17 +115,15 @@ public class MainActivity extends AppCompatActivity {
         finalView.findViewById(R.id.calculationButton).setOnClickListener(this::OnCalculationButton);
 
         refreshButton = finalView.findViewById(R.id.refreshButton);
-        refreshButton.setOnClickListener(view -> RefreshTable());
+        refreshButton.setOnClickListener(view -> UpdateUINetwork());
 
         ImageButton clearButton = findViewById(R.id.clearButton);
         clearButton.setOnClickListener(v ->
         {
             if (!teamSearchView.getText().toString().trim().isEmpty())
                 teamSearchView.setText("");
-            SetTeamNumberFilter("");
-            teamsGroupHandler.SetId(0);
-            teamsGroupHandler.SetType(TeamsGroupHandler.TEAM_GROUP_QUALS);
-            UpdateTeamsGroup();
+            DataModel.ClearFilters();
+            UpdateUI();
         });
 
         teamSearchView = finalView.findViewById(R.id.teamNumberSearch);
@@ -155,8 +141,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable editable) {
                 try {
-                    SetTeamNumberFilter(editable.toString());
-                    ShowActiveTable();
+                    DataModel.ClearFilters();
+                    DataModel.SetTeamNumberFilter(editable.toString());
+                    UpdateUI();
                 }
                 catch (Exception e)
                 {
@@ -180,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
             dialogView.findViewById(R.id.okButton).setOnClickListener(x -> dialog.dismiss());
         });
 
-                TableView tableView = findViewById(R.id.mainTableView);
+        TableView tableView = findViewById(R.id.mainTableView);
 
         // Create TableView Adapter
         tableAdapter = new MainTableAdapter(this);
@@ -189,12 +176,13 @@ public class MainActivity extends AppCompatActivity {
         // Create listener
         tableView.setTableViewListener(new MainTableViewListener(tableView));
 
+        RefreshConnectionProperties();
+
         if (ContextCompat.checkSelfPermission(
                         this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                         == PackageManager.PERMISSION_GRANTED)
         {
-            LoadSerializedTables();
-            LoadTBADataLocal();
+            LoadLocal();
         }
         else
         {
@@ -205,6 +193,50 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void RefreshConnectionProperties()
+    {
+        DataModel.Setup(GetConnectionProperties(), new DataModel.ProgressEvent()
+        {
+            @Override
+            public void BeginProgress()
+            {
+                runOnUiThread(() -> StartProgressAnimation());
+            }
+
+            @Override
+            public void EndProgress()
+            {
+                runOnUiThread(() -> {
+                    EndProgressAnimation();
+                    UpdateUI();
+                });
+            }
+        });
+    }
+
+    private void UpdateUINetwork()
+    {
+        DataModel.RefreshTable(this, () ->
+                runOnUiThread(() -> runOnUiThread(this::UpdateUI)));
+    }
+
+    public void UpdateUI()
+    {
+        if (DataModel.GetTable() != null)
+            tableAdapter.setAllItems(DataModel.GetTable());
+    }
+
+    private void LoadLocal()
+    {
+        String customTeams = FileHandler.LoadContents(FileHandler.CUSTOM_TEAMS_FILE);
+        if (customTeams != null && !customTeams.trim().isEmpty())
+        {
+            teamsGroupHandler.SetCustomTeams(new ArrayList<>(Arrays.asList(customTeams.split("\n"))));
+        }
+        DataModel.LoadSerializedTables();
+        DataModel.LoadTBADataLocal();
+    }
+
     private void UpdateTeamsGroup()
     {
         String groupType = teamsGroupHandler.GetType();
@@ -213,183 +245,29 @@ public class MainActivity extends AppCompatActivity {
         switch (groupType)
         {
             case TeamsGroupHandler.TEAM_GROUP_QUALS:
-                teamsGroupButton.setText("Q" + groupId + " TEAMS");
-                ShowMatch(groupId);
+                if (groupId != 0)
+                {
+                    teamsGroupButton.setText("Q" + groupId + " TEAMS");
+                    DataModel.ShowMatch(groupId);
+                }
+                else
+                {
+                    DataModel.ClearFilters();
+                    UpdateUI();
+                }
                 break;
             case TeamsGroupHandler.TEAM_GROUP_ELIMS:
                 teamsGroupButton.setText("A" + groupId + " TEAMS");
-                ShowAlliance(groupId);
+                DataModel.ShowAlliance(groupId);
                 break;
             case TeamsGroupHandler.TEAM_GROUP_CUSTOM:
                 teamsGroupButton.setText("C Teams");
                 FileHandler.Write(FileHandler.CUSTOM_TEAMS_FILE,
                         TextUtils.join("\n", teamsGroupHandler.GetCustomTeams()));
-                ShowTeams(teamsGroupHandler.GetCustomTeams());
+                DataModel.ShowTeams(teamsGroupHandler.GetCustomTeams());
                 break;
         }
-
-    }
-
-    /*
-    Show a designated alliance's teams
-     */
-    private void ShowAlliance(Integer seatNumber)
-    {
-        try
-        {
-            if (seatNumber <= 0 || seatNumber > alliances.size())
-            {
-                SetTeamNumberFilter();
-                ShowActiveTable();
-                return;
-            }
-
-            List<String> alliance = alliances.get(seatNumber - 1);
-            SetTeamNumberFilter(Stream.of(alliance.toArray()).toArray(String[]::new));
-            ShowActiveTable();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    /*
-    Show Custom teams
-     */
-    private void ShowTeams(List<String> teams)
-    {
-        try
-        {
-            if (teams == null || teams.size() == 0)
-            {
-                SetTeamNumberFilter();
-                ShowActiveTable();
-                return;
-            }
-
-            SetTeamNumberFilter(Stream.of(teams.toArray()).toArray(String[]::new));
-            ShowActiveTable();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    /*
-    When the match search text changes
-     */
-    private synchronized void ShowMatch(Integer matchNumber)
-    {
-        try
-        {
-            if (matchNumber <= 0)
-            {
-                SetTeamNumberFilter(Constants.EMPTY);
-                ShowActiveTable();
-                return;
-            }
-            if (matchNumber <= redTeams.size() && matchNumber <= blueTeams.size())
-            {
-                List<String> red = new ArrayList<>(
-                        Arrays.asList(redTeams.get(matchNumber - 1).split(",")));
-                List<String> blue = new ArrayList<>(
-                        Arrays.asList(blueTeams.get(matchNumber - 1).split(",")));
-
-                List<String> filters = new ArrayList<>();
-                filters.addAll(red);
-                filters.addAll(blue);
-
-                List<RowHeaderModel> rows = new ArrayList<>();
-                List<List<CellModel>> cells = new ArrayList<>();
-                List<ColumnHeaderModel> columns = new ArrayList<>(GetActiveTable().GetColumns());
-
-                for (String team : filters)
-                {
-                    SetTeamNumberFilter(team);
-                    rows.addAll(GetActiveTable().GetRowHeaders());
-
-                    for (List<CellModel> cell : GetActiveTable().GetCells())
-                    {
-                        List<CellModel> newRow = new ArrayList<>(cell);
-                        cells.add(newRow);
-                    }
-                }
-
-                DataTable processor = new DataTable(columns, cells, rows);
-                processor.SetTeamNumberFilter(Constants.EMPTY);
-
-                List<ColumnHeaderModel> columnHeaderModels = processor.GetColumns();
-                columnHeaderModels.add(0, new ColumnHeaderModel(Constants.ALLIANCE));
-
-                List<List<CellModel>> outputCells = processor.GetCells();
-                for (int i = 0; i < outputCells.size(); ++i)
-                {
-                    String teamNumber = processor.GetRowHeaders().get(i).getData();
-
-                    if (red.contains(teamNumber))
-                    {
-                        outputCells.get(i).add(0, new CellModel(i + "_00", Constants.RED));
-                    }
-                    else {
-                        outputCells.get(i).add(0, new CellModel(i + "_00", Constants.BLUE));
-                        blue.remove(teamNumber);
-                    }
-                    red.remove(teamNumber);
-                    blue.remove(teamNumber);
-                }
-
-                List<RowHeaderModel> rowHeaders = processor.GetRowHeaders();
-
-                int firstRowSize = 0;
-                if (outputCells.size() > 0)
-                {
-                    firstRowSize = outputCells.get(0).size() - 1; // -1 for alliance
-                }
-                for (String team : red)
-                {
-                    List<CellModel> row = new ArrayList<>();
-                    row.add(new CellModel("0", Constants.RED));
-
-                    for (int i = 0; i < firstRowSize; ++i)
-                    {
-                        row.add(new CellModel("0", Constants.N_A));
-                    }
-
-
-                    outputCells.add(row);
-                    rowHeaders.add(new RowHeaderModel(team));
-                }
-                for (String team : blue)
-                {
-                    List<CellModel> row = new ArrayList<>();
-                    row.add(new CellModel("0", Constants.BLUE));
-
-                    for (int i = 0; i < firstRowSize; ++i)
-                    {
-                        row.add(new CellModel("0", Constants.N_A));
-                    }
-
-                    outputCells.add(row);
-                    rowHeaders.add(new RowHeaderModel(team));
-                }
-
-                DataTable newProcessor = new DataTable(columnHeaderModels, outputCells, rowHeaders);
-
-                //Sort by alliance
-                tableAdapter.setAllItems(Sort.SortByColumn(newProcessor, 0, false), rawData);
-            }
-            else
-            {
-                SetTeamNumberFilter(Constants.EMPTY);
-                ShowActiveTable();
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        UpdateUI();
     }
 
     /*
@@ -397,70 +275,10 @@ public class MainActivity extends AppCompatActivity {
      */
     private synchronized void OnCalculationButton(View v)
     {
-        DataTable activeTable = tableAdapter.GetCalculatedData();
-        DataTable inactiveTable = (calculationState == DataTableBuilder.Calculation.AVERAGE) ?
-                calculatedDataMaximums.GetTable() : calculatedDataAverages.GetTable();
-        SynchronizeOrder(activeTable, inactiveTable);
-
-        calculationState = (calculationState == DataTableBuilder.Calculation.AVERAGE) ?
-                DataTableBuilder.Calculation.MAXIMUM : DataTableBuilder.Calculation.AVERAGE;
-        v.setTag((calculationState == DataTableBuilder.Calculation.AVERAGE) ?
-                Constants.MAX : Constants.AVG);
-
-        if (teamSearchView.getText().toString().trim().isEmpty())
-            UpdateTeamsGroup();
-        else
-        {
-            SetTeamNumberFilter(teamSearchView.getText().toString());
-            ShowActiveTable();
-        }
-    }
-
-    /*
-    Synchronize the order of teams in maximums and averages
-     */
-    private static void SynchronizeOrder(DataTable source, DataTable target)
-    {
-        if (source == null || target == null)
-            return;
-
-        List<RowHeaderModel> sourceRows = source.GetRowHeaders();
-        List<RowHeaderModel> targetRows = target.GetRowHeaders();
-
-        if (targetRows.size() != sourceRows.size())
-            return;
-
-        List<List<CellModel>> targetCells = target.GetCells();
-        for (RowHeaderModel row : sourceRows)
-        {
-            try
-            {
-                int index = -1;
-                for (RowHeaderModel r : targetRows)
-                {
-                    if (r.getData().equals(row.getData()))
-                        index = targetRows.indexOf(r);
-                }
-                if (index == -1)
-                    continue;
-
-            /*
-            Swap positions of row that shouldn't be there and row that should
-             */
-                int newIndex = sourceRows.indexOf(row);
-                List<CellModel> tmpCells = targetCells.get(newIndex);
-                RowHeaderModel tmpRow = targetRows.get(newIndex);
-                targetCells.set(newIndex, targetCells.get(index));
-                targetRows.set(newIndex, targetRows.get(index));
-
-                targetCells.set(index, tmpCells);
-                targetRows.set(index, tmpRow);
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
+        ((Button)v).setText((((Button) v).getText().toString().equals("AVG")) ?
+                "MAX" : "AVG");
+        DataModel.SwitchCalculation();
+        UpdateUI();
     }
 
     /*
@@ -469,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
     private void OnSettingsButton()
     {
         Intent settingsIntent = new Intent(this, PreferencesActivity.class);
-        startActivity(settingsIntent);
+        startActivityForResult(settingsIntent, Constants.PreferencesRequestCode);
     }
 
     /*
@@ -481,409 +299,28 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == Constants.REQUEST_ENABLE_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
             {
-                LoadSerializedTables();
-                LoadTBADataLocal();
+                LoadLocal();
             }
         }
-    }
-
-    /*
-    Serialize the three datatables and write them to disk
-     */
-    private synchronized void SerializeTables()
-    {
-        @SuppressLint("StaticFieldLeak") AsyncTask serializeTask = new AsyncTask()
-        {
-            @Override
-            protected Object doInBackground(Object[] objects)
-            {
-                FileHandler.Serialize(calculatedDataMaximums, FileHandler.MAXIMUMS_CACHE);
-                FileHandler.Serialize(calculatedDataAverages, FileHandler.AVERAGES_CACHE);
-                FileHandler.Serialize(rawData, FileHandler.RAW_CACHE);
-                runOnUiThread(() -> EndProgressAnimation());
-                return null;
-            }
-        };
-        serializeTask.execute();
-
-    }
-
-    /*
-    Load tables from disk into memory (raw, both calculated tables)
-     */
-    private void LoadSerializedTables()
-    {
-        StartProgressAnimation();
-        @SuppressLint("StaticFieldLeak") AsyncTask task = new AsyncTask() {
-            @Override
-            protected Object doInBackground(Object[] objects) {
-                calculatedDataAverages = (DataTableBuilder)
-                        FileHandler.DeSerialize(FileHandler.AVERAGES_CACHE);
-                calculatedDataMaximums = (DataTableBuilder)
-                        FileHandler.DeSerialize(FileHandler.MAXIMUMS_CACHE);
-                rawData = (DataTable)
-                        FileHandler.DeSerialize(FileHandler.RAW_CACHE);
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Object o) {
-                super.onPostExecute(o);
-
-                String customTeams = FileHandler.LoadContents(FileHandler.CUSTOM_TEAMS_FILE);
-                if (customTeams != null && !customTeams.trim().isEmpty())
-                {
-                    teamsGroupHandler.SetCustomTeams(new ArrayList<>(Arrays.asList(customTeams.split("\n"))));
-                }
-
-                ShowActiveTable();
-                EndProgressAnimation();
-            }
-        };
-        task.execute();
-    }
-
-    /*
-    Re-download all scouting data + TBA data, then refresh
-     */
-    private void RefreshTable()
-    {
-        StartProgressAnimation();
-
-        teamSearchView.setText(Constants.EMPTY);
-
-        LoadTBAData();
-
-        String[] values = GetConnectionProperties();
-
-        if (values == null)
-        {
-            Log.d("HotTeam67", "Couldn't load connection string");
-            EndProgressAnimation();
-            return;
-        }
-
-        String databaseUrl = values[0];
-        String eventName = values[1];
-        String apiKey = values[2];
-
-        final FirebaseHandler model = new FirebaseHandler(
-                databaseUrl, eventName, apiKey);
-
-        // Null child to get all raw data
-        model.Download(() -> {
-
-            rawData = new DataTable(model.getResult(), ColumnSchema.CalculatedColumnsRawNames(), ColumnSchema.SumColumns());
-
-            RunCalculations();
-
-            return null;
-        });
     }
 
     /*
     Get Preferences for web values
-     */
+    */
     private String[] GetConnectionProperties()
     {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String connectionString = (String) prefs.getAll().get("pref_connectionString");
+        if (connectionString == null)
+            return null;
         String[] values = connectionString.split(";");
         if (values.length != 4)
         {
-            runOnUiThread(this::EndProgressAnimation);
             return null;
         }
 
         return values;
     }
-
-    /*
-    Re-run all calculations with the current raw data
-     */
-    private void RunCalculations()
-    {
-        // Runs
-        @SuppressLint("StaticFieldLeak") AsyncTask averagesTask = new AsyncTask() {
-            @Override
-            protected Object doInBackground(Object[] objects) {
-                DataTableBuilder averages = new DataTableBuilder(
-                        rawData,
-                        ColumnSchema.CalculatedColumns(),
-                        ColumnSchema.CalculatedColumnsRawNames(),
-                        ColumnSchema.OutlierAdjustedColumns(),
-                        teamNumbersRanks,
-                        teamNumbersNames,
-                        DataTableBuilder.Calculation.AVERAGE);
-                SetCalculatedDataAverages(averages);
-                UpdateIfLoaded();
-
-                return null;
-            }
-        };
-        @SuppressLint("StaticFieldLeak") AsyncTask maximumsTask = new AsyncTask() {
-            @Override
-            protected Object doInBackground(Object[] objects) {
-                DataTableBuilder maximums = new DataTableBuilder(
-                        rawData,
-                        ColumnSchema.CalculatedColumns(),
-                        ColumnSchema.CalculatedColumnsRawNames(),
-                        ColumnSchema.OutlierAdjustedColumns(),
-                        teamNumbersRanks,
-                        teamNumbersNames,
-                        DataTableBuilder.Calculation.MAXIMUM);
-                SetCalculatedDataMaximums(maximums);
-                UpdateIfLoaded();
-
-                return null;
-            }
-        };
-        averagesTask.execute();
-        maximumsTask.execute();
-    }
-
-    private synchronized void SetCalculatedDataAverages(DataTableBuilder table)
-    {
-        calculatedDataAverages = table;
-    }
-
-    private synchronized void SetCalculatedDataMaximums(DataTableBuilder table)
-    {
-        calculatedDataMaximums = table;
-    }
-
-    private synchronized void UpdateIfLoaded()
-    {
-        if (calculatedDataMaximums != null && calculatedDataAverages != null)
-        {
-            runOnUiThread(() ->
-            {
-                ShowActiveTable();
-                SerializeTables();
-            });
-        }
-    }
-
-    /*
-    Load TBA data from the API v3
-     */
-    private synchronized void LoadTBAData()
-    {
-        String[] values = GetConnectionProperties();
-        if (values == null || values.length != 4)
-        {
-            new AlertDialog.Builder(this).setTitle("Invalid connection string!")
-                    .setPositiveButton("Ok", (dialogInterface, i) -> dialogInterface.dismiss())
-                    .create().show();
-            return;
-        }
-        String eventKey = values[3];
-
-        try
-        {
-            StringBuilder s = new StringBuilder();
-
-            // Call api and load into csv
-            TBAHandler.Matches(eventKey, matches -> {
-                try {
-                    for (List<List<String>> m : matches) {
-                        List<String> redTeams = m.get(0);
-                        List<String> blueTeams = m.get(1);
-                        for (String t : redTeams) {
-                            s.append(t.replace("frc", Constants.EMPTY)).append(",");
-                        }
-                        for (int t = 0; t < blueTeams.size(); ++t) {
-                            s.append(blueTeams.get(t).replace("frc", Constants.EMPTY));
-                            if (t + 1 != blueTeams.size())
-                                s.append(",");
-                        }
-                        s.append("\n");
-                    }
-                    FileHandler.Write(FileHandler.VIEWER_MATCHES_FILE, s.toString());
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-            });
-
-            // Load into json
-            try {
-                TBAHandler.TeamNames(eventKey, teamNames -> {
-                    FileHandler.Write(FileHandler.TEAM_NAMES_FILE, teamNames.toString());
-                    teamNumbersNames = teamNames;
-                });
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-            try {
-                TBAHandler.Rankings(eventKey, rankings ->
-                {
-                    FileHandler.Write(FileHandler.RANKS_FILE, rankings.toString());
-                    teamNumbersRanks = rankings;
-                }
-                );
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-            try {
-                TBAHandler.Alliances(eventKey, a ->
-                {
-                    alliances = a;
-                    StringBuilder alliancesString = new StringBuilder();
-                    for (List<String> alliance : alliances)
-                    {
-                        alliancesString.append(TextUtils.join(",", alliance));
-                        alliancesString.append("\n");
-                    }
-                    FileHandler.Write(FileHandler.ALLIANCES_FILE, alliancesString.toString());
-                });
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-
-            LoadTBADataLocal();
-        }
-        catch (Exception e)
-        {
-            Log.e("HotTeam67", "Failed to get event: " + e.getMessage(), e);
-        }
-    }
-
-    /*
-    Load TBA data from files
-     */
-    private void LoadTBADataLocal()
-    {
-        redTeams = new ArrayList<>();
-        blueTeams = new ArrayList<>();
-
-        String content = FileHandler.LoadContents(FileHandler.VIEWER_MATCHES_FILE);
-        if (content == null || content.trim().isEmpty())
-            return;
-        List<String> contents = Arrays.asList(content.split("\n"));
-
-        for (String match : contents)
-        {
-            List<String> teams = Arrays.asList(match.split(","));
-            // red teams first
-            try
-            {
-                StringBuilder red = new StringBuilder();
-                for (int i = 0; i < 3; ++i)
-                {
-                    red.append(teams.get(i));
-                    if (i + 1 != 3)
-                        red.append(",");
-                }
-                redTeams.add(red.toString());
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-
-            try
-            {
-                StringBuilder blue = new StringBuilder();
-                for (int i = 3; i < 6; ++i)
-                {
-                    blue.append(teams.get(i));
-                    if (i + 1 != 6)
-                        blue.append(",");
-                }
-                blueTeams.add(blue.toString());
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
-
-        try {
-            teamNumbersNames = new JSONObject(FileHandler.LoadContents(FileHandler.TEAM_NAMES_FILE));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        try
-        {
-            teamNumbersRanks = new JSONObject(FileHandler.LoadContents(FileHandler.RANKS_FILE));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        try
-        {
-            alliances = new ArrayList<>();
-            String[] alliancesFile = FileHandler.LoadContents(FileHandler.ALLIANCES_FILE)
-                    .split("\n");
-            for (String value : alliancesFile)
-            {
-                if (value.trim().isEmpty())
-                    continue;
-                String[] teams = value.split(",");
-                if (teams.length == 1)
-                    continue;
-                alliances.add(new ArrayList<>(Arrays.asList(teams)));
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    /*
-    ShowActiveTable the UI with the currently active table
-     */
-    private synchronized void ShowActiveTable()
-    {
-        if (calculatedDataMaximums == null || calculatedDataAverages == null)
-            return;
-
-        if (calculationState == DataTableBuilder.Calculation.MAXIMUM)
-            tableAdapter.setAllItems(calculatedDataMaximums.GetTable(), rawData);
-        else
-            tableAdapter.setAllItems(calculatedDataAverages.GetTable(), rawData);
-    }
-
-    /*
-    Get the active datatable
-     */
-    private synchronized DataTable GetActiveTable()
-    {
-        if (calculationState == DataTableBuilder.Calculation.MAXIMUM)
-            return calculatedDataMaximums.GetTable();
-        else
-            return calculatedDataAverages.GetTable();
-    }
-
-    /*
-    Set the team number filter on the active table
-     */
-    private synchronized void SetTeamNumberFilter(String... s)
-    {
-        if (calculatedDataAverages == null || calculatedDataMaximums == null)
-            return;
-
-        calculatedDataMaximums.GetTable().SetTeamNumberFilter(s);
-        calculatedDataAverages.GetTable().SetTeamNumberFilter(s);
-    }
-
-    /*
-    Get a jsonobject of team numbers and team names
-     */
-    public JSONObject GetTeamNumbersNames() { return teamNumbersNames; }
 
     /*
     Spin the refresh button around, and disable it

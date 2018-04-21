@@ -29,6 +29,7 @@ public class Constants
     public static final int REQUEST_ENABLE_PERMISSION = 3;
     public static final String AUTH_TOKEN =
             "?X-TBA-Auth-Key=HisYRPfFZbTdm3uKUA6cZ2etWXymiIlM8X3XKq2T15TVZQDIc1vaWSr5rX17gHoh";
+    public static final int PreferencesRequestCode = 12;
 
     public static class TBA
     {
@@ -101,16 +102,14 @@ public class Constants
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(message);
-        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                effect.run();
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-            }
+        builder.setPositiveButton("Ok", (dialog, which) -> effect.run());
+        builder.setNegativeButton("Cancel", (dialog, which) ->
+        {
         }).create().show();
+    }
+
+    public interface OnCompleteEvent
+    {
+        void OnComplete();
     }
 }
