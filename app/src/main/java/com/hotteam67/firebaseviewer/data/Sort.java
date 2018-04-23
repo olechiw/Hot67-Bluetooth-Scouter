@@ -1,8 +1,13 @@
 package com.hotteam67.firebaseviewer.data;
 
+import android.util.Log;
+
+import com.annimon.stream.Stream;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
+
+import org.hotteam67.common.Constants;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +18,6 @@ import java.util.List;
  */
 
 public final class Sort {
-    //TODO: OPTIMIZE (NOT BUBBLE SORT)
     public static DataTable BubbleSortAscendingByRowHeader(DataTable input)
     {
         List<ColumnHeaderModel> columns = input.GetColumns();
@@ -60,8 +64,7 @@ public final class Sort {
     public static DataTable SortByColumn(DataTable input, int column,
                                          boolean ascending)
     {
-
-
+        Constants.Time("Sort()");
         List<ColumnHeaderModel> columns = input.GetColumns();
         List<List<CellModel>> newCells = input.GetCells();
         List<RowHeaderModel> rows = input.GetRowHeaders();
@@ -85,6 +88,7 @@ public final class Sort {
             newRows.set(newIndex, rows.get(i));
         }
 
+        Constants.Time("Sort()");
         return new DataTable(columns, newCells, newRows);
     }
 

@@ -115,25 +115,18 @@ public class MainTableViewListener implements ITableViewListener {
     public void onColumnHeaderClicked(@NonNull RecyclerView.ViewHolder columnViewHolder, int
             column) {
 
-        ColumnHeaderViewHolder holder = (ColumnHeaderViewHolder) columnViewHolder;
-        SortState sortState;
-        if (holder.getSortState().equals(SortState.DESCENDING))
+        if (lastColumnClicked == column)
         {
-            sortState = SortState.ASCENDING;
+            lastColumnClicked = -1;
             DataModel.Sort(column, true);
         }
         else
         {
-            sortState = SortState.DESCENDING;
+            lastColumnClicked = column;
             DataModel.Sort(column, false);
         }
 
-        if (lastColumnClicked != -1 && lastColumnClicked != column)
-            tableView.sortColumn(lastColumnClicked, SortState.UNSORTED);
-
-        tableView.sortColumn(column, sortState);
-        lastColumnClicked = column;
-        tableView.scrollToRowPosition(0);
+        ((MainActivity)((MainTableAdapter)tableView.getAdapter()).GetContext()).UpdateUI();
     }
 
 

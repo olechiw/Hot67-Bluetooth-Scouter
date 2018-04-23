@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.util.Log;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 /**
@@ -106,6 +107,25 @@ public class Constants
         builder.setNegativeButton("Cancel", (dialog, which) ->
         {
         }).create().show();
+    }
+
+    public static double Round (double value, int precision) {
+        int scale = (int) Math.pow(10, precision);
+        return (double) Math.round(value * scale) / scale;
+    }
+
+    private static HashMap<String, Long> times = new HashMap<>();
+    public static void Time(String key)
+    {
+        if (times.containsKey(key))
+        {
+            Log.d("HotTeam67-TIME", "Time for " + key + ": " + times.get(key) + " ms");
+            times.remove(key);
+        }
+        else
+        {
+            times.put(key, System.nanoTime());
+        }
     }
 
     public interface OnCompleteEvent

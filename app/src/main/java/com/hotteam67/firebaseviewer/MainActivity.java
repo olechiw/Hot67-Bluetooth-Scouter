@@ -20,11 +20,13 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.view.animation.AnimationUtils;
 import android.view.animation.RotateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 
 import com.annimon.stream.Stream;
 import com.evrencoskun.tableview.TableView;
@@ -57,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
     private Button teamsGroupButton;
 
     private EditText teamSearchView;
+
+    private ProgressBar progressBar;
 
     private TeamsGroupHandler teamsGroupHandler = new TeamsGroupHandler(this);
 
@@ -108,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
         bar.setCustomView(finalView);
         bar.setDisplayShowCustomEnabled(true);
 
+        progressBar = finalView.findViewById(R.id.indeterminateBar);
 
         ImageButton settingsButton = finalView.findViewById(R.id.settingsButton);
         settingsButton.setOnClickListener(view -> OnSettingsButton());
@@ -216,7 +221,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void UpdateUINetwork()
     {
-        StartProgressAnimation();
         DataModel.RefreshTable(this, () ->
                 runOnUiThread(this::UpdateUI));
     }
@@ -328,10 +332,9 @@ public class MainActivity extends AppCompatActivity {
      */
     private void StartProgressAnimation()
     {
-        RotateAnimation anim = (RotateAnimation)
-                AnimationUtils.loadAnimation(this, R.anim.rotate);
-        refreshButton.setAnimation(anim);
         refreshButton.setEnabled(false);
+        refreshButton.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
     }
 
     /*
@@ -339,7 +342,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private void EndProgressAnimation()
     {
-        refreshButton.clearAnimation();
         refreshButton.setEnabled(true);
+        refreshButton.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
     }
 }

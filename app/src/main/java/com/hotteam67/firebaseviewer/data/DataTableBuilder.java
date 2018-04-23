@@ -7,10 +7,13 @@ import com.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
 
+import org.hotteam67.common.Constants;
 import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -76,6 +79,7 @@ public class DataTableBuilder implements Serializable {
         List<RowHeaderModel> calcRowHeaders = new ArrayList<>();
 
         List<RowHeaderModel> rawRowHeaders = rawDataTable.GetRowHeaders();
+        List<List<CellModel>> rawRows = rawDataTable.GetCells();
 
         /*
         Load calculated column names
@@ -89,36 +93,38 @@ public class DataTableBuilder implements Serializable {
         Load every unique team number
          */
         List<String> teamNumbers = new ArrayList<>();
+        HashMap<String, List<List<CellModel>>> teamRows = new HashMap<>();
 
         Log.d("HotTeam67", "Finding unique teams from rowheader of size: " + rawRowHeaders.size());
+        int i = 0;
         for (RowHeaderModel row : rawRowHeaders)
         {
-            String team = row.getData();
-            if (!teamNumbers.contains(team))
-                teamNumbers.add(team);
+            try {
+                String teamNumber = row.getData();
+                if (teamRows.containsKey(teamNumber))
+                    teamRows.get(teamNumber).add(rawRows.get(i));
+                else {
+                    teamNumbers.add(teamNumber);
+                    List<List<CellModel>> rows = new ArrayList<>();
+                    rows.add(rawRows.get(i));
+                    teamRows.put(teamNumber, rows);
+                }
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+            ++i;
         }
 
         /*
-        Create a calculated row for each teamnumber
+        Create a calculated row for each teamNumber
          */
         int current_row = 0;
         for (String teamNumber : teamNumbers)
         {
             // Get all matches for team number
-            List<List<CellModel>> matches = new ArrayList<>();
-            for (List<CellModel> row : rawDataTable.GetCells())
-            {
-                int index = rawDataTable.GetCells().indexOf(row);
-                try
-                {
-                    if (index != -1 && index < rawRowHeaders.size() && rawRowHeaders.get(rawDataTable.GetCells().indexOf(row))
-                            .getData().equals(teamNumber))
-                        matches.add(row);
-                }
-                catch (Exception ignored)
-                {
-                }
-            }
+            List<List<CellModel>> matches = teamRows.get(teamNumber);
 
             List<CellModel> row = new ArrayList<>();
             for (int column : calculatedColumnIndices)
@@ -244,7 +250,7 @@ public class DataTableBuilder implements Serializable {
             calcRowHeaders.add(rowHeaderModel);
 
             List<CellModel> row = new ArrayList<>();
-            for (int i = 0; i < cellCount; ++i)
+            for (int c = 0; c < cellCount; ++c)
             {
                 row.add(new CellModel("0_0", "N/A"));
             }
@@ -275,7 +281,7 @@ public class DataTableBuilder implements Serializable {
                     }
 
                     d /= columnValues.size();
-                    return Math.floor(d * 1000) / 1000;
+                    return Constants.Round(d, 1);
                 }
                 catch (Exception e)
                 {
