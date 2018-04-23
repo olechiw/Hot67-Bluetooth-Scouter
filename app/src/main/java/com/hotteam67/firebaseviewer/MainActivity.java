@@ -216,8 +216,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void UpdateUINetwork()
     {
+        StartProgressAnimation();
         DataModel.RefreshTable(this, () ->
-                runOnUiThread(() -> runOnUiThread(this::UpdateUI)));
+                runOnUiThread(this::UpdateUI));
     }
 
     public void UpdateUI()

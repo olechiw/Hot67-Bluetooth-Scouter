@@ -8,11 +8,11 @@ android {
         applicationId "com.hotteam67.firebaseviewer"
         minSdkVersion 22
         targetSdkVersion 27
-        versionName '9'
+        versionName '10'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
-        versionCode 9
+        versionCode 10
     }
     dexOptions {
         javaMaxHeapSize "4g"
