@@ -35,11 +35,13 @@ import java.util.List;
 public class MainTableViewListener implements ITableViewListener {
 
     private ITableView tableView;
+    private MainTableAdapter adapter;
 
     private final String MatchNumber = "Match Number";
 
-    public MainTableViewListener(ITableView pTableView) {
+    public MainTableViewListener(ITableView pTableView, MainTableAdapter adapter) {
         this.tableView = pTableView;
+        this.adapter = adapter;
     }
 
     @Override
@@ -97,7 +99,7 @@ public class MainTableViewListener implements ITableViewListener {
             title += ": " + rawColumnName;
 
             ScatterPlot.Show(
-                    values, ((MainTableAdapter) tableView.getAdapter()).GetContext(), title);
+                    values, adapter.GetContext(), title);
         }
         catch (Exception e)
         {
@@ -126,7 +128,7 @@ public class MainTableViewListener implements ITableViewListener {
             DataModel.Sort(column, false);
         }
 
-        ((MainActivity)((MainTableAdapter)tableView.getAdapter()).GetContext()).UpdateUI();
+        ((MainActivity)adapter.GetContext()).UpdateUI();
     }
 
 
@@ -139,38 +141,33 @@ public class MainTableViewListener implements ITableViewListener {
     public void onRowHeaderClicked(@NonNull RecyclerView.ViewHolder p_jRowHeaderView, int
             p_nYPosition) {
 
-        MainTableAdapter adapter = (MainTableAdapter) tableView.getAdapter();
-
-        String teamNumber = DataModel.GetTable().GetRowHeaders().get(p_nYPosition).getData();
-
-        DataTable rawData = DataModel.GetRawData();
-        if (rawData == null) {
-            ((RawDataActivity) adapter.GetContext()).doEndWithMatchNumber(
-                    DataModel.GetTable().GetRowHeaders().get(p_nYPosition).getData()
-            );
+        if (adapter.GetContext() instanceof  RawDataActivity) {
+            ((RawDataActivity) adapter.GetContext()).doEndWithMatchNumber(p_nYPosition);
             return;
         }
+
+        String teamNumber = DataModel.GetTable().GetRowHeaders().get(p_nYPosition).getData();
 
             Log.d("HotTeam67", "Set team number filter: " + teamNumber);
 
         DataTable formattedData = GetFormattedRawData(teamNumber);
 
-            Intent rawDataIntent = new Intent(adapter.GetContext(), RawDataActivity.class);
-            rawDataIntent.putExtra(RawDataActivity.RAW_DATA_ATTRIBUTE, formattedData);
-            rawDataIntent.putExtra(RawDataActivity.TEAM_NUMBER_ATTRIBUTE, teamNumber);
+        Intent rawDataIntent = new Intent(adapter.GetContext(), RawDataActivity.class);
+        rawDataIntent.putExtra(RawDataActivity.RAW_DATA_ATTRIBUTE, formattedData);
+        rawDataIntent.putExtra(RawDataActivity.TEAM_NUMBER_ATTRIBUTE, teamNumber);
 
-            MainActivity activity = (MainActivity)adapter.GetContext();
-            try
-            {
-                rawDataIntent.putExtra(RawDataActivity.TEAM_NAME_ATTRIBUTE, (String)DataModel
-                        .GetTeamsNumbersNames().get(teamNumber));
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
+        MainActivity activity = (MainActivity)adapter.GetContext();
+        try
+        {
+            rawDataIntent.putExtra(RawDataActivity.TEAM_NAME_ATTRIBUTE, (String)DataModel
+                    .GetTeamsNumbersNames().get(teamNumber));
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
-            activity.startActivityForResult(rawDataIntent, Constants.RawDataRequestCode);
+        activity.startActivityForResult(rawDataIntent, Constants.RawDataRequestCode);
 
     }
 

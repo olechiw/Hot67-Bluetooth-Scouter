@@ -27,7 +27,7 @@ public class RawDataActivity extends AppCompatActivity {
     private ImageButton backButton;
     private DataTable dataTable;
 
-    TableView table;
+    private TableView table;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +77,7 @@ public class RawDataActivity extends AppCompatActivity {
                 table = findViewById(R.id.mainTableView);
                 MainTableAdapter adapter = new MainTableAdapter(this);
                 table.setAdapter(adapter);
-                table.setTableViewListener(new MainTableViewListener(table));
+                table.setTableViewListener(new MainTableViewListener(table, adapter));
                 adapter.setAllItems(dataTable);
             }
         }
@@ -88,7 +88,14 @@ public class RawDataActivity extends AppCompatActivity {
     }
 
 
-    public void doEndWithMatchNumber(String matchNumber) {
+    public void doEndWithMatchNumber(int yPosition) {
+        int matchNumber = -1;
+        try
+        {
+            matchNumber = Integer.valueOf(dataTable.GetRowHeaders().get(yPosition).getData());
+        } catch (Exception ignored) {}
+        if (matchNumber == -1)
+            return;
         Intent result = new Intent();
         result.putExtra("Match Number", matchNumber);
         setResult(Activity.RESULT_OK, result);

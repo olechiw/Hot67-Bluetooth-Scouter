@@ -77,8 +77,8 @@ public class MainActivity extends AppCompatActivity {
             if (data == null) return;
             try
             {
-                String result = data.getStringExtra("Match Number");
-                teamsGroupHandler.SetId(Integer.valueOf(result));
+                Integer result = data.getIntExtra("Match Number", 0);
+                teamsGroupHandler.SetId(result);
                 teamsGroupHandler.SetType(TeamsGroupHandler.TEAM_GROUP_QUALS);
                 UpdateTeamsGroup();
             }
@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         tableView.setAdapter(tableAdapter);
 
         // Create listener
-        tableView.setTableViewListener(new MainTableViewListener(tableView));
+        tableView.setTableViewListener(new MainTableViewListener(tableView, tableAdapter));
 
         RefreshConnectionProperties();
 
