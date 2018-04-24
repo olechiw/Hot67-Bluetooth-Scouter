@@ -599,8 +599,14 @@ public class ServerActivity extends AppCompatActivity {
                 }
 
             String finalUrl = eventUrl + eventName;
+
+            // Oncomplete event only used for sync-all to notify completion
+            Runnable onComplete = () -> {};
             if (useRootUrl)
+            {
                 finalUrl += ".json?auth=" + apiKey;
+                onComplete = () -> this.VisualLog("Synced All!");
+            }
             else {
                 String tag =
                         json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
@@ -608,8 +614,12 @@ public class ServerActivity extends AppCompatActivity {
                 finalUrl += "/" + tag + ".json?auth=" + apiKey;
             }
 
-            AsyncUploadTask uploadTask = new AsyncUploadTask(finalUrl, json, () -> { });
+
+            AsyncUploadTask uploadTask = new AsyncUploadTask(finalUrl, json, onComplete);
             uploadTask.execute(json);
+
+            if (useRootUrl)
+                return;
             // Save locally
             try {
                 /*
@@ -711,7 +721,7 @@ public class ServerActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            if (json.length > 0)
+            if (json != null && json.length > 0)
                 return json[0];
             else
                 return null;
