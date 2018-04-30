@@ -31,10 +31,6 @@ public class FirebaseHandler {
     private String firebaseUrl;
     private String firebaseApiKey;
 
-    private static final String LocalDatabase = "localDatabase.json";
-    private static final String Directory =
-            Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
-
     private Callable firebaseCompleteEvent = null;
 
     private HashMap<String, Object> results = null;
@@ -79,11 +75,6 @@ public class FirebaseHandler {
                         line = reader.readLine();
                     }
 
-                    // Save locally
-                    File f = new File(Directory + LocalDatabase);
-                    BufferedWriter writer = new BufferedWriter(new FileWriter(f));
-                    writer.write(response.toString());
-                    writer.close();
 
                     Log.d("HotTeam67", "Response: " + response.toString());
 
@@ -143,27 +134,6 @@ public class FirebaseHandler {
             DoFinish();
     }
 
-    public void LoadLocal()
-    {
-        try {
-            // Load from local database
-            File f = new File(Directory + LocalDatabase);
-            BufferedReader reader = new BufferedReader(new FileReader(f));
-            StringBuilder contents = new StringBuilder();
-            String s = reader.readLine();
-            while (s != null)
-            {
-                contents.append(s);
-                s = reader.readLine();
-            }
-
-            DoLoad(contents.toString(), true);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
 
     private void DoFinish()
     {

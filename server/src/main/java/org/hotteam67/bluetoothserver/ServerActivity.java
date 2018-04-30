@@ -622,12 +622,6 @@ public class ServerActivity extends AppCompatActivity {
                 return;
             // Save locally
             try {
-                /*
-                VisualLog("Received Match Number: "
-                        + j.get(Constants.MATCH_NUMBER_JSON_TAG)
-                        + " For Team Number: "
-                        + j.get(Constants.TEAM_NUMBER_JSON_TAG));
-                        */
                 String matchNumber = (String) json.get(Constants.MATCH_NUMBER_JSON_TAG);
 
                 if (matchNumber.equals(lastMatchNumber))
