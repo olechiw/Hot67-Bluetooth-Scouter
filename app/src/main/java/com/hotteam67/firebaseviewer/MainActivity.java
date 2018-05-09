@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private MainTableAdapter tableAdapter;
 
     private ImageButton refreshButton;
+    private ImageButton clearButton;
     private Button teamsGroupButton;
 
     private EditText teamSearchView;
@@ -122,14 +123,17 @@ public class MainActivity extends AppCompatActivity {
         refreshButton = finalView.findViewById(R.id.refreshButton);
         refreshButton.setOnClickListener(view -> UpdateUINetwork());
 
-        ImageButton clearButton = findViewById(R.id.clearButton);
+        clearButton = findViewById(R.id.clearButton);
         clearButton.setOnClickListener(v ->
         {
             if (!teamSearchView.getText().toString().trim().isEmpty())
                 teamSearchView.setText("");
+            teamsGroupButton.setText("TEAMS");
             DataModel.ClearFilters();
             UpdateUI();
+            clearButton.setVisibility(View.INVISIBLE);
         });
+        clearButton.setVisibility(View.INVISIBLE);
 
         teamSearchView = finalView.findViewById(R.id.teamNumberSearch);
         teamSearchView.addTextChangedListener(new TextWatcher() {
@@ -228,7 +232,16 @@ public class MainActivity extends AppCompatActivity {
     public void UpdateUI()
     {
         if (DataModel.GetTable() != null)
+        {
+            if (teamsGroupHandler.GetId() == 0 && teamSearchView.getText().toString().trim().isEmpty())
+            {
+                clearButton.setVisibility(View.INVISIBLE);
+                teamsGroupButton.setText("TEAMS");
+            }
+            else
+                clearButton.setVisibility(View.VISIBLE);
             tableAdapter.setAllItems(DataModel.GetTable());
+        }
     }
 
     private void LoadLocal()
