@@ -64,6 +64,7 @@
         android:layout_toEndOf="@id/teamsGroupButton"
         android:id="@+id/clearButton"
         android:background="#000000"/>
+    <!--
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -71,7 +72,15 @@
         android:text="MAX"
         android:layout_centerVertical="true"
         android:layout_toRightOf="@id/clearButton"
-        android:background="#000000"/>
+        android:background="#000000"/> -->
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="AVG"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@id/clearButton"
+        android:background="#000000"
+        android:id="@+id/calculationButton"/>
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

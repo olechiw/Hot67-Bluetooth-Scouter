@@ -117,6 +117,9 @@ public class MainTableViewListener implements ITableViewListener {
     public void onColumnHeaderClicked(@NonNull RecyclerView.ViewHolder columnViewHolder, int
             column) {
 
+        if (adapter.GetContext() instanceof RawDataActivity)
+            return;
+
         if (lastColumnClicked == column)
         {
             lastColumnClicked = -1;

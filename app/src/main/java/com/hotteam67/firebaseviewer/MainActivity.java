@@ -130,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
                 teamSearchView.setText("");
             teamsGroupButton.setText("TEAMS");
             DataModel.ClearFilters();
+            teamsGroupHandler.SetId(0);
             UpdateUI();
             clearButton.setVisibility(View.INVISIBLE);
         });
@@ -233,7 +234,9 @@ public class MainActivity extends AppCompatActivity {
     {
         if (DataModel.GetTable() != null)
         {
-            if (teamsGroupHandler.GetId() == 0 && teamSearchView.getText().toString().trim().isEmpty())
+            if (teamsGroupHandler.GetId() == 0
+                    && teamSearchView.getText().toString().trim().isEmpty()
+                    && !teamsGroupHandler.GetType().equals(TeamsGroupHandler.TEAM_GROUP_CUSTOM))
             {
                 clearButton.setVisibility(View.INVISIBLE);
                 teamsGroupButton.setText("TEAMS");
@@ -293,8 +296,10 @@ public class MainActivity extends AppCompatActivity {
      */
     private synchronized void OnCalculationButton(View v)
     {
-        ((Button)v).setText((((Button) v).getText().toString().equals("AVG")) ?
-                "MAX" : "AVG");
+
+        ((Button)v).setText((((Button) v).getText().toString().equals("MAX")) ?
+                "AVG" : "MAX");
+
         DataModel.SwitchCalculation();
         UpdateUI();
     }

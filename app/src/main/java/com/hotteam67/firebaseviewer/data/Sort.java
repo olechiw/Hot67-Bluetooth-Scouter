@@ -122,4 +122,13 @@ public final class Sort {
             return 0;
         }
     }
+
+    private static void CustomOrder(DataTable table, List<String> order)
+    {
+        List<RowHeaderModel> rows = table.GetRowHeaders();
+        List<List<CellModel>> cells = table.GetCells();
+
+        //TODO: Custom Order
+
+    }
 }
