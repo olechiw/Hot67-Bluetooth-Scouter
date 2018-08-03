@@ -16,7 +16,6 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -35,7 +34,8 @@ import java.util.Arrays;
 import java.util.List;
 
 
-public class ScoutActivity extends BluetoothActivity {
+public class ScoutActivity extends BluetoothClientActivity
+{
     private static final int REQUEST_ENABLE_PERMISSION = 3;
 
     ImageButton connectButton;

@@ -2,9 +2,6 @@ package org.hotteam67.bluetoothserver;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothServerSocket;
-import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,7 +18,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -36,9 +32,6 @@ import org.hotteam67.common.SchemaHandler;
 import org.hotteam67.common.TBAHandler;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -47,23 +40,10 @@ import java.util.Calendar;
 import java.util.List;
 
 
-public class ServerActivity extends AppCompatActivity {
+public class ServerActivity extends BluetoothServerActivity {
 
-    // Messages, for when any event happens, to be sent to the main thread
-    public static final int MESSAGE_INPUT = 0;
-    public static final int MESSAGE_OTHER = 1;
-    public static final int MESSAGE_DISCONNECTED = 2;
-    public static final int MESSAGE_CONNECTED = 3;
-
-    public static final int REQUEST_BLUETOOTH = 1;
     public static final int REQUEST_PREFERENCES = 2;
     public static final int REQUEST_ENABLE_PERMISSION = 3;
-
-    // Whether bluetooth hardware setup failed, such as nonexistent bluetooth device
-    private boolean bluetoothFailed = false;
-
-    // Message Handler, simple!
-    Handler m_handler;
 
     // Simple log function
     protected void l(String s)
@@ -74,21 +54,12 @@ public class ServerActivity extends AppCompatActivity {
     // The log tag
     public static final String TAG = "BLUETOOTH_SCOUTER_DEBUG";
 
-    // Send a specific message, from the above list
-    public synchronized void MSG(int msg) { m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget(); }
-
-    // Number of active and allowed devices
-    private static final int allowedDevices = 7;
-
     String lastMatchNumber = "0";
     List<String> lastMatchTeamNumbers = new ArrayList<>();
     int lastMatchReceived = 0;
 
     // Current database in json format
     private JSONObject jsonDatabase;
-
-    // Bluetooth hardware adapter
-    protected BluetoothAdapter m_bluetoothAdapter;
 
     // Display a popup box (not a MessageBox, LOL)
     protected void MessageBox(String text)
@@ -119,43 +90,17 @@ public class ServerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_server);
-        m_handler = new Handler() {
+        SetHandler(new Handler() {
             @Override
             public void handleMessage(Message msg)
             {
                 handle(msg);
             }
-        };
+        });
 
         setupPermissions();
 
         loadJsonDatabase();
-    }
-
-
-    // Initialize the bluetooth hardware adapter
-    private synchronized void setupBluetooth()
-    {
-        l("Getting adapter");
-        m_bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-
-        if (m_bluetoothAdapter == null) {
-            l("Bluetooth not detected");
-            bluetoothFailed = true;
-        }
-
-        if (!bluetoothFailed && !m_bluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_BLUETOOTH);
-        }
-        else
-        {
-            setupThreads();
-
-            setupUI();
-        }
-
     }
 
     @Override
@@ -206,11 +151,8 @@ public class ServerActivity extends AppCompatActivity {
 
                     try
                     {
-                        // Send to each device
-                        for (ConnectedThread device : connectedThreads) {
-                            device.write((Constants.SCOUTER_SCHEMA_TAG + schema).getBytes());
-                        }
-                        VisualLog("Wrote schema to " + connectedThreads.size() + " devices");
+                        int devices = WriteAllDevices((Constants.SCOUTER_SCHEMA_TAG + schema).getBytes());
+                        VisualLog("Wrote schema to " + devices + " devices");
                     }
                     catch (Exception e)
                     {
@@ -229,10 +171,7 @@ public class ServerActivity extends AppCompatActivity {
             {
                 GetString("Enter Message:", input ->
                 {
-                    for (ConnectedThread device : connectedThreads)
-                    {
-                        device.write((Constants.SERVER_MESSAGE_TAG + input).getBytes());
-                    }
+                    WriteAllDevices((Constants.SERVER_MESSAGE_TAG + input).getBytes());
                 });
                 break;
             }
@@ -277,7 +216,7 @@ public class ServerActivity extends AppCompatActivity {
         configureButton.setOnClickListener(view -> configure());
 
         downloadMatchesButton = findViewById(R.id.matchesDownloadButton);
-        downloadMatchesButton.setOnClickListener(view -> DownloadEventMatches());
+        downloadMatchesButton.setOnClickListener(view -> downloadEventMatches());
 
 
         // Classic useless feature
@@ -301,7 +240,7 @@ public class ServerActivity extends AppCompatActivity {
     }
 
 
-    private void DownloadEventMatches()
+    private void downloadEventMatches()
     {
         final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
         GetString("Enter Event Key:", eventKey ->
@@ -388,17 +327,18 @@ public class ServerActivity extends AppCompatActivity {
                         }
                     }
 
-                    for (int i = 0; i < connectedThreads.size(); ++i) {
-                        connectedThreads.get(i).write(deviceTeams.get(i).getBytes());
+                    int devices = 0;
+                    for (int i = 0; i < deviceTeams.size(); ++i) {
+                        devices = WriteDevice((deviceTeams.get(i).getBytes()), i);
                     }
 
 
                     String s;
 
-                    if (connectedThreads.size() == 1)
+                    if (devices == 1)
                         s = "Sent to 1 device!";
                     else
-                        s = "Sent to " + connectedThreads.size() + " devices!";
+                        s = "Sent to " + devices + " devices!";
 
                     if (failed > 0)
                         s += " Dropped " + failed + " matches";
@@ -413,28 +353,11 @@ public class ServerActivity extends AppCompatActivity {
         });
     }
 
-
-    //
-    // This is to handle the enable bluetooth activity,
-    // and disable all attempts at bluetooth functionality
-    // if for some reason the user denies permission
-    //
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-
-        if (requestCode==REQUEST_BLUETOOTH)
-        {
-            bluetoothFailed = resultCode != RESULT_OK;
-            setupThreads();
-        }
-    }
-
     private void setupPermissions()
     {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             l("Permission granted");
-            setupBluetooth();
+            setupBluetooth(this::setupUI);
         }
         else
         {
@@ -454,27 +377,13 @@ public class ServerActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
             {
                 l("Permission granted");
-                setupBluetooth();
+                setupBluetooth(this::setupUI);
             }
             else
             {
                 setupPermissions();
             }
         }
-    }
-
-    // Initialize the accept bluetooth connections thread
-    private void setupThreads()
-    {
-        if (!bluetoothFailed) {
-            l("Setting up accept thread");
-            acceptThread = new AcceptThread();
-
-            l("Running accept thread");
-            acceptThread.start();
-        }
-        else
-            l("Attempted to setup threads, but bluetooth setup has failed");
     }
 
     // Configure the current scouting schema and database connection
@@ -507,7 +416,7 @@ public class ServerActivity extends AppCompatActivity {
                 try
                 {
                     // Send on the connected thread
-                    connectedThreads.get(id - 1).write(Constants.SERVER_TEAMS_RECEIVED_TAG.getBytes());
+                    WriteDevice(Constants.SERVER_TEAMS_RECEIVED_TAG.getBytes(), id - 1);
                 }
                 catch (IndexOutOfBoundsException e)
                 {
@@ -537,17 +446,17 @@ public class ServerActivity extends AppCompatActivity {
                 break;
             case MESSAGE_CONNECTED:
                 l("Received Connect");
-                l("Size of connected threads: " + connectedThreads.size());
+                l("Size of connected threads: " + GetDevices());
                 VisualLog("Device Connected!");
-                connectedDevicesText.setText("Connected Devices: " + String.valueOf(connectedThreads.size()));
+                connectedDevicesText.setText("Connected Devices: " + String.valueOf(GetDevices()));
 
                 break;
             case MESSAGE_DISCONNECTED:
                 //MessageBox("DISCONNECTED FROM DEVICE");
                 l("Received Disconnect");
                 VisualLog("Device Disconnected!");
-                l("Size of connected threads: " + connectedThreads.size());
-                connectedDevicesText.setText("Connected Devices: " + String.valueOf(connectedThreads.size()));
+                l("Size of connected threads: " + GetDevices());
+                connectedDevicesText.setText("Connected Devices: " + String.valueOf(GetDevices()));
                 break;
             default:
                 l("Received Message: " + msg.what);
@@ -589,6 +498,8 @@ public class ServerActivity extends AppCompatActivity {
             String eventName = (String) prefs.getAll().get(Constants.PREF_EVENTNAME);
             String eventUrl = (String) prefs.getAll().get(Constants.PREF_DATABASEURL);
             String apiKey = (String) prefs.getAll().get(Constants.PREF_APIKEY);
+            if (eventName == null || eventUrl == null || apiKey == null)
+                return;
             if (!eventName.endsWith("/"))
                 eventUrl += "/";
             if (!eventUrl.startsWith("https://"))
@@ -728,228 +639,11 @@ public class ServerActivity extends AppCompatActivity {
     }
 
 
-    // Accept incoming bluetooth connections thread, actual member and the definition
-    AcceptThread acceptThread;
-    private class AcceptThread extends Thread {
-        final BluetoothServerSocket connectionSocket;
-        AcceptThread()
-        {
-            BluetoothServerSocket tmp = null;
-            try
-            {
-                tmp = m_bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ConnectDevice", Constants.uuid);
-            }
-            catch (java.io.IOException e)
-            {
-                Log.e("[Bluetooth]", "Socket connection failed", e);
-            }
-
-
-            connectionSocket = tmp;
-        }
-
-        public void run()
-        {
-            while (!Thread.currentThread().isInterrupted())
-            {
-                BluetoothSocket conn = null;
-                try
-                {
-                    conn = connectionSocket.accept();
-                }
-                catch (java.io.IOException e)
-                {
-                    // Log.e("[Bluetooth]", "Socket acception failed", e);
-                }
-
-                if (conn != null)
-                {
-                    connectSocket(conn);
-                    MSG(MESSAGE_CONNECTED);
-                }
-            }
-            l("Accept Thread Ended!");
-        }
-
-        public void cancel()
-        {
-            try
-            {
-                connectionSocket.close();
-            }
-            catch (java.io.IOException e)
-            {
-                // Log.e("[Bluetooth]", "Socket close failed", e);
-            }
-        }
-    }
-
-    private void connectSocket(BluetoothSocket connection)
-    {
-
-        if (connectedThreads.size() < allowedDevices)
-        {
-            l("Received a connection, adding a new thread: " + connectedThreads.size());
-            ConnectedThread thread = new ConnectedThread(connection);
-            thread.setId(connectedThreads.size() + 1);
-            thread.start();
-            connectedThreads.add(thread);
-        }
-
-    }
-
-    //
-    // An arraylist of threads for each connected device,
-    // with a unique id for when they finish so they may be removed
-    //
-    ArrayList<ConnectedThread> connectedThreads = new ArrayList<>();
-    private class ConnectedThread extends Thread
-    {
-        private BluetoothSocket connectedSocket;
-        private byte[] buffer;
-        private int id;
-
-        private void setId(int i ) { id = i; }
-
-        ConnectedThread(BluetoothSocket sockets)
-        {
-            connectedSocket = sockets;
-        }
-
-        void close()
-        {
-            try
-            {
-                connectedSocket.close();
-            }
-            catch (Exception e)
-            {
-                l("Error: " + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-        public void run()
-        {
-            while (!Thread.currentThread().isInterrupted())
-            {
-                InputStream stream;
-                InputStream tmpIn = null;
-                try {
-                    l("Loading input stream");
-                    tmpIn = connectedSocket.getInputStream();
-                } catch (IOException e) {
-                    Log.e("[Bluetooth]", "Error occurred when creating input stream", e);
-                }
-                stream = tmpIn;
-
-                l("Reading stream");
-                if (!read(stream))
-                {
-                    break;
-                }
-
-                if (Thread.currentThread().isInterrupted())
-                {
-                    break;
-                }
-            }
-            l("Connected Thread Ended!!!");
-            disconnect(this);
-            MSG(MESSAGE_DISCONNECTED);
-        }
-
-        private boolean read(InputStream stream)
-        {
-            buffer = new byte[1024];
-            int numBytes;
-            try
-            {
-                numBytes = stream.read(buffer);
-
-                l("Reading Bytes of Length:" + numBytes);
-
-                m_handler.obtainMessage(MESSAGE_INPUT, numBytes, id, new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "")).sendToTarget();
-                return true;
-            }
-            catch (java.io.IOException e)
-            {
-                Log.d("[Bluetooth]", "Input stream disconnected", e);
-                return false;
-            }
-        }
-
-
-        public void write(byte[] bytes)
-        {
-            l("Writing: " + new String(bytes));
-            l("Bytes Length: " + bytes.length);
-            OutputStream stream;
-
-            OutputStream tmpOut = null;
-            try {
-                tmpOut = connectedSocket.getOutputStream();
-            } catch (IOException e) {
-                Log.e("[Bluetooth]", "Error occurred when creating output stream", e);
-            }
-            stream = tmpOut;
-
-            try
-            {
-                l("Writing bytes to outstream");
-                stream.write(bytes);
-            }
-            catch (Exception e)
-            {
-                Log.e("[Bluetooth]", "Failed to send data", e);
-                disconnect(this);
-            }
-        }
-
-
-        public void cancel()
-        {
-            try
-            {
-                connectedSocket.close();
-            }
-            catch (java.io.IOException e)
-            {
-                Log.e("[Bluetooth]", "Failed to close socket", e);
-            }
-        }
-    }
-
-    // Disconnect a specific connected device, usually called from the thread itself
-    private synchronized void disconnect(ConnectedThread thread)
-    {
-        thread.close();
-        thread.interrupt();
-        connectedThreads.remove(thread);
-    }
-
     // When the activity is finished, clean up all of the bluetooth elements
     @Override
     public void onDestroy()
     {
         super.onDestroy();
-        l("Destroying application threads");
-        if (bluetoothFailed)
-            return;
-        if (acceptThread.connectionSocket != null && ! acceptThread.isInterrupted())
-        {
-            try
-            {
-                acceptThread.connectionSocket.close();
-            } catch (java.io.IOException e)
-            {
-                l("Connection socket closing failed: " + e.getMessage());
-            }
-        }
-        for (ConnectedThread thread : connectedThreads)
-        {
-            thread.close();
-            thread.interrupt();
-        }
 
 
         saveJsonDatabase();
