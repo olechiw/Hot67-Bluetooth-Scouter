@@ -26,11 +26,11 @@ public class TBAHandler {
     public interface OnCompleteEvent<t>{
         void run(t result);
     }
-    public static class RetreiveUrl extends AsyncTask<String, Void, String> {
+    public static class RetrieveUrl extends AsyncTask<String, Void, String> {
 
         OnCompleteEvent<String> onCompleteEvent;
 
-        public RetreiveUrl(OnCompleteEvent<String> event)
+        public RetrieveUrl(OnCompleteEvent<String> event)
         {
             onCompleteEvent = event;
         }
@@ -86,7 +86,7 @@ public class TBAHandler {
         url += Constants.TBA.EVENT + eventCode + Constants.TBA.TEAMS + Constants.TBA.STATUSES + Constants.AUTH_TOKEN;
         Log.d("HotTeam67", "Pulling data from url: " + url);
 
-        RetreiveUrl retreiveUrl = new RetreiveUrl(result -> {
+        RetrieveUrl retrieveUrl = new RetrieveUrl(result -> {
             JSONObject resultObject;
             JSONObject returnObject = new JSONObject();
             try
@@ -121,7 +121,7 @@ public class TBAHandler {
             }
 
             returnEvent.run(returnObject);
-        }); retreiveUrl.execute(url);
+        }); retrieveUrl.execute(url);
     }
 
     // Returns lists of 3 red teams, and 3 blue teams, red first: [[r1, r2, r3], [b1, b2, b3]]
@@ -132,7 +132,7 @@ public class TBAHandler {
         url += Constants.TBA.EVENT + eventCode + Constants.TBA.MATCHES + Constants.AUTH_TOKEN;
         Log.d("HotTeam67", "Pulling data from url: " + url);
 
-        RetreiveUrl retreiveUrl = new RetreiveUrl(result -> {
+        RetrieveUrl retrieveUrl = new RetrieveUrl(result -> {
             JSONArray resultArray;
             List<List<List<String>>> matches = new ArrayList<>();
             try
@@ -176,7 +176,7 @@ public class TBAHandler {
                 e.printStackTrace();
             }
             returnEvent.run(matches);
-        }); retreiveUrl.execute(url);
+        }); retrieveUrl.execute(url);
     }
 
     // Gets team names and returns as jsonobject
@@ -187,7 +187,7 @@ public class TBAHandler {
         url += Constants.TBA.EVENT + eventCode + Constants.TBA.TEAMS + Constants.AUTH_TOKEN;
         Log.d("HotTeam67", "Pulling data from url: " + url);
 
-        RetreiveUrl retreiveUrl = new RetreiveUrl(result -> {
+        RetrieveUrl retrieveUrl = new RetrieveUrl(result -> {
             JSONArray resultArray;
             JSONObject returnObject = new JSONObject();
             try
@@ -206,7 +206,7 @@ public class TBAHandler {
             }
 
             returnEvent.run(returnObject);
-        }); retreiveUrl.execute(url);
+        }); retrieveUrl.execute(url);
     }
 
     public static void Alliances(String eventCode, OnCompleteEvent<List<List<String>>> returnEvent)
@@ -215,7 +215,7 @@ public class TBAHandler {
 
         url += Constants.TBA.EVENT + eventCode + Constants.TBA.ALLIANCES + Constants.AUTH_TOKEN;
 
-        RetreiveUrl retreiveUrl = new RetreiveUrl(result -> {
+        RetrieveUrl retrieveUrl = new RetrieveUrl(result -> {
             JSONArray resultArray;
             List<List<String>> alliances = new ArrayList<>();
             try
@@ -242,6 +242,6 @@ public class TBAHandler {
             }
 
             returnEvent.run(alliances);
-        }); retreiveUrl.execute(url);
+        }); retrieveUrl.execute(url);
     }
 }

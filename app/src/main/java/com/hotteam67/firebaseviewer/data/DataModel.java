@@ -273,7 +273,7 @@ public class DataModel
     {
         averages = avg;
     }
-    public static synchronized void UpdateIfLoaded(Constants.OnCompleteEvent event)
+    private static synchronized void UpdateIfLoaded(Constants.OnCompleteEvent event)
     {
         if (maximums != null && averages != null)
         {

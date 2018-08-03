@@ -82,8 +82,10 @@ public class DataTable implements Serializable {
                         rowMap.remove(TeamNumber);
                         //columnHeaderList.add(new ColumnHeaderModel(TeamNumber));
                         for (HashMap.Entry<String, String> column : rowMap.entrySet()) {
-                            if (!preferredOrder.contains(column.getKey()))
+                            if (!preferredOrder.contains(column.getKey())) {
                                 columnHeaderList.add(new ColumnHeaderModel(column.getKey()));
+                                preferredOrder.add(column.getKey());
+                            }
                         }
                     }
                     else
@@ -120,6 +122,10 @@ public class DataTable implements Serializable {
         rowHeaderList.add(new RowHeaderModel(number));
         rowMap.remove(TeamNumber);
 
+        // Hack for outdated data where notes didn't exist for part of the data due to tech. difficulties
+        if (!rowMap.containsKey("Notes"))
+            rowMap.put("Notes", "N/A");
+
         List<CellModel> row = cellList.get(yIndex);
 
         // Sum columns first
@@ -146,6 +152,20 @@ public class DataTable implements Serializable {
             row.add(new CellModel("0_0", String.valueOf(value)));
         }
 
+        for (ColumnHeaderModel model : columnHeaderList)
+        {
+            if (!rowMap.containsKey(model.getData())) {
+                boolean contained = false;
+                for (ColumnSchema.SumColumn c : sumColumns)
+                {
+                    if (c.columnName.equals(model.getData()))
+                        contained = true;
+                }
+                if (!contained)
+                    rowMap.put(model.getData(), "0");
+            }
+        }
+
         // Then preferred order
         for (String column : preferredOrder)
         {
@@ -155,7 +175,6 @@ public class DataTable implements Serializable {
                 row.add(model);
             }
         }
-
 
         // Last is other columns
         for (HashMap.Entry<String, String> cell : rowMap.entrySet()) {
