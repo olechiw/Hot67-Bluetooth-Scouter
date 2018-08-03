@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.ListView;
 
 import org.hotteam67.common.Constants;
 
@@ -47,6 +48,8 @@ public class BluetoothClientActivity extends AppCompatActivity {
 
     // Whether the bluetooth hardware setup has completely failed (typically means something like it failed to be enabled)
     private boolean bluetoothFailed = false;
+
+    private List<String> clientNames = new ArrayList<>();
 
     // Adapter to the hardware bluetooth device
     protected BluetoothAdapter m_bluetoothAdapter;
@@ -89,29 +92,34 @@ public class BluetoothClientActivity extends AppCompatActivity {
      */
     ConnectThread connectThread;
     private class ConnectThread extends Thread {
-        private final Set<BluetoothDevice> connectedDevices;
-        private List<BluetoothSocket> connectedSockets;
+        private final Set<BluetoothDevice> pairedDevices;
+        private List<BluetoothSocket> pairedSockets;
         ConnectThread(Set<BluetoothDevice> devices)
         {
-            connectedDevices = devices;
+            pairedDevices = devices;
 
-            connectedSockets = new ArrayList<>();
+            pairedSockets = new ArrayList<>();
+
             BluetoothSocket connectionSocket;
-            for (BluetoothDevice device : connectedDevices) {
+            for (BluetoothDevice device : pairedDevices)
+            {
+
                 connectionSocket = null;
-                try {
+                try
+                {
                     l("Getting Connection");
                     connectionSocket = device.createRfcommSocketToServiceRecord(Constants.uuid);
-                } catch (java.io.IOException e) {
+                } catch (java.io.IOException e)
+                {
                     Log.e("[Bluetooth]", "Failed to connect to socket", e);
                 }
-                connectedSockets.add(connectionSocket);
+                pairedSockets.add(connectionSocket);
             }
         }
 
         public void run()
         {
-            for (BluetoothSocket connectionSocket : connectedSockets)
+            for (BluetoothSocket connectionSocket : pairedSockets)
             {
                 try
                 {
@@ -134,7 +142,7 @@ public class BluetoothClientActivity extends AppCompatActivity {
 
         public void cancel()
         {
-            for (BluetoothSocket connectionSocket : connectedSockets) {
+            for (BluetoothSocket connectionSocket : pairedSockets) {
                 try {
                     connectionSocket.close();
                 } catch (java.io.IOException e) {
@@ -152,9 +160,6 @@ public class BluetoothClientActivity extends AppCompatActivity {
     {
         private BluetoothSocket connectedSocket;
         private byte[] buffer;
-        private int id;
-
-        private void setId(int i ) { id = i; }
 
         public ConnectedThread(BluetoothSocket sockets)
         {
@@ -189,6 +194,11 @@ public class BluetoothClientActivity extends AppCompatActivity {
 
                 l("Reading stream");
                 if (!read(stream))
+                {
+                    break;
+                }
+
+                if (Thread.currentThread().isInterrupted())
                 {
                     break;
                 }
@@ -253,7 +263,7 @@ public class BluetoothClientActivity extends AppCompatActivity {
             OutputStream out = null;
             try
             {
-                out = connectedSockets.get(device).getOutputStream();
+                out = pairedSockets.get(device).getOutputStream();
                 out.write(bytes);
             }
             catch (IndexOutOfBoundsException e)
@@ -327,8 +337,58 @@ public class BluetoothClientActivity extends AppCompatActivity {
             return;
         }
 
-        connectThread = new ConnectThread(pairedDevices);
-        connectThread.start();
+        List<String> pairedNames =  new ArrayList<>();
+        for (BluetoothDevice device : pairedDevices)
+        {
+            String name = device.getName();
+            pairedNames.add(name);
+        }
+
+        // Queue for the selected items, starts with those previously selected
+        List<String> selected = new ArrayList<>();
+        boolean[] prevClients = new boolean[pairedNames.size()];
+        for (String name : clientNames)
+        {
+            if (pairedNames.contains(name))
+            {
+                int index = pairedNames.indexOf(name);
+                prevClients[index] = true;
+                selected.add(name);
+            }
+        }
+
+        AlertDialog.Builder ab = new AlertDialog.Builder(this);
+        ab.setTitle("Top 3 Are Red, Bottom 3 Are Blue").setMultiChoiceItems(
+                pairedNames.toArray(new CharSequence[pairedNames.size()]),
+                prevClients, (dialogInterface, i, b) ->
+                {
+                    if (b)
+                    {
+                        selected.add(0, pairedNames.get(i)); // Put current at start of queue
+
+                        ListView list = ((AlertDialog) dialogInterface).getListView();
+                        // Limit to 6, so fix it if more than 6
+                        if (selected.size() > 6)
+                        {
+                            // Uncheck last and remove it
+                            int lastIndex = pairedNames.indexOf(selected.get(6));
+                            list.setItemChecked(lastIndex, false);
+
+                            selected.remove(6);
+
+                        }
+                    }
+                    else
+                    {
+                        selected.remove(pairedNames.get(i));
+                    }
+                }).setPositiveButton("Ok", (dialogInterface, i) ->
+        {
+            clientNames = selected;
+
+            connectThread = new ConnectThread(pairedDevices);
+            connectThread.start();
+        }).create().show();
     }
 
     private synchronized void connectSocket(BluetoothSocket socket)
