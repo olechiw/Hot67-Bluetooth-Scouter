@@ -108,17 +108,6 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             }
             l("Connect thread ended!");
         }
-
-        public void cancel()
-        {
-            for (BluetoothSocket connectionSocket : sockets) {
-                try {
-                    connectionSocket.close();
-                } catch (java.io.IOException e) {
-                    Log.e("[Bluetooth]", "Failed to close socket", e);
-                }
-            }
-        }
     }
 
 
@@ -326,19 +315,6 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             {
                 Log.e("[Bluetooth]", "Failed to send data", e);
                 disconnect(this);
-            }
-        }
-
-
-        public void cancel()
-        {
-            try
-            {
-                connectedSocket.close();
-            }
-            catch (java.io.IOException e)
-            {
-                Log.e("[Bluetooth]", "Failed to close socket", e);
             }
         }
     }
