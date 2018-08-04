@@ -29,6 +29,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
     // Messages, for when any event happens, to be sent to the main thread
     public static final int MESSAGE_INPUT = 0;
     public static final int MESSAGE_CONNECTING = 1;
+    public static final int MESSAGE_CONNECTION_FAILED = 4;
     public static final int MESSAGE_DISCONNECTED = 2;
     public static final int MESSAGE_CONNECTED = 3;
 
@@ -102,6 +103,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                 {
                     try
                     {
+                        MSG(MESSAGE_CONNECTION_FAILED);
                         connectionSocket.close();
                     } catch (java.io.IOException e2)
                     {

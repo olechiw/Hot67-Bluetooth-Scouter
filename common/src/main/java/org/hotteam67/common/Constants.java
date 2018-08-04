@@ -19,7 +19,7 @@ public class Constants
     public static final String SCOUTER_SCHEMA_TAG =         ":SCHEMA:,,";
     public static final String SERVER_TEAMS_RECEIVED_TAG =  ":HEARD:,,,";
     public static final String SERVER_MESSAGE_TAG =         ":MESSAGE,,";
-    public static final String SCOUTER_SUBMIT_TAG =         ":SUBMIT,,,";
+    public static final String SERVER_SUBMIT_TAG =         ":SUBMIT,,,";
     public static final String AVG = "AVG";
     public static final String MAX = "MAX";
     public static final String EMPTY = "";
@@ -67,35 +67,6 @@ public class Constants
     public static String MATCH_NUMBER_JSON_TAG = "Match Number";
     public static String TEAM_NUMBER_JSON_TAG = "Team Number";
     public static String NOTES_JSON_TAG = "Notes";
-
-    public static String getTag(String s)
-    {
-        try
-        {
-            return s.substring(0, 7);
-        }
-        catch (Exception e)
-        {
-            Log.d("[BluetoothScouter]", "Failed to get tag from string: " + s);
-            e.printStackTrace();
-
-            return s;
-        }
-    }
-    public static String tagless(String s)
-    {
-        try
-        {
-            return s.substring(8, s.length());
-        }
-        catch (Exception e)
-        {
-            Log.d("[BluetoothScouter]", "Failed to strip tag from string: " + s);
-            e.printStackTrace();
-
-            return s;
-        }
-    }
 
     // Application UUID to look for during connection, may be configurable in future
     public static final UUID uuid = UUID.fromString("1cb5d5ce-00f5-11e7-93ae-92361f002671");

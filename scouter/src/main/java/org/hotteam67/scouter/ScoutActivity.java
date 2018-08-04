@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.media.Image;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Message;
@@ -541,8 +540,9 @@ public class ScoutActivity extends BluetoothClientActivity
                     //Shows the message received from the server
                     MessageBox(message);
                     break;
-                case Constants.SCOUTER_SUBMIT_TAG:
-                    SubmitCountDown();
+                case Constants.SERVER_SUBMIT_TAG:
+                    if (String.valueOf(GetCurrentMatchNumber()).equals(message))
+                        SubmitCountDown();
                     break;
                 default:
                     l("Received unknown tag: " + tag);
