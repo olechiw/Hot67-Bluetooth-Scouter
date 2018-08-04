@@ -3,12 +3,14 @@ package org.hotteam67.bluetoothserver;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.os.VibrationEffect;
@@ -26,6 +28,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
@@ -168,20 +171,6 @@ public class ServerActivity extends BluetoothServerActivity {
                 sendEventMatches();
                 break;
             }
-            case R.id.menuItemSendMessage:
-            {
-                GetString("Enter Message:", input ->
-                {
-                    WriteAllDevices((Constants.SERVER_MESSAGE_TAG + input).getBytes());
-                });
-                break;
-            }
-            case R.id.menuItemSyncAll:
-            {
-                Constants.OnConfirm("Sync All Matches?", this, () ->
-                        saveJsonObject(jsonDatabase, true));
-                break;
-            }
             case R.id.menuItemClearDatabase:
             {
                 Constants.OnConfirm("Clear Local Database?", this, () ->
@@ -205,7 +194,10 @@ public class ServerActivity extends BluetoothServerActivity {
     private void setupUI()
     {
         connectButton = findViewById(R.id.connectButton);
-        connectButton.setOnClickListener(view -> Connect());
+        connectButton.setOnClickListener(view ->
+                Constants.OnConfirm("Disconnect all existing devices?",
+                        this, this::Connect));
+
         serverLogText = findViewById(R.id.serverLog);
 
         Toolbar toolbar = findViewById(R.id.toolBar);
@@ -243,6 +235,18 @@ public class ServerActivity extends BluetoothServerActivity {
 
             return true;
         });
+
+        findViewById(R.id.messageButton)
+                .setOnClickListener(view -> GetString("Enter Message:",
+                input -> WriteAllDevices((Constants.SERVER_MESSAGE_TAG + input).getBytes())));
+
+        findViewById(R.id.submitButton)
+                .setOnClickListener(view -> WriteAllDevices(Constants.SCOUTER_SUBMIT_TAG.getBytes()));
+
+        findViewById(R.id.syncButton)
+                .setOnClickListener(view -> Constants.OnConfirm("Sync All Matches?",
+                        this, () ->
+                        saveJsonObject(jsonDatabase, true)));
     }
 
 
@@ -444,10 +448,9 @@ public class ServerActivity extends BluetoothServerActivity {
                 }
 
                 break;
-            case MESSAGE_OTHER:
-                String t = new String((byte[]) msg.obj);
-
-                l("Received Message Other: " + t);
+            case MESSAGE_CONNECTING:
+                String name = (String)msg.obj;
+                VisualLog("Attempting Connection with " + name);
 
                 break;
             case MESSAGE_CONNECTED:

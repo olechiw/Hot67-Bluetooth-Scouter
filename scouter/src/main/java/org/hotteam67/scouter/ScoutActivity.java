@@ -1,9 +1,12 @@
 package org.hotteam67.scouter;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.media.Image;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -19,8 +22,10 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
+import android.widget.TextView;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
@@ -38,7 +43,7 @@ public class ScoutActivity extends BluetoothClientActivity
 {
     private static final int REQUEST_ENABLE_PERMISSION = 3;
 
-    ImageButton connectButton;
+    ImageView connectionStatus;
     ImageButton syncAllButton;
 
     FloatingActionButton nextMatchButton;
@@ -103,7 +108,7 @@ public class ScoutActivity extends BluetoothClientActivity
         if (ab != null)
             ab.setDisplayShowTitleEnabled(false);
 
-        connectButton = toolbar.findViewById(R.id.connectButton);
+        connectionStatus = toolbar.findViewById(R.id.connectionStatus);
 
         teamNumber = toolbar.findViewById(R.id.teamNumberText);
 
@@ -538,6 +543,9 @@ public class ScoutActivity extends BluetoothClientActivity
                     //Shows the message received from the server
                     MessageBox(message);
                     break;
+                case Constants.SCOUTER_SUBMIT_TAG:
+                    SubmitCountDown();
+                    break;
                 default:
                     l("Received unknown tag: " + tag);
             }
@@ -561,12 +569,54 @@ public class ScoutActivity extends BluetoothClientActivity
                 ProcessBluetoothInput(msg);
                 break;
             case MESSAGE_CONNECTED: // A device has connected
-                connectButton.setImageResource(R.drawable.ic_network_wifi);
+                connectionStatus.setImageResource(R.drawable.ic_network_wifi);
                 break;
             case MESSAGE_DISCONNECTED: // A device has disconnected
-                connectButton.setImageResource(R.drawable.ic_network_off);
+                connectionStatus.setImageResource(R.drawable.ic_network_off);
                 break;
         }
+    }
+
+
+    public void SubmitCountDown()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog dialog;
+        dialog = builder
+                .setTitle("Autosubmitting Soon...").setMessage("Submitting in 15 seconds")
+                .setPositiveButton("Submit", (dialogInterface, i) ->
+        {
+            // Submit
+            OnNextMatch();
+        }).setNegativeButton("Cancel", (dialogInterface, i) ->
+        {
+            // Cancelled
+        }).create();
+        dialog.show();
+
+        new CountDownTimer(16000, 1000)
+        {
+            int time = 16;
+            @Override
+            public void onTick(long l)
+            {
+                time -= 1;
+                ((TextView)dialog.findViewById(android.R.id.message))
+                        .setText("Submitting in " + time + " seconds!");
+            }
+
+            @Override
+            public void onFinish()
+            {
+                // Dialog has not dissappeared
+                if (dialog.isShowing())
+                {
+                    // Submit
+                    OnNextMatch();
+                    dialog.dismiss();
+                }
+            }
+        }.start();
     }
 
     /*

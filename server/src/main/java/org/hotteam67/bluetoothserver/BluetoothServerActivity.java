@@ -28,7 +28,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
 {
     // Messages, for when any event happens, to be sent to the main thread
     public static final int MESSAGE_INPUT = 0;
-    public static final int MESSAGE_OTHER = 1;
+    public static final int MESSAGE_CONNECTING = 1;
     public static final int MESSAGE_DISCONNECTED = 2;
     public static final int MESSAGE_CONNECTED = 3;
 
@@ -61,9 +61,9 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
     */
     ConnectThread connectThread;
     private class ConnectThread extends Thread {
-        private final Set<BluetoothDevice> devices;
+        private final List<BluetoothDevice> devices;
         private List<BluetoothSocket> sockets;
-        ConnectThread(Set<BluetoothDevice> devices)
+        ConnectThread(List<BluetoothDevice> devices)
         {
             this.devices = devices;
 
@@ -92,6 +92,9 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             {
                 try
                 {
+                    // Send the message to UI thread we are connecting to device i
+                    m_handler.obtainMessage(MESSAGE_CONNECTING, 0, 0,
+                            devices.get(sockets.indexOf(connectionSocket)).getName()).sendToTarget();
                     l("Connecting to socket");
                     connectionSocket.connect();
                     connectSocket(connectionSocket);
@@ -143,7 +146,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             {
                 // Add to final connect devices array, RED FIRST THEN BLUE.
                 // If less than 6, it will do first 3 red then next 3 blue no matter what
-                Set<BluetoothDevice> devices = new HashSet<>();
+                List<BluetoothDevice> devices = new ArrayList<>();
                 for (BluetoothDevice pairedDevice : pairedDevices)
                 {
                     if (redDevices.contains(pairedDevice.getName())
@@ -159,8 +162,9 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
     private static void PromptChoice(Context context, String title, List<String> options, Constants.OnCompleteEvent<List<String>> onComplete, int maxOptions)
     {
         List<String> result = new ArrayList<>();
+        boolean[] checkedItems = new boolean[options.size()];
         new AlertDialog.Builder(context).setTitle(title).setMultiChoiceItems(
-                options.toArray(new CharSequence[options.size()]), new boolean[options.size()], (dialogInterface, i, b) ->
+                options.toArray(new CharSequence[options.size()]), checkedItems, (dialogInterface, i, b) ->
                 {
                     if (b)
                     {
@@ -173,9 +177,10 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                             // Uncheck last and remove it
                             int lastIndex = options.indexOf(result.get(maxOptions));
                             list.setItemChecked(lastIndex, false);
+                            checkedItems[lastIndex] = false;
+
 
                             result.remove(maxOptions);
-
                         }
                     }
                     else
@@ -183,9 +188,8 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                         result.remove(options.get(i));
                     }
                 }
-        ).setPositiveButton("Done", ((dialogInterface, i) -> {
-            onComplete.OnComplete(result);
-        })).create().show();
+        ).setPositiveButton("Done", ((dialogInterface, i) ->
+                onComplete.OnComplete(result))).create().show();
     }
 
     private void connectSocket(BluetoothSocket connection)

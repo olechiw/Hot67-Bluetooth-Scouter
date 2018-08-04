@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class BluetoothClientActivity extends AppCompatActivity {
+public abstract class BluetoothClientActivity extends AppCompatActivity {
 
 
     // Messages, for when any event happens, to be sent to the main thread

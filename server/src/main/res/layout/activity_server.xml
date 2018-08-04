@@ -49,10 +49,34 @@
 
     </android.support.v7.widget.Toolbar>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/submitButton"
+        android:layout_below="@+id/toolBar"
+        android:layout_margin="5dp"
+        android:text="Get Matches"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sync"
+        android:id="@+id/syncButton"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/toolBar"
+        android:layout_margin="5dp"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_margin="5dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/messageButton"
+        android:layout_below="@+id/toolBar"
+        android:layout_alignParentEnd="true"
+        android:text="Send Message"/>
+
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/toolBar"
+        android:layout_below="@+id/submitButton"
         android:lines="50"
         android:hint="Server Log"
         android:clickable="false"

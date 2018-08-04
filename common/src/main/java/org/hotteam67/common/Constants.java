@@ -19,6 +19,7 @@ public class Constants
     public static final String SCOUTER_SCHEMA_TAG =         ":SCHEMA:,,";
     public static final String SERVER_TEAMS_RECEIVED_TAG =  ":HEARD:,,,";
     public static final String SERVER_MESSAGE_TAG =         ":MESSAGE,,";
+    public static final String SCOUTER_SUBMIT_TAG =         ":SUBMIT,,,";
     public static final String AVG = "AVG";
     public static final String MAX = "MAX";
     public static final String EMPTY = "";

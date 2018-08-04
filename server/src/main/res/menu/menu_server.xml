@@ -11,12 +11,6 @@
         android:id="@+id/menuItemSendMatches"
         android:title="Send Matches"/>
     <item
-        android:id="@+id/menuItemSendMessage"
-        android:title="Send Message"/>
-    <item
-        android:id="@+id/menuItemSyncAll"
-        android:title="Sync All Matches"/>
-    <item
         android:id="@+id/menuItemClearDatabase"
         android:title="Clear Local Database"/>
 </menu>
