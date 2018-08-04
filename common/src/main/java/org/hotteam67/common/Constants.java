@@ -128,8 +128,8 @@ public class Constants
         }
     }
 
-    public interface OnCompleteEvent
+    public interface OnCompleteEvent<type>
     {
-        void OnComplete();
+        void OnComplete(type arg);
     }
 }

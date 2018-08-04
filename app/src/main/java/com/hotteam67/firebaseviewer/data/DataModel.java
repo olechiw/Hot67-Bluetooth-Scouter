@@ -176,7 +176,7 @@ public class DataModel
     /*
     Re-download all scouting data + TBA data, then refresh
      */
-    public static void RefreshTable(Context c, Constants.OnCompleteEvent onCompleteEvent)
+    public static void RefreshTable(Context c, Runnable onCompleteEvent)
     {
         progressEvent.BeginProgress();
 
@@ -221,7 +221,7 @@ public class DataModel
     /*
     Re-run all calculations with the current raw data
      */
-    private static void RunCalculations(Constants.OnCompleteEvent event)
+    private static void RunCalculations(Runnable onComplete)
     {
         // Runs
         @SuppressLint("StaticFieldLeak") AsyncTask averagesTask = new AsyncTask() {
@@ -236,7 +236,7 @@ public class DataModel
                         teamNumbersNames,
                         DataTableBuilder.Calculation.AVERAGE);
                 SetCalculatedDataAverages(avg.GetTable());
-                UpdateIfLoaded(event);
+                UpdateIfLoaded(onComplete);
 
                 return null;
             }
@@ -253,7 +253,7 @@ public class DataModel
                         teamNumbersNames,
                         DataTableBuilder.Calculation.MAXIMUM);
                 SetCalculatedDataMaximums(max.GetTable());
-                UpdateIfLoaded(event);
+                UpdateIfLoaded(onComplete);
 
                 return null;
             }
@@ -273,13 +273,13 @@ public class DataModel
     {
         averages = avg;
     }
-    private static synchronized void UpdateIfLoaded(Constants.OnCompleteEvent event)
+    private static synchronized void UpdateIfLoaded(Runnable event)
     {
         if (maximums != null && averages != null)
         {
             outputMaximums = maximums;
             outputAverages = averages;
-            event.OnComplete();
+            event.run();
             SerializeTables();
         }
     }

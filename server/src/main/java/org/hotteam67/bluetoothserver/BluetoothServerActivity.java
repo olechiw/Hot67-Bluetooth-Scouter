@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +21,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public abstract class BluetoothServerActivity extends AppCompatActivity
 {
@@ -37,8 +41,6 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
     public static final int REQUEST_BLUETOOTH = 1;
 
     private Handler m_handler;
-
-    private List<String> clientNames = new ArrayList<>();
 
     protected void SetHandler(Handler h)
     {
@@ -142,58 +144,59 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             pairedNames.add(name);
         }
 
-        // Queue for the selected items, starts with those previously selected
-        List<String> selected = new ArrayList<>();
-        boolean[] prevClients = new boolean[pairedNames.size()];
-        for (String name : clientNames)
+        PromptChoice(this, "Red Devices", pairedNames, redDevices ->
         {
-            if (pairedNames.contains(name))
-            {
-                int index = pairedNames.indexOf(name);
-                prevClients[index] = true;
-                selected.add(name);
-            }
-        }
+            List<String> remainingNames = new ArrayList<>();
+            for (String s : pairedNames)
+                if (!redDevices.contains(s)) remainingNames.add(s);
 
-        AlertDialog.Builder ab = new AlertDialog.Builder(this);
-        ab.setTitle("Choose Devices to Connect To").setMultiChoiceItems(
-                pairedNames.toArray(new CharSequence[pairedNames.size()]),
-                prevClients, (dialogInterface, i, b) ->
+            PromptChoice(this, "Blue Devices", remainingNames, blueDevices ->
+            {
+                // Add to final connect devices array, RED FIRST THEN BLUE.
+                // If less than 6, it will do first 3 red then next 3 blue no matter what
+                Set<BluetoothDevice> devices = new HashSet<>();
+                for (BluetoothDevice pairedDevice : pairedDevices)
+                {
+                    if (redDevices.contains(pairedDevice.getName())
+                            || blueDevices.contains(pairedDevice.getName()))
+                        devices.add(pairedDevice);
+                }
+                connectThread = new ConnectThread(devices);
+                connectThread.start();
+            }, 3);
+        }, 3);
+    }
+
+    private static void PromptChoice(Context context, String title, List<String> options, Constants.OnCompleteEvent<List<String>> onComplete, int maxOptions)
+    {
+        List<String> result = new ArrayList<>();
+        new AlertDialog.Builder(context).setTitle(title).setMultiChoiceItems(
+                options.toArray(new CharSequence[options.size()]), new boolean[options.size()], (dialogInterface, i, b) ->
                 {
                     if (b)
                     {
-                        selected.add(0, pairedNames.get(i)); // Put current at start of queue
+                        result.add(0, options.get(i)); // Put current at start of queue
 
                         ListView list = ((AlertDialog) dialogInterface).getListView();
                         // Limit to 6, so fix it if more than 6
-                        if (selected.size() > 6)
+                        if (result.size() > maxOptions)
                         {
                             // Uncheck last and remove it
-                            int lastIndex = pairedNames.indexOf(selected.get(6));
+                            int lastIndex = options.indexOf(result.get(maxOptions));
                             list.setItemChecked(lastIndex, false);
 
-                            selected.remove(6);
+                            result.remove(maxOptions);
 
                         }
                     }
                     else
                     {
-                        selected.remove(pairedNames.get(i));
+                        result.remove(options.get(i));
                     }
-                }).setPositiveButton("Ok", (dialogInterface, i) ->
-        {
-            clientNames = selected;
-
-            Set<BluetoothDevice> devices = new HashSet<>();
-            for (BluetoothDevice pairedDevice : pairedDevices)
-            {
-                if (clientNames.contains(pairedDevice.getName()))
-                    devices.add(pairedDevice);
-            }
-
-            connectThread = new ConnectThread(devices);
-            connectThread.start();
-        }).create().show();
+                }
+        ).setPositiveButton("Done", ((dialogInterface, i) -> {
+            onComplete.OnComplete(result);
+        })).create().show();
     }
 
     private void connectSocket(BluetoothSocket connection)
