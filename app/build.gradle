@@ -53,7 +53,7 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     implementation 'com.android.support:support-v4:27.1.1'
     implementation 'com.android.volley:volley:1.0.0'
     implementation 'com.evrencoskun.library:tableview:0.8.6'

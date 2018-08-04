@@ -104,11 +104,6 @@ public class ScoutActivity extends BluetoothClientActivity
             ab.setDisplayShowTitleEnabled(false);
 
         connectButton = toolbar.findViewById(R.id.connectButton);
-        connectButton.setOnClickListener(v -> {
-            l("Triggered Connect!");
-            connectButton.setImageResource(R.drawable.ic_network_check);
-            Connect();
-        });
 
         teamNumber = toolbar.findViewById(R.id.teamNumberText);
 

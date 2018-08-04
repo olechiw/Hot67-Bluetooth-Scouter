@@ -22,9 +22,10 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.TextView;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
@@ -79,7 +80,7 @@ public class ServerActivity extends BluetoothServerActivity {
         }
     }
 
-    TextView connectedDevicesText;
+    Button connectButton;
     EditText serverLogText;
 
     ImageButton configureButton;
@@ -203,7 +204,8 @@ public class ServerActivity extends BluetoothServerActivity {
 
     private void setupUI()
     {
-        connectedDevicesText = findViewById(R.id.connectedDevicesText);
+        connectButton = findViewById(R.id.connectButton);
+        connectButton.setOnClickListener(view -> Connect());
         serverLogText = findViewById(R.id.serverLog);
 
         Toolbar toolbar = findViewById(R.id.toolBar);
@@ -224,13 +226,17 @@ public class ServerActivity extends BluetoothServerActivity {
         {
 
             Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-            // Vibrate for 500 milliseconds
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-            }else
+            if (v != null)
             {
-                //deprecated in API 26
-                v.vibrate(500);
+                // Vibrate for 500 milliseconds
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                {
+                    v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else
+                {
+                    //deprecated in API 26
+                    v.vibrate(500);
+                }
             }
 
             sendEventMatches();
@@ -448,7 +454,7 @@ public class ServerActivity extends BluetoothServerActivity {
                 l("Received Connect");
                 l("Size of connected threads: " + GetDevices());
                 VisualLog("Device Connected!");
-                connectedDevicesText.setText("Connected Devices: " + String.valueOf(GetDevices()));
+                connectButton.setText("Connected Devices: " + String.valueOf(GetDevices()));
 
                 break;
             case MESSAGE_DISCONNECTED:
@@ -456,7 +462,7 @@ public class ServerActivity extends BluetoothServerActivity {
                 l("Received Disconnect");
                 VisualLog("Device Disconnected!");
                 l("Size of connected threads: " + GetDevices());
-                connectedDevicesText.setText("Connected Devices: " + String.valueOf(GetDevices()));
+                connectButton.setText("Connected Devices: " + String.valueOf(GetDevices()));
                 break;
             default:
                 l("Received Message: " + msg.what);
