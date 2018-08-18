@@ -127,12 +127,7 @@ public class ScoutActivity extends BluetoothClientActivity
         syncAllButton = findViewById(R.id.syncAllButton);
         syncAllButton.setOnClickListener(v -> Constants.OnConfirm(
                 "Send All Matches?", c, () -> {
-            if (!(matches.size() > 1))
-                return;
-
-            queuedMatchesToSend = new ArrayList<>(matches.subList(1, matches.size() - 1));
-            SendMatch(matches.get(0));
-            MessageBox("Sent Matches");
+                    SendAllMatches();
         }));
 
 
@@ -320,6 +315,16 @@ public class ScoutActivity extends BluetoothClientActivity
             e.printStackTrace();
             return "0";
         }
+    }
+
+    private void SendAllMatches()
+    {
+        if (!(matches.size() > 1))
+            return;
+
+        queuedMatchesToSend = new ArrayList<>(matches.subList(1, matches.size() - 1));
+        SendMatch(matches.get(0));
+        MessageBox("Sent Matches");
     }
 
     /*
@@ -559,6 +564,9 @@ public class ScoutActivity extends BluetoothClientActivity
                             e.printStackTrace();
                         }
                     }
+                    break;
+                case Constants.SERVER_SYNCALL_TAG:
+                    SendAllMatches();
                     break;
                 default:
                     l("Received unknown tag: " + tag);
