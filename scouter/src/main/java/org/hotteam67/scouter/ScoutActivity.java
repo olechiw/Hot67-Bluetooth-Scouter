@@ -543,6 +543,22 @@ public class ScoutActivity extends BluetoothClientActivity
                 case Constants.SERVER_SUBMIT_TAG:
                     if (String.valueOf(GetCurrentMatchNumber()).equals(message))
                         SubmitCountDown();
+                    else
+                    {
+                        try
+                        {
+                            //TODO: SEND THE MATCH BUT DONT DO COUNTDOWN
+                            if (Integer.valueOf(message) < matches.size())
+                            {
+                                SendMatch(matches.get(Integer.valueOf(message)));
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            l("Error processing match number request: " + message);
+                            e.printStackTrace();
+                        }
+                    }
                     break;
                 default:
                     l("Received unknown tag: " + tag);
