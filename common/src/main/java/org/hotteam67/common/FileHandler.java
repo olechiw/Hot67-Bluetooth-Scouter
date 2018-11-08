@@ -22,7 +22,7 @@ import java.io.Serializable;
 public final class FileHandler
 {
     public static final String SERVER_FILE = "serverDatabase.json"; // Server scouted matches database
-    public static final String SCHEMA_FILE = "schema.csv"; // Server/scouter schema
+    public static final String SCHEMA_FILE = "schema.json"; // Server/scouter schema
     public static final String SCOUTER_FILE = "scouterDatabase.csv"; // Scouter scouted/unscouted matches database
     public static final String MATCHES_FILE = "serverMatches.csv"; // Server unscouted matches datbase (match schedule)
     public static final String TEAM_NAMES_FILE = "teamNames.json";

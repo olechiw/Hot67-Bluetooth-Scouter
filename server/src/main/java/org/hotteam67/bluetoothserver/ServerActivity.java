@@ -30,6 +30,7 @@ import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
 import org.hotteam67.common.TBAHandler;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
@@ -146,11 +147,11 @@ public class ServerActivity extends BluetoothServerActivity {
             {
                 Constants.OnConfirm("Send Schema?", this, () ->
                 {
-                    // Obtain schema
-                    String schema = SchemaHandler.LoadSchemaFromFile();
-
                     try
                     {
+                        // Obtain schema
+                        String schema = SchemaHandler.LoadSchemaFromFile().toString();
+
                         int devices = WriteAllDevices((Constants.SCOUTER_SCHEMA_TAG + schema).getBytes());
                         VisualLog("Wrote schema to " + devices + " devices");
                     }
@@ -226,11 +227,13 @@ public class ServerActivity extends BluetoothServerActivity {
             Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             // Vibrate for 500 milliseconds
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                if (v != null)
+                    v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
             }else
             {
                 //deprecated in API 26
-                v.vibrate(500);
+                if (v != null)
+                    v.vibrate(500);
             }
 
             sendEventMatches();
@@ -285,70 +288,68 @@ public class ServerActivity extends BluetoothServerActivity {
     // Loads all of the loaded matches, split into 6 devices, and then sends them as one giant string
     private void sendEventMatches()
     {
-        Constants.OnConfirm("Send Matches?", this, new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    // Starting value for each piece of information is the tag.
-                    List<String> deviceTeams = new ArrayList<>(Arrays.asList(
-                            Constants.SCOUTER_TEAMS_TAG,
-                            Constants.SCOUTER_TEAMS_TAG,
-                            Constants.SCOUTER_TEAMS_TAG,
-                            Constants.SCOUTER_TEAMS_TAG,
-                            Constants.SCOUTER_TEAMS_TAG,
-                            Constants.SCOUTER_TEAMS_TAG
-                    ));
+        Constants.OnConfirm("Send Matches?", this, () ->
+        {
+            try {
+                // Starting value for each piece of information is the tag.
+                List<String> deviceTeams = new ArrayList<>(Arrays.asList(
+                        Constants.SCOUTER_TEAMS_TAG,
+                        Constants.SCOUTER_TEAMS_TAG,
+                        Constants.SCOUTER_TEAMS_TAG,
+                        Constants.SCOUTER_TEAMS_TAG,
+                        Constants.SCOUTER_TEAMS_TAG,
+                        Constants.SCOUTER_TEAMS_TAG
+                ));
 
-                    List<String> matches =
-                            new ArrayList<>(
-                                    Arrays.asList(
-                                            FileHandler.LoadContents(FileHandler.MATCHES_FILE)
-                                                    .split("\n")
-                                    )
-                            );
+                List<String> matches =
+                        new ArrayList<>(
+                                Arrays.asList(
+                                        FileHandler.LoadContents(FileHandler.MATCHES_FILE)
+                                                .split("\n")
+                                )
+                        );
 
-                    int failed = 0;
-                    VisualLog("Sending Teams");
-                    for (int m = 0; m < matches.size(); ++m) {
-                        // Six teams for
-                        String[] teams = matches.get(m).split(",");
-                        // Has to have six teams
-                        if (teams.length != deviceTeams.size()) {
-                            //VisualLog("Dropping match: " + matches.get(m));
-                            ++failed;
-                        } else {
-                            for (int i = 0; i < deviceTeams.size(); ++i) {
-                                // Append to keep the match tag, and all previous iterations
-                                deviceTeams.set(i, deviceTeams.get(i) + teams[i]);
-                                // If not the last match, add a comma
-                                if (m + 1 < matches.size())
-                                    deviceTeams.set(i, deviceTeams.get(i) + ",");
-                            }
+                int failed = 0;
+                VisualLog("Sending Teams");
+                for (int m = 0; m < matches.size(); ++m) {
+                    // Six teams for
+                    String[] teams = matches.get(m).split(",");
+                    // Has to have six teams
+                    if (teams.length != deviceTeams.size()) {
+                        //VisualLog("Dropping match: " + matches.get(m));
+                        ++failed;
+                    } else {
+                        for (int i = 0; i < deviceTeams.size(); ++i) {
+                            // Append to keep the match tag, and all previous iterations
+                            deviceTeams.set(i, deviceTeams.get(i) + teams[i]);
+                            // If not the last match, add a comma
+                            if (m + 1 < matches.size())
+                                deviceTeams.set(i, deviceTeams.get(i) + ",");
                         }
                     }
-
-                    int devices = 0;
-                    for (int i = 0; i < deviceTeams.size(); ++i) {
-                        devices = WriteDevice((deviceTeams.get(i).getBytes()), i);
-                    }
-
-
-                    String s;
-
-                    if (devices == 1)
-                        s = "Sent to 1 device!";
-                    else
-                        s = "Sent to " + devices + " devices!";
-
-                    if (failed > 0)
-                        s += " Dropped " + failed + " matches";
-                    MessageBox(s);
                 }
-                catch (Exception e)
-                {
-                    l("Failed to send matches from stored file!");
-                    e.printStackTrace();
+
+                int devices = 0;
+                for (int i = 0; i < deviceTeams.size(); ++i) {
+                    devices = WriteDevice((deviceTeams.get(i).getBytes()), i);
                 }
+
+
+                String s;
+
+                if (devices == 1)
+                    s = "Sent to 1 device!";
+                else
+                    s = "Sent to " + devices + " devices!";
+
+                if (failed > 0)
+                    s += " Dropped " + failed + " matches";
+                MessageBox(s);
+            }
+            catch (Exception e)
+            {
+                l("Failed to send matches from stored file!");
+                e.printStackTrace();
             }
         });
     }

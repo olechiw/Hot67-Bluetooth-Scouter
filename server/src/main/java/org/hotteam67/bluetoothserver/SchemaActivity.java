@@ -23,13 +23,15 @@ import android.widget.TableLayout;
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class SchemaActivity extends AppCompatActivity {
-    private String schema = SchemaHandler.LoadSchemaFromFile();
+    private JSONArray schema = SchemaHandler.LoadSchemaFromFile();
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
@@ -43,7 +45,7 @@ public class SchemaActivity extends AppCompatActivity {
                 final Context c = this;
                 Constants.OnConfirm("Delete All?", this, () ->
                 {
-                    schema = "";
+                    schema = new JSONArray();
                     SchemaHandler.Setup(
                             findViewById(R.id.scoutLayout),
                             schema,
@@ -114,60 +116,63 @@ public class SchemaActivity extends AppCompatActivity {
 
         numberButton = findViewById(R.id.numberButton);
         numberButton.setOnClickListener(view ->
-                GetString("Value Label: ", input ->
-        {
-            schema += "," + input + Constants.TYPE_INTEGER;
-            GetString("Minimum:", input12 ->
-            {
-                schema += "," + input12;
-                GetString("Maximum:", input1 ->
-                {
-                    schema += "," + input1;
-                    SchemaHandler.Setup(tableLayout, schema, c);
-                });
-            });
-        }));
+                GetString("Value Label: ", tag ->
+                        GetString("Minimum:", minimum ->
+                                GetString("Maximum:", maximum ->
+                                {
+                                    schema.put(createJSON(Constants.TYPE_INTEGER, tag, minimum, maximum));
+                                    SchemaHandler.Setup(tableLayout, schema, c);
+                                }))));
 
         booleanButton = findViewById(R.id.booleanButton);
         booleanButton.setOnClickListener(view -> GetString("Value Label:", input ->
         {
-            schema += "," + input + Constants.TYPE_BOOLEAN;
+            schema.put(createJSON(Constants.TYPE_BOOLEAN, input));
             SchemaHandler.Setup(tableLayout, schema, c);
         }));
         headerButton = findViewById(R.id.headerButton);
         headerButton.setOnClickListener(view -> GetString("Value Label:", input ->
         {
-            schema += "," + input + Constants.TYPE_HEADER;
+            schema.put(createJSON(Constants.TYPE_HEADER, input));
             SchemaHandler.Setup(tableLayout, schema, c);
         }));
         deleteButton = findViewById(R.id.deleteButton);
         deleteButton.setOnClickListener(view -> Constants.OnConfirm("Are You Sure?", c, () ->
         {
-            List<String> values = new ArrayList<>(Arrays.asList(schema.split(",")));
-            if (values.size() <= 0) return;
+            if (schema.length() != 0)
+                schema.remove(schema.length() - 1);
 
-            values.remove(values.size() - 1);
-
-            schema = "";
-            for (int i = 0; i < values.size(); ++i)
-            {
-                schema += values.get(i);
-                if (i + 1 < values.size()) schema += ",";
-            }
             SchemaHandler.Setup(tableLayout, schema, c);
         }));
 
         SchemaHandler.Setup(tableLayout, schema, this);
 
         ImageButton saveButton = findViewById(R.id.saveButton);
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FileHandler.Write(FileHandler.SCHEMA_FILE, schema);
-            }
-        });
+        saveButton.setOnClickListener(view -> FileHandler.Write(FileHandler.SCHEMA_FILE, schema.toString()));
     }
 
+    public String createJSON(Integer type, String tag, Object... extras)
+    {
+        JSONObject object = new JSONObject();
+        try
+        {
+            object.put(SchemaHandler.TYPE, type);
+            object.put(SchemaHandler.TAG, tag);
+            if (type == Constants.TYPE_INTEGER)
+            {
+                int min = (int)extras[0];
+                object.put(SchemaHandler.MIN, min);
+                int max = (int)extras[1];
+                object.put(SchemaHandler.MAX, max);
+            }
+            return object.toString();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
 
     interface StringInputEvent
@@ -220,7 +225,7 @@ public class SchemaActivity extends AppCompatActivity {
     @Override
     public void onDestroy()
     {
-        FileHandler.Write(FileHandler.SCHEMA_FILE, schema);
+        FileHandler.Write(FileHandler.SCHEMA_FILE, schema.toString());
 
         super.onDestroy();
     }

@@ -400,7 +400,7 @@ public class ScoutActivity extends BluetoothClientActivity
             if (match.endsWith(",")) values.add("");
 
             List<String> jsonTags = new ArrayList<>(Arrays.asList(
-                    SchemaHandler.GetHeader(
+                    SchemaHandler.GetTableHeader(
                             SchemaHandler.LoadSchemaFromFile()).split(",")));
             jsonTags.removeAll(Arrays.asList("", null));
             jsonTags.add(0, Constants.TEAM_NUMBER_JSON_TAG);

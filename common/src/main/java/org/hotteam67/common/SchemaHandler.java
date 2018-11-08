@@ -16,9 +16,13 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,36 +31,40 @@ import java.util.List;
 
 public final class SchemaHandler
 {
-    public static String GetHeader(String schema)
+    // Tags used in JSON format for schema
+    public static final String TAG = "Tag";
+    public static final String TYPE = "Type";
+    public static final String MIN = "Min";
+    public static final String MAX = "Max";
+    public static final String CHOICES = "Choices";
+
+    public static String GetTableHeader(JSONArray schema)
     {
-        String scheme = "";
-        List<SchemaVariable> vars = GetVariables(schema);
-        for (int i = 0; i < vars.size(); ++i)
+        StringBuilder header = new StringBuilder();
+        for (int i = 0; i < schema.length(); ++i)
         {
-            if (vars.get(i) != null && vars.get(i).Type != Constants.TYPE_HEADER)
+            try
             {
-                scheme += vars.get(i).Tag;
-                if (i + 1 < vars.size())
-                    scheme += ",";
+                JSONObject obj = schema.getJSONObject(i);
+                if (obj != null && obj.getInt(TYPE) != Constants.TYPE_HEADER)
+                {
+                    header.append(obj.getString(TAG));
+                    if (i + 1 < schema.length())
+                        header.append(",");
+                }
+            }
+            catch (Exception e)
+            {
             }
         }
 
-        return scheme;
+        return header.toString();
     }
 
-    public static List<TableRow> GetRows(String schema, Context context)
+    public static List<TableRow> GetRows(JSONArray schema, Context context)
     {
-        List<SchemaVariable> variables = GetVariables(schema);
-        List<View> views = new ArrayList<>();
-        variables.remove(null);
-        // Obtain the final list of views to organize
-        for (SchemaVariable v : variables)
-        {
-            if (v != null)
-                views.add(GetView(v, context));
-        }
 
-        if (views.size() == 0)
+        if (schema.length() == 0)
             return new ArrayList<>();
 
         // Measure screen
@@ -66,31 +74,48 @@ public final class SchemaHandler
         List<TableRow> rows = new ArrayList<>();
 
         // Calculate column width
+        List<View> views = new ArrayList<>();
+        for (int i = 0; i < schema.length(); ++i)
+        {
+            try
+            {
+                views.add(GetView(schema.getJSONObject(i), context));
+            }
+            catch (Exception e)
+            {
+            }
+        }
+        views.remove(null);
         int columnWidth = MeasureColumnWidth(views);
         int maxColumns = metrics.widthPixels / columnWidth;
 
 
         int currentColumn = 0;
-        int totalViews = 0;
-        while (totalViews < views.size())
+        int currentView = 0;
+        while (currentView < views.size())
         {
             TableRow row = new TableRow(context);
-            if (variables.get(totalViews).Type == Constants.TYPE_HEADER)
+            View view = views.get(currentView);
+            int type = Integer.valueOf(view.getTag(R.string.variable_type).toString());
+            if (type == Constants.TYPE_HEADER)
             {
-                SetParams(views.get(totalViews), columnWidth);
-                row.addView(views.get(totalViews));
+                SetParams(view, columnWidth);
+                row.addView(view);
                 currentColumn = maxColumns;
-                totalViews++;
+                currentView++;
             }
 
             while (currentColumn < maxColumns &&
-                    totalViews < views.size() &&
-                    (variables.get(totalViews) != null && variables.get(totalViews).Type != Constants.TYPE_HEADER))
+                    currentView < views.size() &&
+                    type != Constants.TYPE_HEADER)
             {
-                SetParams(views.get(totalViews), columnWidth);
-                row.addView(views.get(totalViews));
-                totalViews++;
+                SetParams(view, columnWidth);
+                row.addView(view);
+
+                currentView++;
                 currentColumn++;
+                view = views.get(currentView);
+                type = Integer.valueOf(view.getTag(R.string.variable_type).toString());
             }
 
             row.setLayoutParams(new TableLayout.LayoutParams(
@@ -113,10 +138,6 @@ public final class SchemaHandler
             switch ((int) v.getTag(R.string.variable_type))
             {
                 case Constants.TYPE_INTEGER:
-                    /* l("Integer value of : " + v.getTag(R.string.variable_name) + " " +
-                            String.valueOf(
-                                    ((DarkNumberPicker)v.findViewById(R.id.numberPicker)).getValue())
-                            );*/
 
                     output.add(
                             String.valueOf(
@@ -138,7 +159,7 @@ public final class SchemaHandler
         return output;
     }
 
-    public static void Setup(TableLayout table, String schema, Context context)
+    public static void Setup(TableLayout table, JSONArray schema, Context context)
     {
         table.removeAllViews();
         for (View v : GetRows(schema, context))
@@ -148,7 +169,7 @@ public final class SchemaHandler
         }
     }
 
-    public static String LoadSchemaFromFile()
+    public static JSONArray LoadSchemaFromFile()
     {
         try
         {
@@ -156,18 +177,20 @@ public final class SchemaHandler
             String line = reader.readLine();
             reader.close();
             if (line != null)
-                return line;
+            {
+                return new JSONArray(line);
+            }
             else
-                return "";
+                return new JSONArray();
         }
         catch (Exception e)
         {
             l("Failed to load schema: " + e.getMessage());
-            return "";
+            return new JSONArray();
         }
     }
 
-    public static List<View> getViews(TableLayout table)
+    private static List<View> getViews(TableLayout table)
     {
         List<View> views = new ArrayList<>();
         for (int i = 0; i < table.getChildCount(); ++i)
@@ -183,7 +206,6 @@ public final class SchemaHandler
 
     public static void ClearCurrentValues(TableLayout table)
     {
-        int val = 0;
         for (View v : getViews(table))
         {
             try
@@ -199,15 +221,12 @@ public final class SchemaHandler
                     case Constants.TYPE_STRING:
                         ((EditText) v.findViewById(R.id.editText)).setText("");
                         break;
-                    default:
-                        val--;
                 }
             }
             catch (Exception e)
             {
                 Log.e("[Schema Handler", "Failed to set value : " + e.getMessage(), e);
             }
-            ++val;
         }
     }
 
@@ -257,153 +276,78 @@ public final class SchemaHandler
             ((CheckBox)v).setGravity(Gravity.CENTER);
     }
 
-    public static List<SchemaVariable> GetVariables(String schema)
-    {
-        List<SchemaVariable> vars = new ArrayList<>();
 
-        if (schema == null || schema.trim().isEmpty())
-            return vars;
-
-        l("Loading schema: " + schema);
-
-        try
-        {
-            List<String> vals = Arrays.asList(schema.split(","));
-            for (int i = 0; i < vals.size(); ++i)
-            {
-                String str = vals.get(i);
-                SchemaVariable v = null;
-                int tmp = i;
-                try
-                {
-                    // l("Loading: " + str);
-                    // l("Found tag: " + getBeforeLast(str));
-                    // l("Found type: " + getLast(str));
-                    int number = Integer.valueOf(getLast(str));
-                    int min = 0, max = 0;
-                    if (number == Constants.TYPE_INTEGER)
-                    {
-                        // l("Getting integer value of: " + vals.get(tmp + 1));
-                        min = Integer.valueOf(vals.get(tmp + 1));
-                        ++i;
-                        // l("Getting integer value of: " + vals.get(tmp + 2));
-                        max = Integer.valueOf(vals.get(tmp + 2));
-                        ++i;
-                    }
-                    v = new SchemaVariable(getBeforeLast(str), number, min, max);
-                } catch (IndexOutOfBoundsException e)
-                {
-                    l("Failed to load minimum and maximum values. Not present");
-                    e.printStackTrace();
-                } catch (Exception e)
-                {
-                    l("Failed to load type from input");
-                    e.printStackTrace();
-                }
-
-                vars.add(v);
-            }
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-            l("Failed to load: " + e.getMessage());
-        }
-
-        return vars;
-    }
-
-
-    public static View GetView(SchemaVariable variable, Context c)
+    private static View GetView(JSONObject variable, Context c)
     {
         View v = null;
         if (variable == null)
             return null;
-        switch (variable.Type)
+        Integer type;
+        String tag;
+        try
+        {
+            type = variable.getInt(TYPE);
+            tag = variable.getString(TAG);
+        }
+        catch (Exception e)
+        {
+            type = -1;
+            tag = "N/A";
+        }
+        switch (type)
         {
             case Constants.TYPE_BOOLEAN:
-                /*
-                v = new CheckBox(getContext());
-                ((CheckBox) v).setText(tag);
-                */
                 v = getInflater(c).inflate(R.layout.layout_boolean, null);
                 LinearLayout l = (LinearLayout)v;
                 CheckBox check = l.findViewById(R.id.checkBox1);
                 check.setEnabled(true);
-                check.setText(variable.Tag);
+                check.setText(tag);
                 check.setVisibility(View.VISIBLE);
-                /*
-                v.setTag(R.string.variable_type, Constants.TYPE_BOOLEAN);
-                v.setTag(R.string.variable_name, variable.Tag);
-                */
                 break;
             case Constants.TYPE_STRING:
                 v = getInflater(c).inflate(R.layout.layout_edittext, null);
                 TextView text = v.findViewById(R.id.textLabel);
-                text.setText(variable.Tag);
-                /*
-                v.setTag(R.string.variable_type, Constants.TYPE_STRING);
-                v.setTag(R.string.variable_name, variable.Tag);
-                */
+                text.setText(tag);
                 TextViewCompat.setTextAppearance(
                         text,
                         android.R.style.TextAppearance_DeviceDefault);
                 break;
             case Constants.TYPE_INTEGER:
                 v = getInflater(c).inflate(R.layout.layout_numberpicker, null);
-                ((TextView) v.findViewById(R.id.numberLabel)).setText(variable.Tag);
-                /*
-                v.setTag(R.string.variable_type, Constants.TYPE_INTEGER);
-                v.setTag(R.string.variable_name, variable.Tag);
-                */
+                ((TextView) v.findViewById(R.id.numberLabel)).setText(tag);
                 TextViewCompat.setTextAppearance(
                         v.findViewById(R.id.numberLabel),
                         android.R.style.TextAppearance_DeviceDefault);
 
 
                 DarkNumberPicker picker = v.findViewById(R.id.numberPicker);
-                picker.setMinimum(variable.Min);
-                picker.setMaximum(variable.Max);
+                try
+                {
+                    picker.setMinimum(variable.getInt(MIN));
+                    picker.setMaximum(variable.getInt(MAX));
+                }
+                catch (Exception ignored)
+                {
+
+                }
                 break;
             case Constants.TYPE_HEADER:
                 v = getInflater(c).inflate(R.layout.layout_header, null);
-                ((TextView)v).setText(variable.Tag);
-                /*
-                v.setTag(R.string.variable_type, Constants.TYPE_HEADER);
-                v.setTag(R.string.variable_name, variable.Tag);
-                */
+                ((TextView)v).setText(tag);
                 break;
+            case -1:
+                l("Failed to determine type of obj " + variable.toString());
             default:
-                l("Error, invalid type given: " + variable.Type);
+                l("Error, invalid type given: " + type);
         }
 
         if (v != null)
         {
-            v.setTag(R.string.variable_name, variable.Tag);
-            l("Adding variable tag: " + variable.Tag);
-            l("Returned: " + v.getTag(R.string.variable_name));
-            v.setTag(R.string.variable_type, variable.Type);
-            l("Adding variable type: " + variable.Type);
-            l("Returned: " + v.getTag(R.string.variable_type));
+            v.setTag(R.string.variable_name, tag);
+            v.setTag(R.string.variable_type, type);
         }
 
         return v;
-    }
-
-    // Get just the last char
-    private static String getLast(String s)
-    {
-        if (s.length() > 0)
-            return s.substring(s.length()-1);
-        else
-            return "";
-    }
-    // Get all values up to the last char
-    private static String getBeforeLast(String s)
-    {
-        if (s.length() > 0)
-            return s.substring(0, s.length()-1);
-        else
-            return "";
     }
 
     private static LayoutInflater getInflater(Context c)
