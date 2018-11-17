@@ -269,5 +269,4 @@ public class DataTable implements Serializable {
         // Log.d("HotTeam67", "Returning rows: " + filteredRows.size());
         return filteredRows;
     }
-
 }

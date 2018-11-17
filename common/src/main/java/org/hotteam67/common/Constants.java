@@ -57,6 +57,7 @@ public class Constants
     public static final int TYPE_BOOLEAN =  2;
     public static final int TYPE_INTEGER =  3;
     public static final int TYPE_STRING =   4;
+    public static final int TYPE_MULTI = 5;
 
     public static final String PREF_APIKEY = "pref_apiKey";
     public static final String PREF_EVENTNAME = "pref_eventName";

@@ -29,6 +29,9 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class SchemaActivity extends AppCompatActivity {
     private JSONArray schema = SchemaHandler.LoadSchemaFromFile();
@@ -68,14 +71,6 @@ public class SchemaActivity extends AppCompatActivity {
 
     private void doConfirmEnd()
     {
-        /*
-        Constants.OnConfirm("Are you sure you want to quit?", this, new Runnable() {
-            @Override
-            public void run() {
-                finish();
-            }
-        });
-        */
         finish();
     }
 
@@ -99,6 +94,7 @@ public class SchemaActivity extends AppCompatActivity {
         Button booleanButton;
         Button headerButton;
         Button deleteButton;
+        Button multiChoiceButton;
 
         ScrollView scrollView = findViewById(R.id.scrollView);
         scrollView.setDescendantFocusability(ViewGroup.FOCUS_BEFORE_DESCENDANTS);
@@ -117,12 +113,11 @@ public class SchemaActivity extends AppCompatActivity {
         numberButton = findViewById(R.id.numberButton);
         numberButton.setOnClickListener(view ->
                 GetString("Value Label: ", tag ->
-                        GetString("Minimum:", minimum ->
                                 GetString("Maximum:", maximum ->
                                 {
-                                    schema.put(createJSON(Constants.TYPE_INTEGER, tag, minimum, maximum));
+                                    schema.put(createJSON(Constants.TYPE_INTEGER, tag, maximum));
                                     SchemaHandler.Setup(tableLayout, schema, c);
-                                }))));
+                                })));
 
         booleanButton = findViewById(R.id.booleanButton);
         booleanButton.setOnClickListener(view -> GetString("Value Label:", input ->
@@ -144,6 +139,16 @@ public class SchemaActivity extends AppCompatActivity {
 
             SchemaHandler.Setup(tableLayout, schema, c);
         }));
+        multiChoiceButton = findViewById(R.id.multiChoiceButton);
+        multiChoiceButton.setOnClickListener(view ->
+                GetString("Multi Choice Name", label ->
+                        GetMultiChoiceInput(new ArrayList<>(), choices -> {
+                                schema.put(createJSON(Constants.TYPE_MULTI, label,
+                                        choices.toArray(new String[0])));
+                                SchemaHandler.Setup(tableLayout, schema, c);
+                        })));
+
+
 
         SchemaHandler.Setup(tableLayout, schema, this);
 
@@ -151,7 +156,24 @@ public class SchemaActivity extends AppCompatActivity {
         saveButton.setOnClickListener(view -> FileHandler.Write(FileHandler.SCHEMA_FILE, schema.toString()));
     }
 
-    public String createJSON(Integer type, String tag, Object... extras)
+    public interface onMultiComplete
+    {
+        void Complete(List<String> options);
+    }
+
+    public void GetMultiChoiceInput(List<String> input, onMultiComplete onComplete)
+    {
+        GetString("Input another choice or choose ok to complete", x -> {
+            if (x.trim().isEmpty()) onComplete.Complete(input);
+            else
+            {
+                input.add(x);
+                GetMultiChoiceInput(input, onComplete);
+            }
+        });
+    }
+
+    public JSONObject createJSON(Integer type, String tag, String... extras)
     {
         JSONObject object = new JSONObject();
         try
@@ -160,12 +182,20 @@ public class SchemaActivity extends AppCompatActivity {
             object.put(SchemaHandler.TAG, tag);
             if (type == Constants.TYPE_INTEGER)
             {
-                int min = (int)extras[0];
-                object.put(SchemaHandler.MIN, min);
-                int max = (int)extras[1];
+                int max = Integer.valueOf(extras[0]);
                 object.put(SchemaHandler.MAX, max);
             }
-            return object.toString();
+            else if (type == Constants.TYPE_MULTI)
+            {
+                JSONArray choices = new JSONArray();
+                for (String s : extras)
+                {
+                    if (!(s.trim().isEmpty()))
+                        choices.put(s);
+                }
+                object.put(SchemaHandler.CHOICES, choices);
+            }
+            return object;
         }
         catch (Exception e)
         {

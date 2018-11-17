@@ -38,7 +38,9 @@
             <Button
                 android:id="@+id/booleanButton"
                 android:text="Boolean" />
-
+            <Button
+                android:id="@+id/multiChoiceButton"
+                android:text="Select"/>
             <Button
                 android:id="@+id/numberButton"
                 android:text="Number"/>
@@ -46,10 +48,12 @@
         <TableRow>
             <Button
                 android:id="@+id/headerButton"
-                android:text="Header" />
+                android:text="Header"
+                android:layout_span="2"/>
             <Button
                 android:id="@+id/deleteButton"
-                android:text="Delete"/>
+                android:text="Delete"
+                android:layout_span="1"/>
         </TableRow>
 
     </TableLayout>

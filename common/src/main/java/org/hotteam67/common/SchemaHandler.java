@@ -9,9 +9,11 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -34,7 +36,6 @@ public final class SchemaHandler
     // Tags used in JSON format for schema
     public static final String TAG = "Tag";
     public static final String TYPE = "Type";
-    public static final String MIN = "Min";
     public static final String MAX = "Max";
     public static final String CHOICES = "Choices";
 
@@ -85,8 +86,10 @@ public final class SchemaHandler
             {
             }
         }
+
         views.remove(null);
         int columnWidth = MeasureColumnWidth(views);
+        if (columnWidth == 0) return new ArrayList<>();
         int maxColumns = metrics.widthPixels / columnWidth;
 
 
@@ -114,7 +117,8 @@ public final class SchemaHandler
 
                 currentView++;
                 currentColumn++;
-                view = views.get(currentView);
+                if (currentView < views.size())
+                    view = views.get(currentView);
                 type = Integer.valueOf(view.getTag(R.string.variable_type).toString());
             }
 
@@ -150,6 +154,11 @@ public final class SchemaHandler
                     break;
                 case Constants.TYPE_STRING:
                     output.add(((EditText)v.findViewById(R.id.editText)).getText().toString());
+                    break;
+                case Constants.TYPE_MULTI:
+                    Spinner s = v.findViewById(R.id.multiChoiceSpinner);
+                    if (s.getSelectedItem() == null) output.add(s.getItemAtPosition(0).toString());
+                    else output.add(s.getSelectedItem().toString());
                     break;
                 default:
                     // l("Found a header of tag: " + v.getTag(R.string.variable_name));
@@ -221,6 +230,9 @@ public final class SchemaHandler
                     case Constants.TYPE_STRING:
                         ((EditText) v.findViewById(R.id.editText)).setText("");
                         break;
+                    case Constants.TYPE_MULTI:
+                        ((Spinner)v.findViewById(R.id.multiChoiceSpinner)).setSelection(0);
+                        break;
                 }
             }
             catch (Exception e)
@@ -253,6 +265,11 @@ public final class SchemaHandler
                     case Constants.TYPE_STRING:
                         ((EditText) v.findViewById(R.id.editText)).setText(values.get(val));
                         // l("Loading in value: " + values.get(val));
+                        ++val;
+                        break;
+                    case Constants.TYPE_MULTI:
+                        Spinner s = v.findViewById(R.id.multiChoiceSpinner);
+                        s.setSelection(((ArrayAdapter<String>)s.getAdapter()).getPosition(values.get(val)));
                         ++val;
                         break;
                 }
@@ -323,7 +340,7 @@ public final class SchemaHandler
                 DarkNumberPicker picker = v.findViewById(R.id.numberPicker);
                 try
                 {
-                    picker.setMinimum(variable.getInt(MIN));
+                    picker.setMinimum(0); // Always zero, removed config option for this
                     picker.setMaximum(variable.getInt(MAX));
                 }
                 catch (Exception ignored)
@@ -337,6 +354,29 @@ public final class SchemaHandler
                 break;
             case -1:
                 l("Failed to determine type of obj " + variable.toString());
+            case Constants.TYPE_MULTI:
+                v = getInflater(c).inflate(R.layout.layout_multichoice, null);
+                ((TextView)v.findViewById(R.id.multiChoiceLabel)).setText(tag);
+                Spinner spinner = v.findViewById(R.id.multiChoiceSpinner);
+                try
+                {
+                    JSONArray choices = variable.getJSONArray(CHOICES);
+
+                    List<String> choiceStrings = new ArrayList<>();
+                    for (int i = 0; i < choices.length(); ++i)
+                    {
+                        choiceStrings.add((String)choices.get(i));
+                    }
+                    ArrayAdapter adapter = new ArrayAdapter<>(c,
+                            android.R.layout.simple_spinner_item,
+                            choiceStrings);
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinner.setAdapter(adapter);
+                }
+                catch (Exception ignored)
+                {
+
+                }
             default:
                 l("Error, invalid type given: " + type);
         }
