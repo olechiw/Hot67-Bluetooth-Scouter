@@ -381,7 +381,7 @@ public class DataModel
         String content = FileHandler.LoadContents(FileHandler.VIEWER_MATCHES_FILE);
         if (content == null || content.trim().isEmpty())
             return;
-        List<String> contents = Arrays.asList(content.split("\n"));
+        String[] contents = content.split("\n");
 
         for (String match : contents)
         {
