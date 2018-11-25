@@ -14,11 +14,14 @@
         android:layout_marginBottom="8dp"
         android:minHeight="70dp">
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        <Button android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:padding="5dp"
             android:text="Connected Devices: 0" app:layout_constraintBottom_toBottomOf="parent"
-            android:id="@+id/connectedDevicesText"
-            android:textAppearance="@style/TextAppearance.AppCompat"
-            android:layout_gravity="center" />
+            android:id="@+id/connectButton"
+            android:textAppearance="@style/TextAppearance.AppCompat.Button"
+            android:textColor="#000000"
+            android:layout_gravity="center"
+            android:background="@drawable/shape_button_outline"/>
 
         <ImageButton
             android:layout_width="wrap_content"
@@ -47,10 +50,34 @@
 
     </android.support.v7.widget.Toolbar>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/submitButton"
+        android:layout_below="@+id/toolBar"
+        android:layout_margin="5dp"
+        android:text="Get Matches"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sync"
+        android:id="@+id/syncButton"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/toolBar"
+        android:layout_margin="5dp"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_margin="5dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/messageButton"
+        android:layout_below="@+id/toolBar"
+        android:layout_alignParentEnd="true"
+        android:text="Send Message"/>
+
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/toolBar"
+        android:layout_below="@+id/submitButton"
         android:lines="50"
         android:hint="Server Log"
         android:clickable="false"

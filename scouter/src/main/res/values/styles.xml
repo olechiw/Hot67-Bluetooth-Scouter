@@ -6,12 +6,5 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-
-    </style>
-    <style name="NumberPickerTheme" parent="@android:style/Widget.Holo">
-        <item name="android:colorBackground">#000000</item>
-        <item name="android:textColor">#ffffff</item>
-        <item name="android:colorForeground">#000000</item>
-        <item name="android:color">#000000</item>
     </style>
 </resources>

@@ -3,6 +3,7 @@ package org.hotteam67.scouter;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.ListView;
 
 import org.hotteam67.common.Constants;
 
@@ -21,12 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class BluetoothClientActivity extends AppCompatActivity {
+public abstract class BluetoothClientActivity extends AppCompatActivity {
 
 
     // Messages, for when any event happens, to be sent to the main thread
     public final int MESSAGE_INPUT = 0;
-    public final int MESSAGE_TOAST = 1;
     public final int MESSAGE_DISCONNECTED = 2;
     public final int MESSAGE_CONNECTED = 3;
 
@@ -84,63 +85,58 @@ public class BluetoothClientActivity extends AppCompatActivity {
         }
     }
 
-    /*
-    Connect Thread
-     */
-    ConnectThread connectThread;
-    private class ConnectThread extends Thread {
-        private final Set<BluetoothDevice> connectedDevices;
-        private List<BluetoothSocket> connectedSockets;
-        ConnectThread(Set<BluetoothDevice> devices)
+    // Accept incoming bluetooth connections thread, actual member and the definition
+    AcceptThread acceptThread;
+    private class AcceptThread extends Thread {
+        final BluetoothServerSocket connectionSocket;
+        AcceptThread()
         {
-            connectedDevices = devices;
-
-            connectedSockets = new ArrayList<>();
-            BluetoothSocket connectionSocket;
-            for (BluetoothDevice device : connectedDevices) {
-                connectionSocket = null;
-                try {
-                    l("Getting Connection");
-                    connectionSocket = device.createRfcommSocketToServiceRecord(Constants.uuid);
-                } catch (java.io.IOException e) {
-                    Log.e("[Bluetooth]", "Failed to connect to socket", e);
-                }
-                connectedSockets.add(connectionSocket);
+            BluetoothServerSocket tmp = null;
+            try
+            {
+                tmp = m_bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ConnectDevice", Constants.uuid);
             }
+            catch (java.io.IOException e)
+            {
+                Log.e("[Bluetooth]", "Socket connection failed", e);
+            }
+
+
+            connectionSocket = tmp;
         }
 
         public void run()
         {
-            for (BluetoothSocket connectionSocket : connectedSockets)
+            while (!Thread.currentThread().isInterrupted())
             {
+                BluetoothSocket conn = null;
                 try
                 {
-                    l("Connecting to socket");
-                    connectionSocket.connect();
-                    connectSocket(connectionSocket);
-                    break;
-                } catch (java.io.IOException e)
+                    conn = connectionSocket.accept();
+                }
+                catch (java.io.IOException e)
                 {
-                    try
-                    {
-                        connectionSocket.close();
-                    } catch (java.io.IOException e2)
-                    {
-                        Log.e("[Bluetooth]", "Failed to close socket after failure to connect", e2);
-                    }
+                    // Log.e("[Bluetooth]", "Socket acception failed", e);
                 }
-            }
-        }
 
-        public void cancel()
-        {
-            for (BluetoothSocket connectionSocket : connectedSockets) {
-                try {
-                    connectionSocket.close();
-                } catch (java.io.IOException e) {
-                    Log.e("[Bluetooth]", "Failed to close socket", e);
+                if (conn != null)
+                {
+                    connectSocket(conn);
+                    MSG(MESSAGE_CONNECTED);
+                    break;
                 }
             }
+            try
+            {
+                connectionSocket.close();
+            } catch (IOException e)
+            {
+                // Already closed, probably
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+            l("Accept Thread Ended!");
         }
     }
 
@@ -152,13 +148,10 @@ public class BluetoothClientActivity extends AppCompatActivity {
     {
         private BluetoothSocket connectedSocket;
         private byte[] buffer;
-        private int id;
 
-        private void setId(int i ) { id = i; }
-
-        public ConnectedThread(BluetoothSocket sockets)
+        public ConnectedThread(BluetoothSocket socket)
         {
-            connectedSocket = sockets;
+            connectedSocket = socket;
         }
 
         public void close()
@@ -189,6 +182,11 @@ public class BluetoothClientActivity extends AppCompatActivity {
 
                 l("Reading stream");
                 if (!read(stream))
+                {
+                    break;
+                }
+
+                if (Thread.currentThread().isInterrupted())
                 {
                     break;
                 }
@@ -244,41 +242,6 @@ public class BluetoothClientActivity extends AppCompatActivity {
                 disconnect();
             }
         }
-
-        /*
-        public void write(byte[] bytes, int device)
-        {
-            l("Writing " + new String(bytes));
-            l("Bytes length: " + bytes.length);
-            OutputStream out = null;
-            try
-            {
-                out = connectedSockets.get(device).getOutputStream();
-                out.write(bytes);
-            }
-            catch (IndexOutOfBoundsException e)
-            {
-                l("Failed to write, device not found at index: " + device);
-            }
-            catch (IOException e)
-            {
-                l("Failed to write. IOException." + e.getMessage());
-                e.printStackTrace();
-            }
-        }
-        */
-
-        public void cancel()
-        {
-            try
-            {
-                connectedSocket.close();
-            }
-            catch (java.io.IOException e)
-            {
-                Log.e("[Bluetooth]", "Failed to close socket", e);
-            }
-        }
     }
 
 
@@ -290,13 +253,17 @@ public class BluetoothClientActivity extends AppCompatActivity {
 
         if (m_bluetoothAdapter == null) {
             l("Bluetooth not detected");
-            msgToast("Error, Bluetooth not Detected!");
             bluetoothFailed = true;
         }
 
         if (!bluetoothFailed && !m_bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, 1);
+        }
+        else
+        {
+            acceptThread = new AcceptThread();
+            acceptThread.start();
         }
     }
 
@@ -307,28 +274,8 @@ public class BluetoothClientActivity extends AppCompatActivity {
             if (requestCode==1)
             {
                 bluetoothFailed = resultCode != RESULT_OK;
+                setupBluetooth();
             }
-    }
-
-    protected synchronized void Connect()
-    {
-        l("Connecting");
-
-        if (bluetoothFailed) {
-            l("Failed to connect, bluetooth setup was unsuccessful");
-            return;
-        }
-
-        Set<BluetoothDevice> pairedDevices = m_bluetoothAdapter.getBondedDevices();
-
-        if (pairedDevices.size() < 1)
-        {
-            msgToast("Not enough devices paired");
-            return;
-        }
-
-        connectThread = new ConnectThread(pairedDevices);
-        connectThread.start();
     }
 
     private synchronized void connectSocket(BluetoothSocket socket)
@@ -338,14 +285,8 @@ public class BluetoothClientActivity extends AppCompatActivity {
             l("Storing socket in connected devices");
             connectedThread = new ConnectedThread(socket);
             connectedThread.start();
-            msgToast("CONNECTED!");
             MSG(MESSAGE_CONNECTED);
         }
-    }
-
-    private synchronized void msgToast(String msg)
-    {
-        m_handler.obtainMessage(MESSAGE_TOAST, msg.getBytes().length, -1, msg.getBytes()).sendToTarget();
     }
 
     protected synchronized void Write(String text)
@@ -361,39 +302,9 @@ public class BluetoothClientActivity extends AppCompatActivity {
         }
     }
 
-    public interface Callable
+    protected void handle(Message msg)
     {
-        void call(String input);
-    }
-
-    protected Callable inputEvent;
-    protected Callable disconnectEvent;
-    protected Callable sendMessageEvent;
-    protected synchronized void handle(Message msg)
-    {
-        switch (msg.what)
-        {
-            case MESSAGE_INPUT:
-
-                String message = (String) msg.obj;
-                //m_sendButton.setText(message);
-
-                inputEvent.call(message);
-                break;
-            case MESSAGE_TOAST:
-                String t = new String((byte[]) msg.obj);
-
-                l("TOASTING: " + t);
-
-                //MessageBox(t);
-
-                sendMessageEvent.call(t);
-                break;
-            case MESSAGE_DISCONNECTED:
-                //MessageBox("DISCONNECTED FROM DEVICE");
-                disconnectEvent.call("");
-                break;
-        }
+        // Do nothing, OVERRIDE ME
     }
 
     protected boolean ISDESTROYED = false;
@@ -420,5 +331,8 @@ public class BluetoothClientActivity extends AppCompatActivity {
     {
         connectedThread.close();
         connectedThread.interrupt();
+
+        acceptThread = new AcceptThread();
+        acceptThread.start();
     }
 }

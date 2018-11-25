@@ -1,12 +1,16 @@
 package org.hotteam67.bluetoothserver;
 
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.ListView;
 
 import org.hotteam67.common.Constants;
 
@@ -14,12 +18,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public abstract class BluetoothServerActivity extends AppCompatActivity
 {
     // Messages, for when any event happens, to be sent to the main thread
     public static final int MESSAGE_INPUT = 0;
-    public static final int MESSAGE_OTHER = 1;
+    public static final int MESSAGE_CONNECTING = 1;
+    public static final int MESSAGE_CONNECTION_FAILED = 4;
     public static final int MESSAGE_DISCONNECTED = 2;
     public static final int MESSAGE_CONNECTED = 3;
 
@@ -47,60 +57,141 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
         Log.d("BLUETOOTH_SCOUTER_DEBUG", s);
     }
 
-    // Accept incoming bluetooth connections thread, actual member and the definition
-    AcceptThread acceptThread;
-    private class AcceptThread extends Thread {
-        final BluetoothServerSocket connectionSocket;
-        AcceptThread()
+    /*
+   Connect Thread
+    */
+    ConnectThread connectThread;
+    private class ConnectThread extends Thread {
+        private final List<BluetoothDevice> devices;
+        private List<BluetoothSocket> sockets;
+        ConnectThread(List<BluetoothDevice> devices)
         {
-            BluetoothServerSocket tmp = null;
-            try
-            {
-                tmp = m_bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ConnectDevice", Constants.uuid);
-            }
-            catch (java.io.IOException e)
-            {
-                Log.e("[Bluetooth]", "Socket connection failed", e);
-            }
+            this.devices = devices;
 
+            sockets = new ArrayList<>();
 
-            connectionSocket = tmp;
+            BluetoothSocket connectionSocket;
+            for (BluetoothDevice device : this.devices)
+            {
+
+                connectionSocket = null;
+                try
+                {
+                    l("Getting Connection");
+                    connectionSocket = device.createRfcommSocketToServiceRecord(Constants.uuid);
+                } catch (java.io.IOException e)
+                {
+                    Log.e("[Bluetooth]", "Failed to connect to socket", e);
+                }
+                sockets.add(connectionSocket);
+            }
         }
 
         public void run()
         {
-            while (!Thread.currentThread().isInterrupted())
+            for (BluetoothSocket connectionSocket : sockets)
             {
-                BluetoothSocket conn = null;
                 try
                 {
-                    conn = connectionSocket.accept();
-                }
-                catch (java.io.IOException e)
+                    // Send the message to UI thread we are connecting to device i
+                    m_handler.obtainMessage(MESSAGE_CONNECTING, 0, 0,
+                            devices.get(sockets.indexOf(connectionSocket)).getName()).sendToTarget();
+                    l("Connecting to socket");
+                    connectionSocket.connect();
+                    connectSocket(connectionSocket);
+                } catch (java.io.IOException e)
                 {
-                    // Log.e("[Bluetooth]", "Socket acception failed", e);
-                }
-
-                if (conn != null)
-                {
-                    connectSocket(conn);
-                    MSG(MESSAGE_CONNECTED);
+                    try
+                    {
+                        MSG(MESSAGE_CONNECTION_FAILED);
+                        connectionSocket.close();
+                    } catch (java.io.IOException e2)
+                    {
+                        Log.e("[Bluetooth]", "Failed to close socket after failure to connect", e2);
+                    }
                 }
             }
-            l("Accept Thread Ended!");
+            l("Connect thread ended!");
+        }
+    }
+
+
+    protected synchronized void Connect()
+    {
+        // Reset all connections
+        if (connectedThreads.size() > 0)
+            for (ConnectedThread thread : connectedThreads) disconnect(thread);
+
+        l("Connecting");
+
+        if (bluetoothFailed) {
+            l("Failed to connect, bluetooth setup was unsuccessful");
+            return;
         }
 
-        public void cancel()
+        Set<BluetoothDevice> pairedDevices = m_bluetoothAdapter.getBondedDevices();
+
+        List<String> pairedNames =  new ArrayList<>();
+        for (BluetoothDevice device : pairedDevices)
         {
-            try
-            {
-                connectionSocket.close();
-            }
-            catch (java.io.IOException e)
-            {
-                // Log.e("[Bluetooth]", "Socket close failed", e);
-            }
+            String name = device.getName();
+            pairedNames.add(name);
         }
+
+        PromptChoice(this, "Red Devices", pairedNames, redDevices ->
+        {
+            List<String> remainingNames = new ArrayList<>();
+            for (String s : pairedNames)
+                if (!redDevices.contains(s)) remainingNames.add(s);
+
+            PromptChoice(this, "Blue Devices", remainingNames, blueDevices ->
+            {
+                // Add to final connect devices array, RED FIRST THEN BLUE.
+                // If less than 6, it will do first 3 red then next 3 blue no matter what
+                List<BluetoothDevice> devices = new ArrayList<>();
+                for (BluetoothDevice pairedDevice : pairedDevices)
+                {
+                    if (redDevices.contains(pairedDevice.getName())
+                            || blueDevices.contains(pairedDevice.getName()))
+                        devices.add(pairedDevice);
+                }
+                connectThread = new ConnectThread(devices);
+                connectThread.start();
+            }, 3);
+        }, 3);
+    }
+
+    private static void PromptChoice(Context context, String title, List<String> options, Constants.OnCompleteEvent<List<String>> onComplete, int maxOptions)
+    {
+        List<String> result = new ArrayList<>();
+        boolean[] checkedItems = new boolean[options.size()];
+        new AlertDialog.Builder(context).setTitle(title).setMultiChoiceItems(
+                options.toArray(new CharSequence[options.size()]), checkedItems, (dialogInterface, i, b) ->
+                {
+                    if (b)
+                    {
+                        result.add(0, options.get(i)); // Put current at start of queue
+
+                        ListView list = ((AlertDialog) dialogInterface).getListView();
+                        // Limit to 6, so fix it if more than 6
+                        if (result.size() > maxOptions)
+                        {
+                            // Uncheck last and remove it
+                            int lastIndex = options.indexOf(result.get(maxOptions));
+                            list.setItemChecked(lastIndex, false);
+                            checkedItems[lastIndex] = false;
+
+
+                            result.remove(maxOptions);
+                        }
+                    }
+                    else
+                    {
+                        result.remove(options.get(i));
+                    }
+                }
+        ).setPositiveButton("Done", ((dialogInterface, i) ->
+                onComplete.OnComplete(result))).create().show();
     }
 
     private void connectSocket(BluetoothSocket connection)
@@ -113,6 +204,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             thread.setId(connectedThreads.size() + 1);
             thread.start();
             connectedThreads.add(thread);
+            MSG(MESSAGE_CONNECTED);
         }
 
     }
@@ -231,19 +323,6 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                 disconnect(this);
             }
         }
-
-
-        public void cancel()
-        {
-            try
-            {
-                connectedSocket.close();
-            }
-            catch (java.io.IOException e)
-            {
-                Log.e("[Bluetooth]", "Failed to close socket", e);
-            }
-        }
     }
 
     // Write to all threads, returns number of connected devices
@@ -287,7 +366,6 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
         }
         else
         {
-            setupThreads();
             oncomplete.run();
         }
 
@@ -304,23 +382,8 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
 
         if (requestCode==REQUEST_BLUETOOTH)
         {
-            bluetoothFailed = resultCode != RESULT_OK;
-            setupThreads();
+            bluetoothFailed = (resultCode != RESULT_OK);
         }
-    }
-
-    // Initialize the accept bluetooth connections thread
-    private void setupThreads()
-    {
-        if (!bluetoothFailed) {
-            l("Setting up accept thread");
-            acceptThread = new AcceptThread();
-
-            l("Running accept thread");
-            acceptThread.start();
-        }
-        else
-            l("Attempted to setup threads, but bluetooth setup has failed");
     }
 
     @Override
@@ -330,16 +393,6 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
         l("Destroying application threads");
         if (bluetoothFailed)
             return;
-        if (acceptThread.connectionSocket != null && ! acceptThread.isInterrupted())
-        {
-            try
-            {
-                acceptThread.connectionSocket.close();
-            } catch (java.io.IOException e)
-            {
-                l("Connection socket closing failed: " + e.getMessage());
-            }
-        }
         for (ConnectedThread thread : connectedThreads)
         {
             thread.close();

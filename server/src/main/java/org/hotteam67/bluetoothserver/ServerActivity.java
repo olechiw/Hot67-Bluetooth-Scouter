@@ -22,9 +22,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.TextView;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
@@ -57,7 +57,7 @@ public class ServerActivity extends BluetoothServerActivity {
 
     String lastMatchNumber = "0";
     List<String> lastMatchTeamNumbers = new ArrayList<>();
-    int lastMatchReceived = 0;
+    int matchesReceived = 0;
 
     // Current database in json format
     private JSONObject jsonDatabase;
@@ -80,7 +80,7 @@ public class ServerActivity extends BluetoothServerActivity {
         }
     }
 
-    TextView connectedDevicesText;
+    Button connectButton;
     EditText serverLogText;
 
     ImageButton configureButton;
@@ -111,8 +111,9 @@ public class ServerActivity extends BluetoothServerActivity {
         return true;
     }
 
-    private void GetString(final String prompt, final SchemaActivity.StringInputEvent onInput) {
+    private void GetString(final String prompt, final String defaultValue, final SchemaActivity.StringInputEvent onInput) {
         final EditText input = new EditText(this);
+        input.setText(defaultValue);
 
         try {
             AlertDialog.Builder dlg = new AlertDialog.Builder(this);
@@ -168,20 +169,6 @@ public class ServerActivity extends BluetoothServerActivity {
                 sendEventMatches();
                 break;
             }
-            case R.id.menuItemSendMessage:
-            {
-                GetString("Enter Message:", input ->
-                {
-                    WriteAllDevices((Constants.SERVER_MESSAGE_TAG + input).getBytes());
-                });
-                break;
-            }
-            case R.id.menuItemSyncAll:
-            {
-                Constants.OnConfirm("Sync All Matches?", this, () ->
-                        saveJsonObject(jsonDatabase, true));
-                break;
-            }
             case R.id.menuItemClearDatabase:
             {
                 Constants.OnConfirm("Clear Local Database?", this, () ->
@@ -204,7 +191,11 @@ public class ServerActivity extends BluetoothServerActivity {
 
     private void setupUI()
     {
-        connectedDevicesText = findViewById(R.id.connectedDevicesText);
+        connectButton = findViewById(R.id.connectButton);
+        connectButton.setOnClickListener(view ->
+                Constants.OnConfirm("Disconnect all existing devices?",
+                        this, this::Connect));
+
         serverLogText = findViewById(R.id.serverLog);
 
         Toolbar toolbar = findViewById(R.id.toolBar);
@@ -240,13 +231,27 @@ public class ServerActivity extends BluetoothServerActivity {
 
             return true;
         });
+
+        findViewById(R.id.messageButton)
+                .setOnClickListener(view -> GetString("Enter Message:", "",
+                input -> WriteAllDevices((Constants.SERVER_MESSAGE_TAG + input).getBytes())));
+
+        findViewById(R.id.submitButton)
+                .setOnClickListener(view ->
+                        GetString("Get Match Number", lastMatchNumber, (input) ->
+                                WriteAllDevices((Constants.SERVER_SUBMIT_TAG + input).getBytes())));
+
+        findViewById(R.id.syncButton)
+                .setOnClickListener(view -> Constants.OnConfirm("Sync All Matches?",
+                        this, () ->
+                        saveJsonObject(jsonDatabase, true)));
     }
 
 
     private void downloadEventMatches()
     {
         final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-        GetString("Enter Event Key:", eventKey ->
+        GetString("Enter Event Key:", "", eventKey ->
                 TBAHandler.Matches(currentYear + eventKey, result ->
                 {
                     try
@@ -439,17 +444,19 @@ public class ServerActivity extends BluetoothServerActivity {
                 }
 
                 break;
-            case MESSAGE_OTHER:
-                String t = new String((byte[]) msg.obj);
+            case MESSAGE_CONNECTING:
+                String name = (String)msg.obj;
+                VisualLog("Attempting Connection with " + name);
 
-                l("Received Message Other: " + t);
-
+                break;
+            case MESSAGE_CONNECTION_FAILED:
+                VisualLog("Connection Timed Out");
                 break;
             case MESSAGE_CONNECTED:
                 l("Received Connect");
                 l("Size of connected threads: " + GetDevices());
                 VisualLog("Device Connected!");
-                connectedDevicesText.setText("Connected Devices: " + String.valueOf(GetDevices()));
+                connectButton.setText("Connected Devices: " + String.valueOf(GetDevices()));
 
                 break;
             case MESSAGE_DISCONNECTED:
@@ -457,7 +464,7 @@ public class ServerActivity extends BluetoothServerActivity {
                 l("Received Disconnect");
                 VisualLog("Device Disconnected!");
                 l("Size of connected threads: " + GetDevices());
-                connectedDevicesText.setText("Connected Devices: " + String.valueOf(GetDevices()));
+                connectButton.setText("Connected Devices: " + String.valueOf(GetDevices()));
                 break;
             default:
                 l("Received Message: " + msg.what);
@@ -540,21 +547,21 @@ public class ServerActivity extends BluetoothServerActivity {
                 {
                     if (!lastMatchTeamNumbers.contains(json.get(Constants.TEAM_NUMBER_JSON_TAG)))
                     {
-                        lastMatchReceived++;
+                        matchesReceived++;
                         lastMatchTeamNumbers.add((String) json.get(Constants.TEAM_NUMBER_JSON_TAG));
                     }
                     serverLogText.setText(
-                            "Last Match: " + lastMatchNumber + " Received: " + lastMatchReceived + "\n"
+                            "Last Match: " + lastMatchNumber + " Received: " + matchesReceived + "\n"
                     );
                 }
                 else
                 {
                     lastMatchNumber = matchNumber;
-                    lastMatchReceived = 1;
+                    matchesReceived = 1;
                     lastMatchTeamNumbers = new ArrayList<>();
                     lastMatchTeamNumbers.add((String) json.get(Constants.TEAM_NUMBER_JSON_TAG));
                     serverLogText.setText(
-                            "Last Match: " + matchNumber + " Received: " + lastMatchReceived + "\n"
+                            "Last Match: " + matchNumber + " Received: " + matchesReceived + "\n"
                     );
                 }
             }
