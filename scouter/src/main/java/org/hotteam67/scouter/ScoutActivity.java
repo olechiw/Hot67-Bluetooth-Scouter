@@ -126,9 +126,7 @@ public class ScoutActivity extends BluetoothClientActivity
         final Context c = this;
         syncAllButton = findViewById(R.id.syncAllButton);
         syncAllButton.setOnClickListener(v -> Constants.OnConfirm(
-                "Send All Matches?", c, () -> {
-                    SendAllMatches();
-        }));
+                "Send All Matches?", c, this::SendAllMatches));
 
 
         // Build the input table's rows and columns.
