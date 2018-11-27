@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 public class ColumnHeaderModel implements Serializable {
 
-    private String mData;
+    private final String mData;
 
     public ColumnHeaderModel(String mData) {
         this.mData = mData;

@@ -77,8 +77,7 @@ public final class FileHandler
 
         try
         {
-            FileWriter writer = new FileWriter(new File(f).getAbsolutePath(), false);
-            return writer;
+            return new FileWriter(new File(f).getAbsolutePath(), false);
         }
         catch (FileNotFoundException e)
         {
@@ -105,14 +104,14 @@ public final class FileHandler
 
     public static String LoadContents(String file)
     {
-        String content = "";
+        StringBuilder content = new StringBuilder();
         BufferedReader r = GetReader(file);
         try
         {
             String line = r.readLine();
             while (line != null)
             {
-                content += line + "\n";
+                content.append(line).append("\n");
                 line = r.readLine();
             }
         }
@@ -121,7 +120,7 @@ public final class FileHandler
             l("Failed to load :" + e.getMessage());
         }
 
-        return content;
+        return content.toString();
     }
 
     public static void Write(String FILE, String s)
@@ -145,8 +144,6 @@ public final class FileHandler
     public static void Serialize(Serializable o, String file)
     {
         try {
-            if (file(file) == null)
-                return;
             FileOutputStream fileOutputStream = new FileOutputStream(file(file));
             ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
             outputStream.writeObject(o);
@@ -162,8 +159,6 @@ public final class FileHandler
     {
         try
         {
-            if (file(file) == null)
-                return null;
             FileInputStream fileInputStream = new FileInputStream(file(file));
             ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
             Object returnObject = inputStream.readObject();
@@ -179,7 +174,7 @@ public final class FileHandler
         }
     }
 
-    private static final void l(String s)
+    private static void l(String s)
     {
         Log.d("[File Handling]", s);
     }

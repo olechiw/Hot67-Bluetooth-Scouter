@@ -13,17 +13,15 @@ import com.evrencoskun.tableview.sort.SortState;
 import com.hotteam67.firebaseviewer.R;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 
-import java.io.Serializable;
-
 /**
  * Created by evrencoskun on 1.12.2017.
  */
 
 public class ColumnHeaderViewHolder extends AbstractSorterViewHolder {
-    final LinearLayout column_header_container;
-    final TextView column_header_textview;
-    final ImageButton column_header_sort_button;
-    final ITableView tableView;
+    private final LinearLayout column_header_container;
+    private final TextView column_header_textview;
+    private final ImageButton column_header_sort_button;
+    private final ITableView tableView;
 
     public ColumnHeaderViewHolder(View itemView, ITableView pTableView) {
         super(itemView);
@@ -33,10 +31,25 @@ public class ColumnHeaderViewHolder extends AbstractSorterViewHolder {
         column_header_sort_button = itemView.findViewById(R.id.column_header_sort_imageButton);
 
         // Set click listener to the sort button
+        // Default one
+        View.OnClickListener mSortButtonClickListener = view ->
+        {
+            if (getSortState() == SortState.ASCENDING)
+            {
+                tableView.sortColumn(getAdapterPosition(), SortState.DESCENDING);
+            } else if (getSortState() == SortState.DESCENDING)
+            {
+                tableView.sortColumn(getAdapterPosition(), SortState.ASCENDING);
+            } else
+            {
+                // Default one
+                tableView.sortColumn(getAdapterPosition(), SortState.DESCENDING);
+            }
+        };
         column_header_sort_button.setOnClickListener(mSortButtonClickListener);
     }
 
-    public void setColumnHeaderModel(ColumnHeaderModel pColumnHeaderModel, int pColumnPosition) {
+    public void setColumnHeaderModel(ColumnHeaderModel pColumnHeaderModel) {
 
         // Change alignment of textView
         column_header_textview.setGravity(Gravity.CENTER_HORIZONTAL | Gravity
@@ -105,17 +118,4 @@ public class ColumnHeaderViewHolder extends AbstractSorterViewHolder {
         }
     }
 
-    private View.OnClickListener mSortButtonClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            if (getSortState() == SortState.ASCENDING) {
-                tableView.sortColumn(getAdapterPosition(), SortState.DESCENDING);
-            } else if (getSortState() == SortState.DESCENDING) {
-                tableView.sortColumn(getAdapterPosition(), SortState.ASCENDING);
-            } else {
-                // Default one
-                tableView.sortColumn(getAdapterPosition(), SortState.DESCENDING);
-            }
-        }
-    };
 }

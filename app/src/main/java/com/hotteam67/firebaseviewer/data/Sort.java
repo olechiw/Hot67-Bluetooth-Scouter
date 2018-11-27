@@ -1,8 +1,5 @@
 package com.hotteam67.firebaseviewer.data;
 
-import android.util.Log;
-
-import com.annimon.stream.Stream;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
@@ -123,12 +120,4 @@ public final class Sort {
         }
     }
 
-    private static void CustomOrder(DataTable table, List<String> order)
-    {
-        List<RowHeaderModel> rows = table.GetRowHeaders();
-        List<List<CellModel>> cells = table.GetCells();
-
-        //TODO: Custom Order
-
-    }
 }

@@ -42,28 +42,22 @@ public class ScoutActivity extends BluetoothClientActivity
 {
     private static final int REQUEST_ENABLE_PERMISSION = 3;
 
-    ImageView connectionStatus;
-    ImageButton syncAllButton;
+    private ImageView connectionStatus;
+    private ImageButton syncAllButton;
 
-    FloatingActionButton nextMatchButton;
-    FloatingActionButton prevMatchButton;
+    private EditText teamNumber;
+    private EditText matchNumber;
+    private EditText notes;
 
-    EditText teamNumber;
-    EditText matchNumber;
-    EditText notes;
+    private int unlockCount = 0;
 
-    Toolbar toolbar;
+    private List<String> queuedMatchesToSend = new ArrayList<>();
 
-    Button unlockButton;
-    int unlockCount = 0;
+    private TableLayout inputTable;
 
-    List<String> queuedMatchesToSend = new ArrayList<>();
+    private List<String> matches = new ArrayList<>();
 
-    TableLayout inputTable;
-
-    List<String> matches = new ArrayList<>();
-
-    String lastValuesBeforeChange = "";
+    private String lastValuesBeforeChange = "";
 
     /*
     When the activity is born
@@ -101,7 +95,7 @@ public class ScoutActivity extends BluetoothClientActivity
      */
     private void SetupPostBluetooth()
     {
-        toolbar = findViewById(R.id.toolBar);
+        Toolbar toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
         if (ab != null)
@@ -115,8 +109,8 @@ public class ScoutActivity extends BluetoothClientActivity
 
         inputTable = findViewById(R.id.scoutLayout);
 
-        nextMatchButton = findViewById(R.id.nextMatchButton);
-        prevMatchButton = findViewById(R.id.prevMatchButton);
+        FloatingActionButton nextMatchButton = findViewById(R.id.nextMatchButton);
+        FloatingActionButton prevMatchButton = findViewById(R.id.prevMatchButton);
 
         notes = findViewById(R.id.notesText);
 
@@ -164,7 +158,7 @@ public class ScoutActivity extends BluetoothClientActivity
         });
 
         // Button locks syncing and team-number changing, three long clicks to unlock
-        unlockButton = findViewById(R.id.unlockButton);
+        Button unlockButton = findViewById(R.id.unlockButton);
         unlockButton.setOnLongClickListener(v -> {
             unlockCount++;
             if (unlockCount >= 2) {
@@ -238,11 +232,10 @@ public class ScoutActivity extends BluetoothClientActivity
         if (matches.size() >= match) // Currently existing match
         {
             String val = matches.get(match - 1);
-            String[] vals = val.split(",");
 
 
             try {
-                SchemaHandler.SetCurrentValues(inputTable, Arrays.asList(vals).subList(2, vals.length));
+                SchemaHandler.SetCurrentValues(inputTable, new JSONObject(val));
             } catch (Exception e) {
                 l("Failed to load match, corrupted, out of sync, or doesn't exist " + e.getMessage());
                 // e.printStackTrace();
@@ -265,7 +258,7 @@ public class ScoutActivity extends BluetoothClientActivity
             matchNumber.setText(String.valueOf(match));
         }
 
-        lastValuesBeforeChange = GetCurrentMatchValuesCSV();
+        lastValuesBeforeChange = GetCurrentMatchValuesJSON();
     }
 
     /*
@@ -274,20 +267,15 @@ public class ScoutActivity extends BluetoothClientActivity
     private String GetNotes(int i)
     {
         if (matches.size() > i)
-        {
-            // Split doesn't catch the end if there are no notes, so check for no notes
-            if (matches.get(i).endsWith(","))
-                return "";
-            else if (matches.get(i).split(",").length < 2)
-                return "";
-            else
-                try {
-                    String[] match = matches.get(i).split(",");
-                    return match[match.length - 1];
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-        }
+            try
+            {
+                JSONObject match = new JSONObject(matches.get(i));
+                if (match.has(Constants.NOTES_TAG)) return match.getString(Constants.NOTES_TAG);
+                else return "";
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         return "";
     }
 
@@ -341,21 +329,21 @@ public class ScoutActivity extends BluetoothClientActivity
     private void SaveAllMatches(boolean localOnly, boolean saveDuplicates)
     {
         // Check if something actually changed since the value was loaded
-        if (GetCurrentMatchValuesCSV().equals(lastValuesBeforeChange) && !saveDuplicates) {
-            l("nothing changed, not saving: " + GetCurrentMatchValuesCSV());
+        if (GetCurrentMatchValuesJSON().equals(lastValuesBeforeChange) && !saveDuplicates) {
+            l("nothing changed, not saving: " + GetCurrentMatchValuesJSON());
             return;
         }
 
         // Existing match
         if (matches.size() >= GetCurrentMatchNumber())
         {
-            // l("Setting value: " + GetCurrentMatchValuesCSV());
-            matches.set(GetCurrentMatchNumber() - 1, GetCurrentMatchValuesCSV());
+            // l("Setting value: " + GetCurrentMatchValuesJSON());
+            matches.set(GetCurrentMatchNumber() - 1, GetCurrentMatchValuesJSON());
         }
         // New match
         else if (matches.size() + 1 == GetCurrentMatchNumber())
         {
-            matches.add(GetCurrentMatchValuesCSV());
+            matches.add(GetCurrentMatchValuesJSON());
         }
 
         // Store all matches locally
@@ -427,7 +415,6 @@ public class ScoutActivity extends BluetoothClientActivity
                 } catch (JSONException e)
                 {
                     l("Exception raised in json addition:" + e.getMessage());
-                    return;
                 }
             }
         }
@@ -441,34 +428,26 @@ public class ScoutActivity extends BluetoothClientActivity
     /*
     Get current match values as csv
      */
-    private String GetCurrentMatchValuesCSV()
+    private String GetCurrentMatchValuesJSON()
     {
-        StringBuilder values = new StringBuilder();
-        String div = ",";
-
-
-        values.append(teamNumber.getText().toString()).append(div);
-
-
-        values.append(GetCurrentMatchNumber()).append(div);
-
-        List<String> currentValues = SchemaHandler.GetCurrentValues(inputTable);
-        for (int i = 0; i < currentValues.size(); ++i)
-        {
-            String s = currentValues.get(i);
-            values.append(s);
-            values.append(div);
-        }
+        JSONObject currentValues = SchemaHandler.GetCurrentValues(inputTable);
 
 
         String notesText = notes.getText().toString().replace(",", "");
         notesText = notesText.replace("\r\n", "");
         notesText = notesText.replace("\n", "");
-        values.append(notesText);
+        try
+        {
+            currentValues.put("Notes", notesText);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
         // l("Current Values: " + values);
 
-        return values.toString();
+        return currentValues.toString();
     }
 
     /*
@@ -479,13 +458,20 @@ public class ScoutActivity extends BluetoothClientActivity
         try
         {
             BufferedReader r = FileHandler.GetReader(FileHandler.SCOUTER_FILE);
-            String line = r.readLine();
+            String line = null;
+            if (r != null)
+            {
+                line = r.readLine();
+            }
             while (line != null)
             {
                 matches.add(line);
                 line = r.readLine();
             }
-            r.close();
+            if (r != null)
+            {
+                r.close();
+            }
         }
         catch (Exception e)
         {
@@ -598,7 +584,7 @@ public class ScoutActivity extends BluetoothClientActivity
     }
 
 
-    public void SubmitCountDown()
+    private void SubmitCountDown()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         AlertDialog dialog;

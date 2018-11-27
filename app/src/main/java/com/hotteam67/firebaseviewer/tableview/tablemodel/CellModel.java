@@ -9,8 +9,8 @@ import java.io.Serializable;
  */
 
 public class CellModel implements ISortableModel, Serializable {
-    private String mId;
-    private Object mData;
+    private final String mId;
+    private final Object mData;
 
     public CellModel(String pId, Object mData) {
         this.mId = pId;

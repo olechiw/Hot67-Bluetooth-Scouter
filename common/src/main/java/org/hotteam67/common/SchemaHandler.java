@@ -23,8 +23,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,7 +52,7 @@ public final class SchemaHandler
                         header.append(",");
                 }
             }
-            catch (Exception e)
+            catch (Exception ignored)
             {
             }
         }
@@ -62,7 +60,7 @@ public final class SchemaHandler
         return header.toString();
     }
 
-    public static List<TableRow> GetRows(JSONArray schema, Context context)
+    private static List<TableRow> GetRows(JSONArray schema, Context context)
     {
 
         if (schema.length() == 0)
@@ -82,7 +80,7 @@ public final class SchemaHandler
             {
                 views.add(GetView(schema.getJSONObject(i), context));
             }
-            catch (Exception e)
+            catch (Exception ignored)
             {
             }
         }

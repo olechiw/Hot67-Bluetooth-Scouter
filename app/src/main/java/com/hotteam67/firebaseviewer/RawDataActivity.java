@@ -18,16 +18,11 @@ import com.hotteam67.firebaseviewer.data.Sort;
 
 public class RawDataActivity extends AppCompatActivity {
 
-    TextView teamNumberView;
-
     public static final String RAW_DATA_ATTRIBUTE = "raw_data_attribute";
     public static final String TEAM_NUMBER_ATTRIBUTE = "team_number_attribute";
     public static final String TEAM_NAME_ATTRIBUTE = "team_name_attribute";
 
-    private ImageButton backButton;
     private DataTable dataTable;
-
-    private TableView table;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,8 +38,8 @@ public class RawDataActivity extends AppCompatActivity {
         bar.setCustomView(finalView);
         bar.setDisplayShowCustomEnabled(true);
 
-        teamNumberView = findViewById(R.id.teamNumberTextView);
-        backButton = findViewById(R.id.backButton);
+        TextView teamNumberView = findViewById(R.id.teamNumberTextView);
+        ImageButton backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener(v -> finish());
 
         Bundle b = getIntent().getExtras();
@@ -74,7 +69,7 @@ public class RawDataActivity extends AppCompatActivity {
 
                 dataTable = Sort.BubbleSortAscendingByRowHeader(dataTable);
 
-                table = findViewById(R.id.mainTableView);
+                TableView table = findViewById(R.id.mainTableView);
                 MainTableAdapter adapter = new MainTableAdapter(this);
                 table.setAdapter(adapter);
                 table.setTableViewListener(new MainTableViewListener(table, adapter));

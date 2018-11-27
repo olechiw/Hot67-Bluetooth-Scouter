@@ -2,7 +2,6 @@ package org.hotteam67.common;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.util.Log;
 
 import java.util.HashMap;
@@ -14,15 +13,14 @@ import java.util.UUID;
 
 public class Constants
 {
-    public static final int SCOUTER_TAG_LENGTH = 10;
+    public static final String NOTES_TAG = "Notes";
+    private static final int SCOUTER_TAG_LENGTH = 10;
     public static final String SCOUTER_TEAMS_TAG =          ":TEAM:,,,,";
     public static final String SCOUTER_SCHEMA_TAG =         ":SCHEMA:,,";
     public static final String SERVER_TEAMS_RECEIVED_TAG =  ":HEARD:,,,";
     public static final String SERVER_MESSAGE_TAG =         ":MESSAGE,,";
     public static final String SERVER_SUBMIT_TAG =          ":SUBMIT,,,";
     public static final String SERVER_SYNCALL_TAG =         ":SYNCALL,,";
-    public static final String AVG = "AVG";
-    public static final String MAX = "MAX";
     public static final String EMPTY = "";
     public static final String RED = "RED";
     public static final String N_A = "N/A";
@@ -39,7 +37,6 @@ public class Constants
         public static final String BASE_URL = "https://www.thebluealliance.com/api/v3";
         public static final String EVENT = "/event/";
         public static final String TEAMS = "/teams";
-        private static final String SIMPLE = "/simple";
         public static final String MATCHES = "/matches/simple";
         public static final String STATUSES = "/statuses";
         public static final String ALLIANCES = "/alliances";
@@ -66,9 +63,9 @@ public class Constants
     public static final String PREF_DATABASEURL = "pref_databaseUrl";
 
 
-    public static String MATCH_NUMBER_JSON_TAG = "Match Number";
-    public static String TEAM_NUMBER_JSON_TAG = "Team Number";
-    public static String NOTES_JSON_TAG = "Notes";
+    public static final String MATCH_NUMBER_JSON_TAG = "Match Number";
+    public static final String TEAM_NUMBER_JSON_TAG = "Team Number";
+    public static final String NOTES_JSON_TAG = "Notes";
 
     // Application UUID to look for during connection, may be configurable in future
     public static final UUID uuid = UUID.fromString("1cb5d5ce-00f5-11e7-93ae-92361f002671");
@@ -88,7 +85,7 @@ public class Constants
         return (double) Math.round(value * scale) / scale;
     }
 
-    private static HashMap<String, Long> times = new HashMap<>();
+    private static final HashMap<String, Long> times = new HashMap<>();
     public static void Time(String key)
     {
         if (times.containsKey(key))

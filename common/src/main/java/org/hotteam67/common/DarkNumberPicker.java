@@ -3,10 +3,8 @@ package org.hotteam67.common;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
-import android.text.Spanned;
 import android.text.TextWatcher;
 import android.view.Gravity;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,13 +28,11 @@ public class DarkNumberPicker extends LinearLayout
         Construct();
     }
 
-    EditText mainText;
-    Button upButton;
-    Button downButton;
-    int minimum = 0;
-    int maximum = 100;
+    private EditText mainText;
+    private int minimum = 0;
+    private int maximum = 100;
 
-    public void Construct()
+    private void Construct()
     {
         mainText = new EditText(getContext());
         mainText.setInputType(InputType.TYPE_CLASS_NUMBER);
@@ -62,12 +58,10 @@ public class DarkNumberPicker extends LinearLayout
             {
                 return String.valueOf(minimum);
             }
-            else if (i > maximum)
+            else
             {
                 return String.valueOf(maximum);
             }
-            else
-                return String.valueOf(minimum);
         };
         mainText.setFilters(new InputFilter[] { filter });
 
@@ -112,12 +106,12 @@ public class DarkNumberPicker extends LinearLayout
         mainText.setLayoutParams(params);
         mainText.setText("0");
 
-        upButton = new Button(getContext());
+        Button upButton = new Button(getContext());
         upButton.setOnClickListener(v -> setValue(getValue() + 1));
         upButton.setText("+");
         upButton.setLayoutParams(params);
 
-        downButton = new Button(getContext());
+        Button downButton = new Button(getContext());
         downButton.setOnClickListener(v -> setValue(getValue() - 1));
         downButton.setText("-");
         downButton.setLayoutParams(params);

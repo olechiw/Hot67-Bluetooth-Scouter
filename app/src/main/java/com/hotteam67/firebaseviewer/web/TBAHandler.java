@@ -26,11 +26,11 @@ public class TBAHandler {
     public interface OnCompleteEvent<t>{
         void run(t result);
     }
-    public static class RetrieveUrl extends AsyncTask<String, Void, String> {
+    static class RetrieveUrl extends AsyncTask<String, Void, String> {
 
-        OnCompleteEvent<String> onCompleteEvent;
+        final OnCompleteEvent<String> onCompleteEvent;
 
-        public RetrieveUrl(OnCompleteEvent<String> event)
+        RetrieveUrl(OnCompleteEvent<String> event)
         {
             onCompleteEvent = event;
         }

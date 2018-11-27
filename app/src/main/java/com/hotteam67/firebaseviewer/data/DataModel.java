@@ -1,14 +1,11 @@
 package com.hotteam67.firebaseviewer.data;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.os.AsyncTask;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.annimon.stream.Stream;
-import com.hotteam67.firebaseviewer.TeamsGroupHandler;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
@@ -100,7 +97,7 @@ public class DataModel
     /*
     Serialize the three datatables and write them to disk
      */
-    public static synchronized void SerializeTables()
+    private static synchronized void SerializeTables()
     {
         @SuppressLint("StaticFieldLeak") AsyncTask serializeTask = new AsyncTask()
         {
@@ -176,11 +173,11 @@ public class DataModel
     /*
     Re-download all scouting data + TBA data, then refresh
      */
-    public static void RefreshTable(Context c, Runnable onCompleteEvent)
+    public static void RefreshTable(Runnable onCompleteEvent)
     {
         progressEvent.BeginProgress();
 
-        LoadTBAData(c);
+        LoadTBAData();
 
 
         if (connectionProperties == null || connectionProperties.length != 4)
@@ -287,7 +284,7 @@ public class DataModel
     /*
     Load TBA data from the API v3
      */
-    public static synchronized void LoadTBAData(Context c)
+    private static synchronized void LoadTBAData()
     {
         if (connectionProperties == null || connectionProperties.length != 4)
             return;

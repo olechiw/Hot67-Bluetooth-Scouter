@@ -9,16 +9,13 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
 
-import com.annimon.stream.Stream;
-
 import org.hotteam67.common.DarkNumberPicker;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TeamsGroupHandler
+class TeamsGroupHandler
 {
 
     public static final String TEAM_GROUP_QUALS = "Qualification Match";
@@ -27,7 +24,7 @@ public class TeamsGroupHandler
 
     private Integer currentId;
     private String currentType = TEAM_GROUP_QUALS;
-    private Context context;
+    private final Context context;
     private List<String> customTeams = new ArrayList<>();
 
     public TeamsGroupHandler(Context c)
@@ -69,9 +66,7 @@ public class TeamsGroupHandler
             input.setText("");
         });
         removeButton.setOnClickListener(x ->
-        {
-            adapter.remove(adapter.getItem(adapter.getCount() - 1));
-        });
+                adapter.remove(adapter.getItem(adapter.getCount() - 1)));
 
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()

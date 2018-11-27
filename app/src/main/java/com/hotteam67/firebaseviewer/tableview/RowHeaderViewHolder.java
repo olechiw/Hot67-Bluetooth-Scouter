@@ -11,7 +11,7 @@ import com.hotteam67.firebaseviewer.R;
  * Created by evrencoskun on 1.12.2017.
  */
 
-public class RowHeaderViewHolder extends AbstractViewHolder {
+class RowHeaderViewHolder extends AbstractViewHolder {
     public final TextView row_header_textview;
 
     public RowHeaderViewHolder(View p_jItemView) {

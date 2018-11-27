@@ -27,8 +27,7 @@ public class ScatterPlot {
     public static void Show(List<Integer> inputValues, Context c, String title)
     {
         // Populate y-axis
-        List<Integer> yValues = new ArrayList<>();
-        yValues.addAll(inputValues);
+        List<Integer> yValues = new ArrayList<>(inputValues);
 
         // Populate x-axis
         List<Integer> xValues = new ArrayList<>();

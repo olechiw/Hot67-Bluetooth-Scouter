@@ -30,7 +30,6 @@ import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
 import org.hotteam67.common.TBAHandler;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
@@ -43,27 +42,27 @@ import java.util.List;
 
 public class ServerActivity extends BluetoothServerActivity {
 
-    public static final int REQUEST_PREFERENCES = 2;
-    public static final int REQUEST_ENABLE_PERMISSION = 3;
+    private static final int REQUEST_PREFERENCES = 2;
+    private static final int REQUEST_ENABLE_PERMISSION = 3;
 
     // Simple log function
-    protected void l(String s)
+    void l(String s)
     {
         Log.d(TAG, s);
     }
 
     // The log tag
-    public static final String TAG = "BLUETOOTH_SCOUTER_DEBUG";
+    private static final String TAG = "BLUETOOTH_SCOUTER_DEBUG";
 
-    String lastMatchNumber = "0";
-    List<String> lastMatchTeamNumbers = new ArrayList<>();
-    int matchesReceived = 0;
+    private String lastMatchNumber = "0";
+    private List<String> lastMatchTeamNumbers = new ArrayList<>();
+    private int matchesReceived = 0;
 
     // Current database in json format
     private JSONObject jsonDatabase;
 
     // Display a popup box (not a MessageBox, LOL)
-    protected void MessageBox(String text)
+    private void MessageBox(String text)
     {
         try {
             AlertDialog.Builder dlg = new AlertDialog.Builder(this);
@@ -80,11 +79,8 @@ public class ServerActivity extends BluetoothServerActivity {
         }
     }
 
-    Button connectButton;
-    EditText serverLogText;
-
-    ImageButton configureButton;
-    ImageButton downloadMatchesButton;
+    private Button connectButton;
+    private EditText serverLogText;
 
     // When the app is initialized, setup the UI and the bluetooth adapter
     @Override
@@ -204,10 +200,10 @@ public class ServerActivity extends BluetoothServerActivity {
         if (ab != null)
             ab.setDisplayShowTitleEnabled(false);
 
-        configureButton = toolbar.findViewById(R.id.configureButton);
+        ImageButton configureButton = toolbar.findViewById(R.id.configureButton);
         configureButton.setOnClickListener(view -> configure());
 
-        downloadMatchesButton = findViewById(R.id.matchesDownloadButton);
+        ImageButton downloadMatchesButton = findViewById(R.id.matchesDownloadButton);
         downloadMatchesButton.setOnClickListener(view -> downloadEventMatches());
 
 
@@ -399,7 +395,7 @@ public class ServerActivity extends BluetoothServerActivity {
         startActivityForResult(intent, REQUEST_PREFERENCES);
     }
 
-    int currentLog = 1;
+    private int currentLog = 1;
     // Log to the end user about things like connected and disconnected devices
     private void VisualLog(String text)
     {
@@ -409,7 +405,7 @@ public class ServerActivity extends BluetoothServerActivity {
 
     // Handle an input message from one of the bluetooth threads
     @SuppressLint("SetTextI18n")
-    protected synchronized void handle(Message msg) {
+    private synchronized void handle(Message msg) {
         switch (msg.what) {
             case MESSAGE_INPUT:
 
@@ -534,7 +530,7 @@ public class ServerActivity extends BluetoothServerActivity {
             }
 
 
-            AsyncUploadTask uploadTask = new AsyncUploadTask(finalUrl, json, onComplete);
+            AsyncUploadTask uploadTask = new AsyncUploadTask(finalUrl, onComplete);
             uploadTask.execute(json);
 
             if (useRootUrl)
@@ -545,6 +541,7 @@ public class ServerActivity extends BluetoothServerActivity {
 
                 if (matchNumber.equals(lastMatchNumber))
                 {
+                    //noinspection SuspiciousMethodCalls
                     if (!lastMatchTeamNumbers.contains(json.get(Constants.TEAM_NUMBER_JSON_TAG)))
                     {
                         matchesReceived++;
@@ -569,12 +566,10 @@ public class ServerActivity extends BluetoothServerActivity {
             {
                 e.printStackTrace();
             }
-            if (!useRootUrl) {
-                String tag =
-                        json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
-                                json.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
-                jsonDatabase.put(tag, json);
-            }
+            String tag =
+                    json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
+                            json.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
+            jsonDatabase.put(tag, json);
             saveJsonDatabase();
         }
         catch (Exception e)
@@ -586,13 +581,11 @@ public class ServerActivity extends BluetoothServerActivity {
     private final Context context = this;
     private class AsyncUploadTask extends AsyncTask<JSONObject, Void, JSONObject> {
 
-        private String uploadUrl;
-        private JSONObject jsonData;
-        private Runnable onCompleteEvent;
-        AsyncUploadTask(String url, JSONObject data, Runnable onComplete)
+        private final String uploadUrl;
+        private final Runnable onCompleteEvent;
+        AsyncUploadTask(String url, Runnable onComplete)
         {
             uploadUrl = url;
-            jsonData = data;
             onCompleteEvent = onComplete;
         }
 

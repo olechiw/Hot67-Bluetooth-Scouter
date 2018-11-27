@@ -2,14 +2,9 @@ package com.hotteam67.firebaseviewer.web;
 
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.util.Log;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -27,9 +22,9 @@ import org.json.JSONObject;
 
 public class FirebaseHandler {
 
-    private String firebaseEvent;
-    private String firebaseUrl;
-    private String firebaseApiKey;
+    private final String firebaseEvent;
+    private final String firebaseUrl;
+    private final String firebaseApiKey;
 
     private Callable firebaseCompleteEvent = null;
 
@@ -54,8 +49,7 @@ public class FirebaseHandler {
         {
             try
             {
-                String authToken = firebaseApiKey;
-                String finalUrl = firebaseUrl + "/" + firebaseEvent + ".json" + "?auth=" + authToken;
+                String finalUrl = firebaseUrl + "/" + firebaseEvent + ".json" + "?auth=" + firebaseApiKey;
                 Log.d("HotTeam67", "URL: " + finalUrl);
 
                 HttpURLConnection conn = (HttpURLConnection) new URL(finalUrl).openConnection();
@@ -98,10 +92,6 @@ public class FirebaseHandler {
 
     private void DoLoad(String json)
     {
-        DoLoad(json, false);
-    }
-    private void DoLoad(String json, boolean skipFinish)
-    {
         try
         {
             results = new HashMap<>();
@@ -130,8 +120,7 @@ public class FirebaseHandler {
             results = new HashMap<>();
             e.printStackTrace();
         }
-        if (!skipFinish)
-            DoFinish();
+        DoFinish();
     }
 
 

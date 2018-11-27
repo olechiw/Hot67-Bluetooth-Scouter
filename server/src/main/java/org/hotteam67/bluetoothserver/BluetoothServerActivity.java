@@ -5,7 +5,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -18,41 +17,38 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public abstract class BluetoothServerActivity extends AppCompatActivity
 {
     // Messages, for when any event happens, to be sent to the main thread
-    public static final int MESSAGE_INPUT = 0;
-    public static final int MESSAGE_CONNECTING = 1;
-    public static final int MESSAGE_CONNECTION_FAILED = 4;
-    public static final int MESSAGE_DISCONNECTED = 2;
-    public static final int MESSAGE_CONNECTED = 3;
+    static final int MESSAGE_INPUT = 0;
+    static final int MESSAGE_CONNECTING = 1;
+    static final int MESSAGE_CONNECTION_FAILED = 4;
+    static final int MESSAGE_DISCONNECTED = 2;
+    static final int MESSAGE_CONNECTED = 3;
 
     // Number of active and allowed devices
     private static final int allowedDevices = 7;
 
     // Bluetooth hardware adapter
-    protected BluetoothAdapter m_bluetoothAdapter;
-    protected boolean bluetoothFailed = false;
-    public static final int REQUEST_BLUETOOTH = 1;
+    private BluetoothAdapter m_bluetoothAdapter;
+    private boolean bluetoothFailed = false;
+    private static final int REQUEST_BLUETOOTH = 1;
 
     private Handler m_handler;
 
-    protected void SetHandler(Handler h)
+    void SetHandler(Handler h)
     {
         m_handler = h;
     }
 
     // Send a specific message, from the above list
-    public synchronized void MSG(int msg) { m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget(); }
+    private synchronized void MSG(int msg) { m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget(); }
 
     // Simple log function
-    protected void l(String s)
+    void l(String s)
     {
         Log.d("BLUETOOTH_SCOUTER_DEBUG", s);
     }
@@ -60,10 +56,10 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
     /*
    Connect Thread
     */
-    ConnectThread connectThread;
+    private ConnectThread connectThread;
     private class ConnectThread extends Thread {
         private final List<BluetoothDevice> devices;
-        private List<BluetoothSocket> sockets;
+        private final List<BluetoothSocket> sockets;
         ConnectThread(List<BluetoothDevice> devices)
         {
             this.devices = devices;
@@ -116,7 +112,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
     }
 
 
-    protected synchronized void Connect()
+    synchronized void Connect()
     {
         // Reset all connections
         if (connectedThreads.size() > 0)
@@ -157,16 +153,16 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                 }
                 connectThread = new ConnectThread(devices);
                 connectThread.start();
-            }, 3);
-        }, 3);
+            });
+        });
     }
 
-    private static void PromptChoice(Context context, String title, List<String> options, Constants.OnCompleteEvent<List<String>> onComplete, int maxOptions)
+    private static void PromptChoice(Context context, String title, List<String> options, Constants.OnCompleteEvent<List<String>> onComplete)
     {
         List<String> result = new ArrayList<>();
         boolean[] checkedItems = new boolean[options.size()];
         new AlertDialog.Builder(context).setTitle(title).setMultiChoiceItems(
-                options.toArray(new CharSequence[options.size()]), checkedItems, (dialogInterface, i, b) ->
+                options.toArray(new CharSequence[0]), checkedItems, (dialogInterface, i, b) ->
                 {
                     if (b)
                     {
@@ -174,15 +170,15 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
 
                         ListView list = ((AlertDialog) dialogInterface).getListView();
                         // Limit to 6, so fix it if more than 6
-                        if (result.size() > maxOptions)
+                        if (result.size() > 3)
                         {
                             // Uncheck last and remove it
-                            int lastIndex = options.indexOf(result.get(maxOptions));
+                            int lastIndex = options.indexOf(result.get(3));
                             list.setItemChecked(lastIndex, false);
                             checkedItems[lastIndex] = false;
 
 
-                            result.remove(maxOptions);
+                            result.remove(3);
                         }
                     }
                     else
@@ -221,10 +217,10 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
     // An arraylist of threads for each connected device,
     // with a unique id for when they finish so they may be removed
     //
-    private ArrayList<ConnectedThread> connectedThreads = new ArrayList<>();
+    private final ArrayList<ConnectedThread> connectedThreads = new ArrayList<>();
     private class ConnectedThread extends Thread
     {
-        private BluetoothSocket connectedSocket;
+        private final BluetoothSocket connectedSocket;
         private byte[] buffer;
         private int id;
 
@@ -298,7 +294,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
         }
 
 
-        public void write(byte[] bytes)
+        void write(byte[] bytes)
         {
             l("Writing: " + new String(bytes));
             l("Bytes Length: " + bytes.length);
@@ -326,7 +322,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
     }
 
     // Write to all threads, returns number of connected devices
-    protected synchronized int WriteAllDevices(byte[] bytes)
+    synchronized int WriteAllDevices(byte[] bytes)
     {
         // Send to each device
         for (ConnectedThread device : connectedThreads) {
@@ -336,20 +332,20 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
     }
 
     // Write a specific thread (by index). Returns number of connected devices
-    protected synchronized int WriteDevice(byte[] bytes, int index)
+    synchronized int WriteDevice(byte[] bytes, int index)
     {
         if (connectedThreads.size() > index)
             connectedThreads.get(index).write(bytes);
         return connectedThreads.size();
     }
 
-    protected synchronized int GetDevices()
+    synchronized int GetDevices()
     {
         return connectedThreads.size();
     }
 
     // Initialize the bluetooth hardware adapter
-    protected synchronized void setupBluetooth(Runnable oncomplete)
+    synchronized void setupBluetooth(Runnable oncomplete)
     {
         l("Getting adapter");
         m_bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();

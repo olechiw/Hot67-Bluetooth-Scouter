@@ -12,7 +12,6 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -21,25 +20,25 @@ import java.util.List;
  * Created by Jakob on 1/19/2018.
  */
 
-public class DataTableBuilder implements Serializable {
-    private DataTable rawDataTable;
-    private List<String> columnsNames;
+class DataTableBuilder implements Serializable {
+    private final DataTable rawDataTable;
+    private final List<String> columnsNames;
 
     private DataTable calculatedDataTable;
-    private String teamRanksJson;
-    private String teamNamesJson;
-    private List<Integer> calculatedColumnIndices;
+    private final String teamRanksJson;
+    private final String teamNamesJson;
+    private final List<Integer> calculatedColumnIndices;
 
-    private List<ColumnSchema.OutlierAdjustedColumn> outlierAdjustedColumns;
+    private final List<ColumnSchema.OutlierAdjustedColumn> outlierAdjustedColumns;
 
     public final static class Calculation implements Serializable
     {
         public static final int AVERAGE = 0;
         public static final int MAXIMUM = 1;
-        public static final int MINIMUM = 2;
+        static final int MINIMUM = 2;
     }
 
-    private int calculationType;
+    private final int calculationType;
 
     public DataTableBuilder(DataTable rawData, List<String> calculatedColumns,
                             List<String> columnIndices,
@@ -344,18 +343,4 @@ public class DataTableBuilder implements Serializable {
         }
     }
 
-    public static String getCalculatedColumnName(String column, int calculation)
-    {
-        switch (calculation)
-        {
-            case Calculation.AVERAGE:
-                return column + " Average";
-            case Calculation.MINIMUM:
-                return column + " Minimum";
-            case Calculation.MAXIMUM:
-                return column + " Maximum";
-            default:
-                return column + "Unknown";
-        }
-    }
 }

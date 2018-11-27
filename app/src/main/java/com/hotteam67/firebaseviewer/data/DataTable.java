@@ -17,8 +17,8 @@ import java.util.List;
  */
 
 public class DataTable implements Serializable {
-    private List<ColumnHeaderModel> columnHeaderList;
-    private List<List<CellModel>> cellList;
+    private final List<ColumnHeaderModel> columnHeaderList;
+    private final List<List<CellModel>> cellList;
     private List<RowHeaderModel> rowHeaderList;
 
     private List<String> preferredOrder;
@@ -101,13 +101,6 @@ public class DataTable implements Serializable {
 
             ++row_id;
         }
-    }
-
-    public void Set(List<RowHeaderModel> rows, List<List<CellModel>> cells, List<ColumnHeaderModel> columns)
-    {
-        rowHeaderList = rows;
-        cellList = cells;
-        columnHeaderList = columns;
     }
 
     private void LoadRow(HashMap<String, String> rowMap, int yIndex)

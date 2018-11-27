@@ -7,7 +7,7 @@ import java.io.Serializable;
  */
 
 public class RowHeaderModel implements Serializable {
-    private String mData;
+    private final String mData;
 
     public RowHeaderModel(String mData) {
         this.mData = mData;

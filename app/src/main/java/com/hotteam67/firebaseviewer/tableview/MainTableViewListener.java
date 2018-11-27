@@ -7,7 +7,6 @@ import android.util.Log;
 
 import com.evrencoskun.tableview.ITableView;
 import com.evrencoskun.tableview.listener.ITableViewListener;
-import com.evrencoskun.tableview.sort.SortState;
 import com.hotteam67.firebaseviewer.MainActivity;
 import com.hotteam67.firebaseviewer.RawDataActivity;
 import com.hotteam67.firebaseviewer.data.ColumnSchema;
@@ -15,7 +14,6 @@ import com.hotteam67.firebaseviewer.data.DataModel;
 import com.hotteam67.firebaseviewer.data.ScatterPlot;
 import com.hotteam67.firebaseviewer.data.DataTable;
 import com.hotteam67.firebaseviewer.data.Sort;
-import com.hotteam67.firebaseviewer.tableview.holder.ColumnHeaderViewHolder;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
@@ -34,10 +32,8 @@ import java.util.List;
 
 public class MainTableViewListener implements ITableViewListener {
 
-    private ITableView tableView;
-    private MainTableAdapter adapter;
-
-    private final String MatchNumber = "Match Number";
+    private final ITableView tableView;
+    private final MainTableAdapter adapter;
 
     public MainTableViewListener(ITableView pTableView, MainTableAdapter adapter) {
         this.tableView = pTableView;
@@ -195,7 +191,8 @@ public class MainTableViewListener implements ITableViewListener {
         /*
         Remove match number, set as row header, add all of the teams unscouted matches
          */
-        if (columns.size() == 0 || !columns.get(0).getData().equals(MatchNumber)) {
+        String matchNumber1 = "Match Number";
+        if (columns.size() == 0 || !columns.get(0).getData().equals(matchNumber1)) {
             int matchNumberColumnIndex = -1;
             /*
             Prep full team schedule
@@ -216,7 +213,7 @@ public class MainTableViewListener implements ITableViewListener {
             Move header
              */
             for (ColumnHeaderModel column : columns) {
-                if (column.getData().equals(MatchNumber)) {
+                if (column.getData().equals(matchNumber1)) {
                     matchNumberColumnIndex = columns.indexOf(column);
                 }
             }

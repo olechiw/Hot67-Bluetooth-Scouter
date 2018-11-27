@@ -15,8 +15,8 @@ import com.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
  */
 
 public class CellViewHolder extends AbstractViewHolder {
-    public final TextView cell_textview;
-    public final LinearLayout cell_container;
+    private final TextView cell_textview;
+    private final LinearLayout cell_container;
 
     public CellViewHolder(View itemView) {
         super(itemView);
@@ -24,7 +24,7 @@ public class CellViewHolder extends AbstractViewHolder {
         cell_container = itemView.findViewById(R.id.cell_container);
     }
 
-    public void setCellModel(CellModel cellModel, int xPosition) {
+    public void setCellModel(CellModel cellModel) {
 
         // Change textView align by column
         cell_textview.setGravity(Gravity.CENTER |

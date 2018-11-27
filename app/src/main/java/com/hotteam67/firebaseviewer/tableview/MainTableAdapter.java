@@ -44,7 +44,7 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
 
         if (holder instanceof CellViewHolder) {
             // Get the holder to update cell item text
-            ((CellViewHolder) holder).setCellModel(cell, xPosition);
+            ((CellViewHolder) holder).setCellModel(cell);
         }
     }
 
@@ -75,7 +75,7 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         // Get the holder to update cell item text
         ColumnHeaderViewHolder columnHeaderViewHolder = (ColumnHeaderViewHolder) holder;
 
-        columnHeaderViewHolder.setColumnHeaderModel(columnHeader, p_nXPosition);
+        columnHeaderViewHolder.setColumnHeaderModel(columnHeader);
     }
 
     @Override

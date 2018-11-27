@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Outliers
+class Outliers
 {
-    public static int getQuartile(int[] array, float quartileType)
+    private static int getQuartile(int[] array, float quartileType)
     {
         //Calculate the size of the new array based on the quartile specified.
         int newArraySize = (int)((array.length)*(quartileType*25/100));

@@ -1,5 +1,6 @@
 package org.hotteam67.bluetoothserver;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -12,7 +13,6 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,11 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class SchemaActivity extends AppCompatActivity {
     private JSONArray schema = SchemaHandler.LoadSchemaFromFile();
@@ -80,6 +76,7 @@ public class SchemaActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_schema, menu);
         return true;
     }
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -156,12 +153,12 @@ public class SchemaActivity extends AppCompatActivity {
         saveButton.setOnClickListener(view -> FileHandler.Write(FileHandler.SCHEMA_FILE, schema.toString()));
     }
 
-    public interface onMultiComplete
+    interface onMultiComplete
     {
         void Complete(List<String> options);
     }
 
-    public void GetMultiChoiceInput(List<String> input, onMultiComplete onComplete)
+    private void GetMultiChoiceInput(List<String> input, onMultiComplete onComplete)
     {
         GetString("Input another choice or choose ok to complete", x -> {
             if (x.trim().isEmpty()) onComplete.Complete(input);
@@ -173,7 +170,7 @@ public class SchemaActivity extends AppCompatActivity {
         });
     }
 
-    public JSONObject createJSON(Integer type, String tag, String... extras)
+    private JSONObject createJSON(Integer type, String tag, String... extras)
     {
         JSONObject object = new JSONObject();
         try

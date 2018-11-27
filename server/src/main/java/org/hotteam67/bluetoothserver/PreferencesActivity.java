@@ -25,15 +25,13 @@ public class PreferencesActivity extends AppCompatActivity
         return true;
     }
 
-    Toolbar toolbar;
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preferences);
 
-        toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -46,7 +44,7 @@ public class PreferencesActivity extends AppCompatActivity
                         , prefs).commit();
     }
 
-    SimplePreferences prefs;
+    private SimplePreferences prefs;
 
     public static class SimplePreferences extends PreferenceFragment
     {
