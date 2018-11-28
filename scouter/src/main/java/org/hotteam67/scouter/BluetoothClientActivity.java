@@ -283,7 +283,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
         }
     }
 
-    synchronized void Write(String text)
+    synchronized void BluetoothWrite(String text)
     {
         l("EVENT: send() " + text);
         try {

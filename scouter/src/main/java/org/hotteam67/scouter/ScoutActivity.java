@@ -66,18 +66,18 @@ public class ScoutActivity extends BluetoothClientActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scout);
 
-        SetupPreBluetooth();
+        CheckBluetooth();
 
     }
 
     /*
     Setup operations before bluetooth is turned on/given permission etc
      */
-    private void SetupPreBluetooth()
+    private void CheckBluetooth()
     {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             l("Permission granted");
-            SetupPostBluetooth();
+            SetupAfterBluetooth();
         }
         else
         {
@@ -91,7 +91,7 @@ public class ScoutActivity extends BluetoothClientActivity
     /*
     Setup operations after bluetooth is turned on/given permission etc
      */
-    private void SetupPostBluetooth()
+    private void SetupAfterBluetooth()
     {
         Toolbar toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
@@ -133,8 +133,8 @@ public class ScoutActivity extends BluetoothClientActivity
         matchNumber.setText("1");
         if (!matches.isEmpty()) {
             l("Loading first match!");
-            teamNumber.setText(GetCurrentTeamNumber());
-            ShowMatch(1);
+            teamNumber.setText(GetMatchTeamNumber(GetCurrentMatchNumber()));
+            DisplayMatch(1);
         }
 
         matchNumber.addTextChangedListener(new TextWatcher() {
@@ -146,7 +146,7 @@ public class ScoutActivity extends BluetoothClientActivity
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                ShowMatch(GetCurrentMatchNumber(), false);
+                DisplayMatch(GetCurrentMatchNumber(), false);
             }
 
             @Override
@@ -178,7 +178,7 @@ public class ScoutActivity extends BluetoothClientActivity
     {
         SaveAllMatches();
         l("Loading Next Match");
-        ShowMatch(GetCurrentMatchNumber() + 1);
+        DisplayMatch(GetCurrentMatchNumber() + 1);
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
     }
 
@@ -191,7 +191,7 @@ public class ScoutActivity extends BluetoothClientActivity
         if (GetCurrentMatchNumber() > 1)
         {
             l("Loading Previous Match");
-            ShowMatch(GetCurrentMatchNumber() - 1);
+            DisplayMatch(GetCurrentMatchNumber() - 1);
         }
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
     }
@@ -214,16 +214,16 @@ public class ScoutActivity extends BluetoothClientActivity
     /*
     Display a match in the UI
      */
-    private void ShowMatch(int match)
+    private void DisplayMatch(int match)
     {
-        ShowMatch(match, true);
+        DisplayMatch(match, true);
     }
 
     /*
     Display a match in the UI
     changeMatchText: whether to update match number also
      */
-    private void ShowMatch(int match, boolean changeMatchText)
+    private void DisplayMatch(int match, boolean changeMatchText)
     {
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
 
@@ -231,11 +231,12 @@ public class ScoutActivity extends BluetoothClientActivity
         {
             try {
                 JSONObject val = matches.get(match - 1);
-                SchemaHandler.SetCurrentValues(inputTable, val);
+                if (val != null)
+                    SchemaHandler.SetCurrentValues(inputTable, val);
             } catch (Exception e) {
                 l("Failed to load match, corrupted, out of sync, or doesn't exist " + e.getMessage());
                 // e.printStackTrace();
-                l("Offending match: -->  " + matches.get(match - 1) + " <--");
+                l("Offending match: " + matches.get(match - 1));
                 SchemaHandler.ClearCurrentValues(inputTable);
             }
 
@@ -254,7 +255,7 @@ public class ScoutActivity extends BluetoothClientActivity
             matchNumber.setText(String.valueOf(match));
         }
 
-        JSONObject currentValues = GetCurrentMatchValues();
+        JSONObject currentValues = GetCurrentInputValues();
         if (currentValues != null)
             lastValuesBeforeChange = currentValues.toString();
     }
@@ -262,27 +263,19 @@ public class ScoutActivity extends BluetoothClientActivity
     /*
     Get the value of notes from memory for the current match
      */
-    private String GetNotes(int i)
+    private String GetNotes(int matchNumber)
     {
-        if (matches.size() > i)
+        if (matches.size() > matchNumber)
             try
             {
-                JSONObject match = matches.get(i);
-                if (match.has(Constants.NOTES_JSON_TAG)) return match.getString(Constants.NOTES_JSON_TAG);
+                JSONObject match = matches.get(matchNumber);
+                if (match != null && match.has(Constants.NOTES_JSON_TAG)) return match.getString(Constants.NOTES_JSON_TAG);
                 else return "";
             } catch (Exception e)
             {
                 e.printStackTrace();
             }
         return "";
-    }
-
-    /*
-    Get the team number for this match number
-     */
-    private String GetCurrentTeamNumber()
-    {
-        return GetMatchTeamNumber(GetCurrentMatchNumber());
     }
 
     /*
@@ -328,21 +321,21 @@ public class ScoutActivity extends BluetoothClientActivity
     private void SaveAllMatches(boolean localOnly, boolean saveDuplicates)
     {
         // Check if something actually changed since the value was loaded
-        JSONObject currentMatch = GetCurrentMatchValues();
+        JSONObject currentMatch = GetCurrentInputValues();
         if (currentMatch == null || currentMatch.toString().equals(lastValuesBeforeChange) && !saveDuplicates) {
-            l("nothing changed, not saving: " + GetCurrentMatchValues());
+            l("nothing changed, not saving: " + GetCurrentInputValues());
             return;
         }
 
         // Existing match
         if (GetCurrentMatchNumber() <= matches.size())
         {
-            matches.set(GetCurrentMatchNumber() - 1, GetCurrentMatchValues());
+            matches.set(GetCurrentMatchNumber() - 1, GetCurrentInputValues());
         }
         // New match
         else if (GetCurrentMatchNumber() + 1 == matches.size())
         {
-            matches.add(GetCurrentMatchValues());
+            matches.add(GetCurrentInputValues());
         }
 
         // Store all matches locally
@@ -379,7 +372,7 @@ public class ScoutActivity extends BluetoothClientActivity
         try
         {
             // Send the match over bluetooth
-            Write(match.toString());
+            BluetoothWrite(match.toString());
             l("Output JSON: " + match);
         }
         catch (Exception e)
@@ -392,7 +385,7 @@ public class ScoutActivity extends BluetoothClientActivity
     /*
     Get current match values as JSON string
      */
-    private JSONObject GetCurrentMatchValues()
+    private JSONObject GetCurrentInputValues()
     {
         JSONObject currentValues = SchemaHandler.GetCurrentValues(inputTable);
 
@@ -483,7 +476,7 @@ public class ScoutActivity extends BluetoothClientActivity
                                 c); // Context
                         FileHandler.Write(FileHandler.SCOUTER_FILE, "");
                         matches = new ArrayList<>();
-                        ShowMatch(1);
+                        DisplayMatch(1);
                     });
                     break;
                 case Constants.SCOUTER_TEAMS_TAG:
@@ -510,7 +503,7 @@ public class ScoutActivity extends BluetoothClientActivity
                                 e.printStackTrace();
                             }
                         }
-                        ShowMatch(1);
+                        DisplayMatch(1);
                         SaveAllMatches(true, true);
                     });
                     break;
@@ -564,16 +557,19 @@ public class ScoutActivity extends BluetoothClientActivity
             case MESSAGE_INPUT: // Input received through bluetooth
                 ProcessBluetoothInput(msg);
                 break;
-            case MESSAGE_CONNECTED: // A device has connected
+            case MESSAGE_CONNECTED: // The device has connected
                 connectionStatus.setImageResource(R.drawable.ic_network_wifi);
                 break;
-            case MESSAGE_DISCONNECTED: // A device has disconnected
+            case MESSAGE_DISCONNECTED: // The device has disconnected
                 connectionStatus.setImageResource(R.drawable.ic_network_off);
                 break;
         }
     }
 
 
+    /*
+    Count down for 15 seconds and then send the current match over bluetooth
+     */
     private void SubmitCountDown()
     {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -590,6 +586,7 @@ public class ScoutActivity extends BluetoothClientActivity
         }).create();
         dialog.show();
 
+        // Start a countdown timer
         new CountDownTimer(16000, 1000)
         {
             int time = 16;
@@ -597,6 +594,7 @@ public class ScoutActivity extends BluetoothClientActivity
             public void onTick(long l)
             {
                 time -= 1;
+                // Change dialog text every tick
                 ((TextView)dialog.findViewById(android.R.id.message))
                         .setText("Submitting in " + time + " seconds!");
             }
@@ -604,7 +602,7 @@ public class ScoutActivity extends BluetoothClientActivity
             @Override
             public void onFinish()
             {
-                // Dialog has not disappeared
+                // Dialog has not disappeared/been canceled
                 if (dialog.isShowing())
                 {
                     // Submit
@@ -636,8 +634,8 @@ public class ScoutActivity extends BluetoothClientActivity
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
     {
+        // Confirm when the back button is pressed
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-            android.util.Log.d(this.getClass().getName(), "back button pressed");
             Constants.OnConfirm("Are you sure you want to quit?", this, this::finish);
         }
         return super.onKeyDown(keyCode, event);
@@ -654,11 +652,11 @@ public class ScoutActivity extends BluetoothClientActivity
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
             {
                 l("Permission granted");
-                SetupPostBluetooth();
+                SetupAfterBluetooth();
             }
             else
             {
-                SetupPreBluetooth();
+                CheckBluetooth();
             }
         }
     }
