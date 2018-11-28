@@ -13,7 +13,6 @@ import java.util.UUID;
 
 public class Constants
 {
-    public static final String NOTES_TAG = "Notes";
     private static final int SCOUTER_TAG_LENGTH = 10;
     public static final String SCOUTER_TEAMS_TAG =          ":TEAM:,,,,";
     public static final String SCOUTER_SCHEMA_TAG =         ":SCHEMA:,,";

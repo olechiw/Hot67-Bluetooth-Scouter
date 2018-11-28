@@ -37,29 +37,6 @@ public final class SchemaHandler
     public static final String MAX = "Max";
     public static final String CHOICES = "Choices";
 
-    public static String GetTableHeader(JSONArray schema)
-    {
-        StringBuilder header = new StringBuilder();
-        for (int i = 0; i < schema.length(); ++i)
-        {
-            try
-            {
-                JSONObject obj = schema.getJSONObject(i);
-                if (obj != null && obj.getInt(TYPE) != Constants.TYPE_HEADER)
-                {
-                    header.append(obj.getString(TAG));
-                    if (i + 1 < schema.length())
-                        header.append(",");
-                }
-            }
-            catch (Exception ignored)
-            {
-            }
-        }
-
-        return header.toString();
-    }
-
     private static List<TableRow> GetRows(JSONArray schema, Context context)
     {
 

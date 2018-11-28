@@ -29,12 +29,10 @@ import android.widget.TextView;
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -51,11 +49,11 @@ public class ScoutActivity extends BluetoothClientActivity
 
     private int unlockCount = 0;
 
-    private List<String> queuedMatchesToSend = new ArrayList<>();
+    private List<JSONObject> queuedMatchesToSend = new ArrayList<>();
 
     private TableLayout inputTable;
 
-    private List<String> matches = new ArrayList<>();
+    private List<JSONObject> matches = new ArrayList<>();
 
     private String lastValuesBeforeChange = "";
 
@@ -231,11 +229,9 @@ public class ScoutActivity extends BluetoothClientActivity
 
         if (matches.size() >= match) // Currently existing match
         {
-            String val = matches.get(match - 1);
-
-
             try {
-                SchemaHandler.SetCurrentValues(inputTable, new JSONObject(val));
+                JSONObject val = matches.get(match - 1);
+                SchemaHandler.SetCurrentValues(inputTable, val);
             } catch (Exception e) {
                 l("Failed to load match, corrupted, out of sync, or doesn't exist " + e.getMessage());
                 // e.printStackTrace();
@@ -258,7 +254,9 @@ public class ScoutActivity extends BluetoothClientActivity
             matchNumber.setText(String.valueOf(match));
         }
 
-        lastValuesBeforeChange = GetCurrentMatchValuesJSON();
+        JSONObject currentValues = GetCurrentMatchValues();
+        if (currentValues != null)
+            lastValuesBeforeChange = currentValues.toString();
     }
 
     /*
@@ -269,8 +267,8 @@ public class ScoutActivity extends BluetoothClientActivity
         if (matches.size() > i)
             try
             {
-                JSONObject match = new JSONObject(matches.get(i));
-                if (match.has(Constants.NOTES_TAG)) return match.getString(Constants.NOTES_TAG);
+                JSONObject match = matches.get(i);
+                if (match.has(Constants.NOTES_JSON_TAG)) return match.getString(Constants.NOTES_JSON_TAG);
                 else return "";
             } catch (Exception e)
             {
@@ -294,7 +292,8 @@ public class ScoutActivity extends BluetoothClientActivity
     {
         try
         {
-            return matches.get(m - 1).split(",")[0];
+            return matches.get(m - 1)
+                    .getString(Constants.TEAM_NUMBER_JSON_TAG);
         }
         catch (Exception e)
         {
@@ -315,7 +314,7 @@ public class ScoutActivity extends BluetoothClientActivity
 
     /*
     Save all matches and send the current one over bluetooth
-    Localonly: No sending. SaveDuplicates: Save/send even if nothing changed
+    Local only: No sending. SaveDuplicates: Save/send even if nothing changed
      */
     private void SaveAllMatches()
     {
@@ -324,34 +323,34 @@ public class ScoutActivity extends BluetoothClientActivity
 
     /*
     Save all matches and send the current one over bluetooth
-    Localonly: No sending. SaveDuplicates: Save/send even if nothing changed
+    Local only: No sending. SaveDuplicates: Save/send even if nothing changed
      */
     private void SaveAllMatches(boolean localOnly, boolean saveDuplicates)
     {
         // Check if something actually changed since the value was loaded
-        if (GetCurrentMatchValuesJSON().equals(lastValuesBeforeChange) && !saveDuplicates) {
-            l("nothing changed, not saving: " + GetCurrentMatchValuesJSON());
+        JSONObject currentMatch = GetCurrentMatchValues();
+        if (currentMatch == null || currentMatch.toString().equals(lastValuesBeforeChange) && !saveDuplicates) {
+            l("nothing changed, not saving: " + GetCurrentMatchValues());
             return;
         }
 
         // Existing match
-        if (matches.size() >= GetCurrentMatchNumber())
+        if (GetCurrentMatchNumber() <= matches.size())
         {
-            // l("Setting value: " + GetCurrentMatchValuesJSON());
-            matches.set(GetCurrentMatchNumber() - 1, GetCurrentMatchValuesJSON());
+            matches.set(GetCurrentMatchNumber() - 1, GetCurrentMatchValues());
         }
         // New match
-        else if (matches.size() + 1 == GetCurrentMatchNumber())
+        else if (GetCurrentMatchNumber() + 1 == matches.size())
         {
-            matches.add(GetCurrentMatchValuesJSON());
+            matches.add(GetCurrentMatchValues());
         }
 
         // Store all matches locally
         StringBuilder output = new StringBuilder();
         int i = 1;
-        for (String s : matches)
+        for (JSONObject s : matches)
         {
-            output.append(s);
+            output.append(s.toString());
             if (i < matches.size())
                 output.append("\n");
             i++;
@@ -363,7 +362,7 @@ public class ScoutActivity extends BluetoothClientActivity
         if (!localOnly)
         {
             // Make sure actual match is there
-            if (matches.get(GetCurrentMatchNumber() - 1).split(",").length > 1)
+            if (matches.get(GetCurrentMatchNumber() - 1) != null)
                 SendMatch(matches.get(GetCurrentMatchNumber() - 1));
             else
                 l("Saving local only due to missing match data");
@@ -373,81 +372,52 @@ public class ScoutActivity extends BluetoothClientActivity
     /*
     Send a match over bluetooth
      */
-    private void SendMatch(String match)
+    private void SendMatch(JSONObject match)
     {
-        if (match == null || match.split(",").length <= 1) return;
+        if (match == null) return;
 
         try
         {
-            JSONObject outputObject = new JSONObject();
-
-            List<String> values = new ArrayList<>(Arrays.asList(
-                    match.split(",")));
-
-            // Add blank notes because split doesn't catch those
-            if (match.endsWith(",")) values.add("");
-
-            List<String> jsonTags = new ArrayList<>(Arrays.asList(
-                    SchemaHandler.GetTableHeader(
-                            SchemaHandler.LoadSchemaFromFile()).split(",")));
-            jsonTags.removeAll(Arrays.asList("", null));
-            jsonTags.add(0, Constants.TEAM_NUMBER_JSON_TAG);
-            jsonTags.add(1, Constants.MATCH_NUMBER_JSON_TAG);
-            jsonTags.add(Constants.NOTES_JSON_TAG);
-            if (jsonTags.size() != values.size())
-            {
-                l("Failed to load schema into json, values/tags out of sync!");
-                l(String.valueOf(jsonTags.size()));
-                l(String.valueOf(values.size()));
-            } else
-            {
-                try
-                {
-                    // Everything including notes
-                    for (int i = 0; i < jsonTags.size(); ++i)
-                    {
-                        outputObject.put(jsonTags.get(i), values.get(i));
-                    }
-
-                    Write(outputObject.toString());
-
-                    l("Output JSON: " + outputObject.toString());
-                } catch (JSONException e)
-                {
-                    l("Exception raised in json addition:" + e.getMessage());
-                }
-            }
+            // Send the match over bluetooth
+            Write(match.toString());
+            l("Output JSON: " + match);
         }
         catch (Exception e)
         {
-            l("Failure to load and parse csv match to json: " + match);
+            l("Failure to send json match: " + match);
             e.printStackTrace();
         }
     }
 
     /*
-    Get current match values as csv
+    Get current match values as JSON string
      */
-    private String GetCurrentMatchValuesJSON()
+    private JSONObject GetCurrentMatchValues()
     {
         JSONObject currentValues = SchemaHandler.GetCurrentValues(inputTable);
 
 
-        String notesText = notes.getText().toString().replace(",", "");
+        // Experimenting without sanitation now that everything is JSON
+        String notesText = notes.getText().toString();//.replace(",", "");
+        /*
         notesText = notesText.replace("\r\n", "");
         notesText = notesText.replace("\n", "");
+        */
         try
         {
-            currentValues.put("Notes", notesText);
+            /*
+            Add three values outside of schema-input fields: Team #, Match #, and Notes
+             */
+            currentValues.put(Constants.NOTES_JSON_TAG, notesText);
+            currentValues.put(Constants.TEAM_NUMBER_JSON_TAG, teamNumber.getText().toString());
+            currentValues.put(Constants.MATCH_NUMBER_JSON_TAG, matchNumber.getText().toString());
+            return currentValues;
         }
         catch (Exception e)
         {
             e.printStackTrace();
+            return null;
         }
-
-        // l("Current Values: " + values);
-
-        return currentValues.toString();
     }
 
     /*
@@ -465,7 +435,7 @@ public class ScoutActivity extends BluetoothClientActivity
             }
             while (line != null)
             {
-                matches.add(line);
+                matches.add(new JSONObject(line));
                 line = r.readLine();
             }
             if (r != null)
@@ -520,7 +490,26 @@ public class ScoutActivity extends BluetoothClientActivity
                     // Show a confirmation dialog
                     Constants.OnConfirm("Received new teams, clear local database?", this, () ->
                     {
-                        matches = new ArrayList<>(Arrays.asList(message.split(",")));
+                        matches = new ArrayList<>();
+                        String[] teamNumbers = message.split(",");
+                        // Create a json object for each of the CSV teams
+                        for (int i = 0;i < teamNumbers.length; ++i)
+                        {
+                            try
+                            {
+                                if (teamNumbers[i] != null && !teamNumbers[i].trim().isEmpty())
+                                {
+                                    JSONObject matchObject = new JSONObject();
+                                    matchObject.put(Constants.TEAM_NUMBER_JSON_TAG, teamNumbers[i]);
+                                    matchObject.put(Constants.MATCH_NUMBER_JSON_TAG, String.valueOf(i - 1));
+                                    matches.add(matchObject);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                e.printStackTrace();
+                            }
+                        }
                         ShowMatch(1);
                         SaveAllMatches(true, true);
                     });
@@ -530,13 +519,14 @@ public class ScoutActivity extends BluetoothClientActivity
                     MessageBox(message);
                     break;
                 case Constants.SERVER_SUBMIT_TAG:
+                    // If the match is still open show a countdown before sending
                     if (String.valueOf(GetCurrentMatchNumber()).equals(message))
                         SubmitCountDown();
                     else
                     {
                         try
                         {
-                            //TODO: SEND THE MATCH BUT DONT DO COUNTDOWN
+                            // If match was not current one, but exists, just send it right away
                             if (Integer.valueOf(message) < matches.size())
                             {
                                 SendMatch(matches.get(Integer.valueOf(message)));
@@ -589,7 +579,7 @@ public class ScoutActivity extends BluetoothClientActivity
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         AlertDialog dialog;
         dialog = builder
-                .setTitle("Autosubmitting Soon...").setMessage("Submitting in 15 seconds")
+                .setTitle("Auto submitting Soon...").setMessage("Submitting in 15 seconds")
                 .setPositiveButton("Submit", (dialogInterface, i) ->
         {
             // Submit
@@ -614,7 +604,7 @@ public class ScoutActivity extends BluetoothClientActivity
             @Override
             public void onFinish()
             {
-                // Dialog has not dissappeared
+                // Dialog has not disappeared
                 if (dialog.isShowing())
                 {
                     // Submit

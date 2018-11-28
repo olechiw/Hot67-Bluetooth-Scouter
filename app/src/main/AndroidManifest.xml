@@ -25,9 +25,10 @@
         <activity
             android:name=".RawDataActivity"
             android:screenOrientation="landscape" />
-        <activity android:name=".PreferencesActivity"
+        <activity
+            android:name=".PreferencesActivity"
             android:screenOrientation="landscape"
-            android:theme="@style/AppThemePreferences"></activity>
+            android:theme="@style/AppThemePreferences" />
     </application>
 
 </manifest>
