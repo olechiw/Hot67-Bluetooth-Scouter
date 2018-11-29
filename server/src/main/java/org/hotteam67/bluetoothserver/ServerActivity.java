@@ -246,9 +246,8 @@ public class ServerActivity extends BluetoothServerActivity {
 
     private void downloadEventMatches()
     {
-        final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
         GetString("Enter Event Key:", "", eventKey ->
-                TBAHandler.Matches(currentYear + eventKey, result ->
+                TBAHandler.Matches(eventKey, result ->
                 {
                     try
                     {
@@ -470,7 +469,7 @@ public class ServerActivity extends BluetoothServerActivity {
     private void loadJsonDatabase()
     {
         String fileContents = FileHandler.LoadContents(FileHandler.SERVER_FILE);
-        if (fileContents == null || fileContents.trim().isEmpty()) {
+        if (fileContents.trim().isEmpty()) {
             jsonDatabase = new JSONObject();
         }
         else

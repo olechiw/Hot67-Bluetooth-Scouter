@@ -82,10 +82,7 @@ public final class FileHandler
         catch (FileNotFoundException e)
         {
             l("File not found");
-            new File(DIRECTORY).mkdirs();
-            new File(DIRECTORY + "Scouter").mkdirs();
-            new File(DIRECTORY + "Server").mkdirs();
-            new File(DIRECTORY + "Viewer").mkdirs();
+            new File(f).mkdirs();
 
             try
             {
@@ -109,6 +106,7 @@ public final class FileHandler
     {
         StringBuilder content = new StringBuilder();
         BufferedReader r = GetReader(file);
+        if (r == null) return "";
         try
         {
             String line = r.readLine();

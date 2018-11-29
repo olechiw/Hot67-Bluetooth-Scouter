@@ -234,12 +234,12 @@ public class ScoutActivity extends BluetoothClientActivity
         if (matches.size() >= match) // Currently existing match
         {
             try {
+                // Load the match and display it
                 JSONObject val = matches.get(match - 1);
                 if (val != null)
                     SchemaHandler.SetCurrentValues(inputTable, val);
             } catch (Exception e) {
                 l("Failed to load match, corrupted, out of sync, or doesn't exist " + e.getMessage());
-                // e.printStackTrace();
                 l("Offending match: " + matches.get(match - 1));
                 SchemaHandler.ClearCurrentValues(inputTable);
             }
@@ -248,8 +248,11 @@ public class ScoutActivity extends BluetoothClientActivity
             notes.setText(GetNotes(match - 1));
         } else // New match
         {
+            // Save current matches (no bluetooth)
             SaveCurrentMatch(true, false);
             SaveAllMatches();
+
+            // Load the new match
             teamNumber.setText(GetMatchTeamNumber(match));
             notes.setText("");
             SchemaHandler.ClearCurrentValues(inputTable);
