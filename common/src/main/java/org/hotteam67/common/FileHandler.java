@@ -21,18 +21,18 @@ import java.io.Serializable;
 
 public final class FileHandler
 {
-    public static final String SERVER_FILE = "serverDatabase.json"; // Server scouted matches database
+    public static final String SERVER_FILE = "Server/serverDatabase.json"; // Server scouted matches database
     public static final String SCHEMA_FILE = "schema.json"; // Server/scouter schema
-    public static final String SCOUTER_FILE = "scouterDatabase.csv"; // Scouter scouted/unscouted matches database
-    public static final String MATCHES_FILE = "serverMatches.csv"; // Server unscouted matches datbase (match schedule)
-    public static final String TEAM_NAMES_FILE = "teamNames.json";
-    public static final String RANKS_FILE = "teamRanks.json";
-    public static final String CUSTOM_TEAMS_FILE = "customTeams.csv";
-    public static final String ALLIANCES_FILE = "alliances.csv";
-    public static final String VIEWER_MATCHES_FILE = "viewerMatches.csv";
-    public static final String AVERAGES_CACHE = "averagesCache";
-    public static final String MAXIMUMS_CACHE = "maximumsCache";
-    public static final String RAW_CACHE = "matchesCache";
+    public static final String SCOUTER_FILE = "Scouter/scouterDatabase.json"; // Scouter scouted/unscouted matches database
+    public static final String MATCHES_FILE = "Server/serverMatches.csv"; // Server unscouted matches (match schedule)
+    public static final String TEAM_NAMES_FILE = "Viewer/teamNames.json";  // Viewer team name sjson
+    public static final String RANKS_FILE = "Viewer/teamRanks.json"; // Viewer team ranks json
+    public static final String CUSTOM_TEAMS_FILE = "Viewer/customTeams.csv"; // Viewer list of custom teams
+    public static final String ALLIANCES_FILE = "Viewer/alliances.csv"; // Viewer alliances list
+    public static final String VIEWER_MATCHES_FILE = "Viewer/viewerMatches.csv"; // Viewer match schedule
+    public static final String AVERAGES_CACHE = "Viewer/averagesCache"; // Cache of viewer average calculations
+    public static final String MAXIMUMS_CACHE = "Viewer/maximumsCache"; // Cache of viewer maximum calculations
+    public static final String RAW_CACHE = "Viewer/matchesCache"; // Cache of raw data for viewer
     private static final String DIRECTORY =
             Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
 
@@ -83,6 +83,9 @@ public final class FileHandler
         {
             l("File not found");
             new File(DIRECTORY).mkdirs();
+            new File(DIRECTORY + "Scouter").mkdirs();
+            new File(DIRECTORY + "Server").mkdirs();
+            new File(DIRECTORY + "Viewer").mkdirs();
 
             try
             {

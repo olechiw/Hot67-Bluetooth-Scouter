@@ -54,7 +54,7 @@ public class Constants
     public static final int TYPE_HEADER =   1;
     public static final int TYPE_BOOLEAN =  2;
     public static final int TYPE_INTEGER =  3;
-    public static final int TYPE_STRING =   4;
+    static final int TYPE_STRING =   4;
     public static final int TYPE_MULTI = 5;
 
     public static final String PREF_APIKEY = "pref_apiKey";

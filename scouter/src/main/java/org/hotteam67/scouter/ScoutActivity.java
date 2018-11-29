@@ -140,8 +140,10 @@ public class ScoutActivity extends BluetoothClientActivity
         matchNumber.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                if (getCurrentFocus() == matchNumber)
+                if (getCurrentFocus() == matchNumber) {
+                    SaveCurrentMatch();
                     SaveAllMatches();
+                }
             }
 
             @Override
@@ -176,6 +178,7 @@ public class ScoutActivity extends BluetoothClientActivity
      */
     private void OnNextMatch()
     {
+        SaveCurrentMatch();
         SaveAllMatches();
         l("Loading Next Match");
         DisplayMatch(GetCurrentMatchNumber() + 1);
@@ -187,6 +190,7 @@ public class ScoutActivity extends BluetoothClientActivity
      */
     private void OnPreviousMatch()
     {
+        SaveCurrentMatch();
         SaveAllMatches();
         if (GetCurrentMatchNumber() > 1)
         {
@@ -244,10 +248,12 @@ public class ScoutActivity extends BluetoothClientActivity
             notes.setText(GetNotes(match - 1));
         } else // New match
         {
-            SaveAllMatches(true, false);
+            SaveCurrentMatch(true, false);
+            SaveAllMatches();
             teamNumber.setText(GetMatchTeamNumber(match));
             notes.setText("");
             SchemaHandler.ClearCurrentValues(inputTable);
+            matches.add(GetCurrentInputValues());
         }
 
         if (changeMatchText) {
@@ -311,14 +317,29 @@ public class ScoutActivity extends BluetoothClientActivity
      */
     private void SaveAllMatches()
     {
-        SaveAllMatches(false, false);
+        // Store all matches locally
+        StringBuilder output = new StringBuilder();
+        int i = 1;
+        for (JSONObject s : matches)
+        {
+            output.append(s.toString());
+            if (i < matches.size())
+                output.append("\n");
+            i++;
+        }
+        // l("Writing output to matches file: " + output);
+        FileHandler.Write(FileHandler.SCOUTER_FILE, output.toString());
     }
 
     /*
-    Save all matches and send the current one over bluetooth
-    Local only: No sending. SaveDuplicates: Save/send even if nothing changed
+    Save match locally
      */
-    private void SaveAllMatches(boolean localOnly, boolean saveDuplicates)
+    private void SaveCurrentMatch() { SaveCurrentMatch(false, false); }
+
+    /*
+    Save match locally
+     */
+    private void SaveCurrentMatch(boolean localOnly, boolean saveDuplicates)
     {
         // Check if something actually changed since the value was loaded
         JSONObject currentMatch = GetCurrentInputValues();
@@ -332,30 +353,21 @@ public class ScoutActivity extends BluetoothClientActivity
         {
             matches.set(GetCurrentMatchNumber() - 1, GetCurrentInputValues());
         }
-        // New match
-        else if (GetCurrentMatchNumber() + 1 == matches.size())
+        // New match when we are on the last match or there are no matches yet
+        else if (GetCurrentMatchNumber() + 1 == matches.size() || matches.size() == 0)
         {
             matches.add(GetCurrentInputValues());
         }
-
-        // Store all matches locally
-        StringBuilder output = new StringBuilder();
-        int i = 1;
-        for (JSONObject s : matches)
+        // Too large of a match number
+        else
         {
-            output.append(s.toString());
-            if (i < matches.size())
-                output.append("\n");
-            i++;
+            return;
         }
-        // l("Writing output to matches file: " + output);
-        FileHandler.Write(FileHandler.SCOUTER_FILE, output.toString());
-
         // Write to bluetooth
         if (!localOnly)
         {
             // Make sure actual match is there
-            if (matches.get(GetCurrentMatchNumber() - 1) != null)
+            if (matches.size() >= GetCurrentMatchNumber() && matches.get(GetCurrentMatchNumber() - 1) != null)
                 SendMatch(matches.get(GetCurrentMatchNumber() - 1));
             else
                 l("Saving local only due to missing match data");
@@ -504,7 +516,8 @@ public class ScoutActivity extends BluetoothClientActivity
                             }
                         }
                         DisplayMatch(1);
-                        SaveAllMatches(true, true);
+                        SaveCurrentMatch(true, true);
+                        SaveAllMatches();
                     });
                     break;
                 case Constants.SERVER_MESSAGE_TAG:
