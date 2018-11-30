@@ -34,7 +34,7 @@ import org.hotteam67.common.FileHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class MainActivity extends AppCompatActivity {
+public class ViewerActivity extends AppCompatActivity {
 
     private MainTableAdapter tableAdapter;
 

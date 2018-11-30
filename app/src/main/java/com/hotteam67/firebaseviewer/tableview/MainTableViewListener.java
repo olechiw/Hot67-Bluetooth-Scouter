@@ -7,7 +7,7 @@ import android.util.Log;
 
 import com.evrencoskun.tableview.ITableView;
 import com.evrencoskun.tableview.listener.ITableViewListener;
-import com.hotteam67.firebaseviewer.MainActivity;
+import com.hotteam67.firebaseviewer.ViewerActivity;
 import com.hotteam67.firebaseviewer.RawDataActivity;
 import com.hotteam67.firebaseviewer.data.ColumnSchema;
 import com.hotteam67.firebaseviewer.data.DataModel;
@@ -127,7 +127,7 @@ public class MainTableViewListener implements ITableViewListener {
             DataModel.Sort(column, false);
         }
 
-        ((MainActivity)adapter.GetContext()).UpdateUI();
+        ((ViewerActivity)adapter.GetContext()).UpdateUI();
     }
 
 
@@ -155,7 +155,7 @@ public class MainTableViewListener implements ITableViewListener {
         rawDataIntent.putExtra(RawDataActivity.RAW_DATA_ATTRIBUTE, formattedData);
         rawDataIntent.putExtra(RawDataActivity.TEAM_NUMBER_ATTRIBUTE, teamNumber);
 
-        MainActivity activity = (MainActivity)adapter.GetContext();
+        ViewerActivity activity = (ViewerActivity)adapter.GetContext();
         try
         {
             rawDataIntent.putExtra(RawDataActivity.TEAM_NAME_ATTRIBUTE, (String)DataModel

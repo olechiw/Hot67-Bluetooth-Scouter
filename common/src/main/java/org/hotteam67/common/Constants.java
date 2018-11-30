@@ -19,7 +19,7 @@ public class Constants
     public static final String SERVER_TEAMS_RECEIVED_TAG =  ":HEARD:,,,";
     public static final String SERVER_MESSAGE_TAG =         ":MESSAGE,,";
     public static final String SERVER_SUBMIT_TAG =          ":SUBMIT,,,";
-    public static final String SERVER_SYNCALL_TAG =         ":SYNCALL,,";
+    public static final String SERVER_SENDALL_TAG =         ":SYNCALL,,";
     public static final String EMPTY = "";
     public static final String RED = "RED";
     public static final String N_A = "N/A";

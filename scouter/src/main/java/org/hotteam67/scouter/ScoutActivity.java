@@ -18,10 +18,12 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TextView;
@@ -34,14 +36,20 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class ScoutActivity extends BluetoothClientActivity
 {
     private static final int REQUEST_ENABLE_PERMISSION = 3;
 
+    enum SendingState { SENDING, WAITING }
+    SendingState sendingState = SendingState.WAITING;
+
     private ImageView connectionStatus;
-    private ImageButton syncAllButton;
+    private ImageButton sendAllButton;
+    private ProgressBar sendAllProgress;
 
     private EditText teamNumber;
     private EditText matchNumber;
@@ -116,9 +124,14 @@ public class ScoutActivity extends BluetoothClientActivity
         prevMatchButton.setOnClickListener(v -> OnPreviousMatch());
 
         final Context c = this;
-        syncAllButton = findViewById(R.id.syncAllButton);
-        syncAllButton.setOnClickListener(v -> Constants.OnConfirm(
-                "Send All Matches?", c, this::SendAllMatches));
+        sendAllButton = findViewById(R.id.sendAllButton);
+        sendAllButton.setOnLongClickListener(v ->
+                {
+                    Constants.OnConfirm(
+                            "Send All Matches?", c, this::SendAllMatches);
+                    return true;
+                });
+        sendAllProgress = findViewById(R.id.indeterminateBar);
 
 
         // Build the input table's rows and columns.
@@ -162,14 +175,12 @@ public class ScoutActivity extends BluetoothClientActivity
         unlockButton.setOnLongClickListener(v -> {
             unlockCount++;
             if (unlockCount >= 2) {
-                syncAllButton.setEnabled(true);
                 teamNumber.setInputType(InputType.TYPE_CLASS_NUMBER);
                 return true;
             }
             else
                 return false;
         });
-        syncAllButton.setEnabled(false);
         teamNumber.setInputType(InputType.TYPE_NULL);
     }
 
@@ -306,12 +317,27 @@ public class ScoutActivity extends BluetoothClientActivity
 
     private void SendAllMatches()
     {
-        if (!(matches.size() > 1))
+        if (matches.size() < 1 || sendingState == SendingState.SENDING)
             return;
 
+        sendingState = SendingState.SENDING;
+        sendAllButton.setVisibility(View.INVISIBLE);
+        sendAllProgress.setVisibility(View.VISIBLE);
         queuedMatchesToSend = new ArrayList<>(matches.subList(1, matches.size() - 1));
         SendMatch(matches.get(0));
-        MessageBox("Sent Matches");
+
+        Timer completeTimer = new Timer();
+        // 15 second timeout
+        completeTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (queuedMatchesToSend.size() > 0)
+                    MessageBox("Failed to send: " + queuedMatchesToSend.size() + " matches");
+                sendAllButton.setVisibility(View.VISIBLE);
+                sendAllProgress.setVisibility(View.INVISIBLE);
+                sendingState = SendingState.WAITING;
+            }
+        }, 15000);
     }
 
     /*
@@ -382,7 +408,8 @@ public class ScoutActivity extends BluetoothClientActivity
      */
     private void SendMatch(JSONObject match)
     {
-        if (match == null) return;
+        // If currently doing send all don't allow any other activity
+        if (sendingState == SendingState.SENDING || match == null) return;
 
         try
         {
@@ -469,16 +496,21 @@ public class ScoutActivity extends BluetoothClientActivity
             final String tag =
                     Constants.getScouterInputTag((String) msg.obj);
 
-            if (tag.equals(Constants.SERVER_TEAMS_RECEIVED_TAG)
-                    &&
-                    (queuedMatchesToSend.size() > 0))
-            {
-                l("Server received last, sending again");
-                SendMatch(queuedMatchesToSend.get(0));
-                queuedMatchesToSend.remove(0);
-            }
-
             switch (tag) {
+                case Constants.SERVER_TEAMS_RECEIVED_TAG:
+                    if (queuedMatchesToSend.size() > 0 && sendingState == SendingState.SENDING)
+                    {
+                        l("Server received last, sending again");
+                        SendMatch(queuedMatchesToSend.get(0));
+                        queuedMatchesToSend.remove(0);
+                    }
+                    else
+                    {
+                        sendingState = SendingState.WAITING;
+                        sendAllButton.setVisibility(View.VISIBLE);
+                        sendAllProgress.setVisibility(View.INVISIBLE);
+                    }
+                    break;
                 case Constants.SCOUTER_SCHEMA_TAG:
                     final Context c = this;
                     // Show a confirmation dialog
@@ -548,7 +580,7 @@ public class ScoutActivity extends BluetoothClientActivity
                         }
                     }
                     break;
-                case Constants.SERVER_SYNCALL_TAG:
+                case Constants.SERVER_SENDALL_TAG:
                     SendAllMatches();
                     break;
                 default:

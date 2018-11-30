@@ -35,7 +35,7 @@ class TeamsGroupHandler
 
     public View GetView()
     {
-        View v = ((MainActivity)context).getLayoutInflater().inflate(R.layout.teamgroup_dialog_layout, null);
+        View v = ((ViewerActivity)context).getLayoutInflater().inflate(R.layout.teamgroup_dialog_layout, null);
 
         DarkNumberPicker picker = v.findViewById(R.id.teamsGroupId);
         picker.setMinimum(0);

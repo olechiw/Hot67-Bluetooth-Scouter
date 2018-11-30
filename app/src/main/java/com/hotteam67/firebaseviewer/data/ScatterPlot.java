@@ -12,7 +12,7 @@ import com.androidplot.xy.StepMode;
 import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
-import com.hotteam67.firebaseviewer.MainActivity;
+import com.hotteam67.firebaseviewer.ViewerActivity;
 import com.hotteam67.firebaseviewer.R;
 
 import java.text.DecimalFormat;
@@ -50,7 +50,7 @@ public class ScatterPlot {
         LineAndPointFormatter format =
                 new LineAndPointFormatter(Color.RED, Color.BLACK, null, null);
 
-        XYPlot newPlot = (XYPlot)((MainActivity)c).getLayoutInflater().inflate(R.layout.xyplot, null);
+        XYPlot newPlot = (XYPlot)((ViewerActivity)c).getLayoutInflater().inflate(R.layout.xyplot, null);
         newPlot.setTitle(title);
 
         newPlot.setDomainBoundaries(0, BoundaryMode.FIXED, xValues.size() + 1, BoundaryMode.FIXED);

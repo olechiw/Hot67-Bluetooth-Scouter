@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.hotteam67.firebaseviewer.MainActivity"
+    tools:context="com.hotteam67.firebaseviewer.ViewerActivity"
     android:id="@+id/frameLayout">
 
     <com.evrencoskun.tableview.TableView

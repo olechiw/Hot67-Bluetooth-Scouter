@@ -17,15 +17,17 @@
         android:minHeight="70dp"
         tools:layout_editor_absoluteY="0dp"
         tools:layout_editor_absoluteX="0dp">
-        <!--
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_gravity="center"
-            android:layout_height="wrap_content"> -->
+            android:layout_height="wrap_content">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Team:"
+                android:layout_centerHorizontal="true"
+                android:layout_alignParentTop="true"
                 android:textAppearance="@style/TextAppearance.AppCompat"
                 android:layout_gravity="center_horizontal"/>
             <EditText
@@ -45,6 +47,8 @@
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_gravity="center"
+            android:layout_centerInParent="true"
+            android:layout_toRightOf="@+id/teamNumberText"
             android:background="#000000"
             android:id="@+id/unlockButton"/>
             <ImageView
@@ -55,6 +59,7 @@
                 android:src="@drawable/ic_network_off"
                 android:id="@+id/connectionStatus"
                 android:layout_gravity="start"
+                android:layout_alignParentStart="true"
                 android:background="@color/colorPrimary"/>
         <ImageButton
             android:layout_width="wrap_content"
@@ -62,10 +67,24 @@
             android:scaleX=".4"
             android:scaleY=".4"
             android:src="@drawable/ic_sync"
-            android:id="@+id/syncAllButton"
+            android:id="@+id/sendAllButton"
             android:layout_gravity="end"
+            android:layout_alignParentEnd="true"
             android:background="@color/colorPrimary"/>
-        <!-- </RelativeLayout> -->
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:visibility="invisible"
+            android:layout_margin="5dp"
+            android:paddingRight="7dp"
+            android:paddingLeft="7dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="5dp"
+            android:id="@+id/indeterminateBar"
+            android:layout_alignParentEnd="true"
+            android:layout_gravity="end"/>
+        </RelativeLayout>
 
     </android.support.v7.widget.Toolbar>
     <android.support.design.widget.CoordinatorLayout
