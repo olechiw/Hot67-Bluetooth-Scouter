@@ -7,6 +7,7 @@
       <module fileurl="file://$PROJECT_DIR$/common/common.iml" filepath="$PROJECT_DIR$/common/common.iml" />
       <module fileurl="file://$PROJECT_DIR$/scouter/scouter.iml" filepath="$PROJECT_DIR$/scouter/scouter.iml" />
       <module fileurl="file://$PROJECT_DIR$/server/server.iml" filepath="$PROJECT_DIR$/server/server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/viewer/viewer.iml" filepath="$PROJECT_DIR$/viewer/viewer.iml" />
     </modules>
   </component>
 </project>
