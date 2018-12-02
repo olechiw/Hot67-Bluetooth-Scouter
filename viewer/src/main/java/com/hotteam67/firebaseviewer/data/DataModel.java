@@ -48,16 +48,16 @@ public class DataModel
     private static JSONObject teamNumbersNames = new JSONObject();
     private static JSONObject teamNumbersRanks = new JSONObject();
 
-    private static ProgressEvent progressEvent;
+    private static DataLoadEvent dataLoadEvent;
 
     public static void Setup(String[] conn,
-                             ProgressEvent progEvent)
+                             DataLoadEvent progEvent)
     {
         outputAverages = averages;
         outputMaximums = maximums;
 
         connectionProperties = conn;
-        progressEvent = progEvent;
+        dataLoadEvent = progEvent;
     }
 
     /*
@@ -107,7 +107,7 @@ public class DataModel
                 FileHandler.Serialize(maximums, FileHandler.MAXIMUMS_CACHE);
                 FileHandler.Serialize(averages, FileHandler.AVERAGES_CACHE);
                 FileHandler.Serialize(rawData, FileHandler.RAW_CACHE);
-                progressEvent.EndProgress();
+                dataLoadEvent.OnCompleteProgress();
                 return null;
             }
         };
@@ -122,7 +122,7 @@ public class DataModel
     {
         try
         {
-            progressEvent.BeginProgress();
+            dataLoadEvent.OnBeginProgress();
             @SuppressLint("StaticFieldLeak") AsyncTask task = new AsyncTask()
             {
                 @Override
@@ -159,7 +159,7 @@ public class DataModel
                     super.onPostExecute(o);
                     outputAverages = averages;
                     outputMaximums = maximums;
-                    progressEvent.EndProgress();
+                    dataLoadEvent.OnCompleteProgress();
                 }
             };
             task.execute();
@@ -175,7 +175,7 @@ public class DataModel
      */
     public static void RefreshTable(Runnable onCompleteEvent)
     {
-        progressEvent.BeginProgress();
+        dataLoadEvent.OnBeginProgress();
 
         LoadTBAData();
 
@@ -183,7 +183,7 @@ public class DataModel
         if (connectionProperties == null || connectionProperties.length != 4)
         {
             Log.d("HotTeam67", "Couldn't load connection string");
-            progressEvent.EndProgress();
+            dataLoadEvent.OnCompleteProgress();
             return;
         }
 
@@ -213,6 +213,7 @@ public class DataModel
         SetTeamNumberFilter();
         outputMaximums = maximums;
         outputAverages = averages;
+        Sort(0, true);
     }
 
     /*
@@ -695,9 +696,9 @@ public class DataModel
         averages.SetTeamNumberFilter(s);
     }
 
-    public interface ProgressEvent
+    public interface DataLoadEvent
     {
-        void BeginProgress();
-        void EndProgress();
+        void OnBeginProgress();
+        void OnCompleteProgress();
     }
 }

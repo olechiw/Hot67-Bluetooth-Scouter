@@ -5,6 +5,9 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.RelativeLayout;
 
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
+
 public class InterceptAllLayout extends RelativeLayout {
     public InterceptAllLayout(Context c)
     {
@@ -16,8 +19,29 @@ public class InterceptAllLayout extends RelativeLayout {
         super(c, attrs);
     }
 
+    Callable<Boolean> interceptCondition;
+    public void setInterceptCondition(Callable<Boolean> condition)
+    {
+        interceptCondition = condition;
+    }
+
+    Runnable interceptEvent;
+    public void setInterceptEvent(Runnable event)
+    {
+        interceptEvent = event;
+    }
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        return true; // With this i tell my layout to consume all the touch events from its childs
+        try {
+            if (interceptCondition.call())
+            {
+                // With this i tell my layout to consume all the touch events from its childs
+                interceptEvent.run();
+                return true;
+            }
+        }
+        catch (Exception ignored) {}
+        return false;
     }
 }

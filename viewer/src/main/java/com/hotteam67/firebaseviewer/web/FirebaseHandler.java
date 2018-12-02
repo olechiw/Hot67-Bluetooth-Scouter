@@ -70,10 +70,11 @@ public class FirebaseHandler {
                     }
 
 
-                    Log.d("HotTeam67", "Response: " + response.toString());
+                    String resp = response.toString();
+                    Log.d("HotTeam67", "Response: " + resp);
 
                     conn.disconnect();
-                    return response.toString();
+                    return resp;
                 }
                 conn.disconnect();
             }

@@ -15,7 +15,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -34,6 +33,7 @@ import com.hotteam67.firebaseviewer.tableview.MainTableViewListener;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.DarkNumberPicker;
+import org.hotteam67.common.InterceptAllLayout;
 
 public class ViewerActivity extends AppCompatActivity {
 
@@ -52,7 +52,6 @@ public class ViewerActivity extends AppCompatActivity {
     private DarkNumberPicker teamsGroupInput;
     private Spinner teamsGroupType;
 
-
     /*
     Result for raw data activity, load the match number if one was selected
      */
@@ -66,6 +65,7 @@ public class ViewerActivity extends AppCompatActivity {
             {
                 Integer result = data.getIntExtra("Match Number", 0);
                 teamsGroupInput.setValue(result);
+                teamsGroupType.setSelection(0);
             }
             catch (Exception e)
             {
@@ -170,14 +170,12 @@ public class ViewerActivity extends AppCompatActivity {
             else
                 collapse(teamsGroupView);
         });
-        findViewById(R.id.tableViewFrame).setOnTouchListener((v, event) -> {
-            if (teamsGroupView.getVisibility() == View.VISIBLE)
-            {
-                collapse(teamsGroupView);
-                return true;
-            }
-            return false;
-        });
+        InterceptAllLayout tableViewFrame = findViewById(R.id.tableViewFrame);
+        // Intercept all table touches when the teamsgroupview is shown
+        tableViewFrame.setInterceptCondition(() -> (teamsGroupView.getVisibility() == View.VISIBLE));
+        // Hide the view after the interception of a touch
+        tableViewFrame.setInterceptEvent(() -> collapse(teamsGroupView));
+
 
         TableView tableView = findViewById(R.id.mainTableView);
 
@@ -261,19 +259,20 @@ public class ViewerActivity extends AppCompatActivity {
 
     private void RefreshConnectionProperties()
     {
-        DataModel.Setup(GetConnectionProperties(), new DataModel.ProgressEvent()
+        DataModel.Setup(GetConnectionProperties(), new DataModel.DataLoadEvent()
         {
             @Override
-            public void BeginProgress()
+            public void OnBeginProgress()
             {
                 runOnUiThread(() -> StartProgressAnimation());
             }
 
             @Override
-            public void EndProgress()
+            public void OnCompleteProgress()
             {
                 runOnUiThread(() -> {
                     EndProgressAnimation();
+                    DataModel.ClearFilters(); // Clears and sorts
                     UpdateUI();
                 });
             }
