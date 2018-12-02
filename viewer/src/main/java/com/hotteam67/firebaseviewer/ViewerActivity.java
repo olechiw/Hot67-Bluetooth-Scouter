@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -168,6 +169,14 @@ public class ViewerActivity extends AppCompatActivity {
                 expand(teamsGroupView);
             else
                 collapse(teamsGroupView);
+        });
+        findViewById(R.id.tableViewFrame).setOnTouchListener((v, event) -> {
+            if (teamsGroupView.getVisibility() == View.VISIBLE)
+            {
+                collapse(teamsGroupView);
+                return true;
+            }
+            return false;
         });
 
         TableView tableView = findViewById(R.id.mainTableView);
