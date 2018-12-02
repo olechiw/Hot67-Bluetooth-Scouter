@@ -40,11 +40,11 @@ public class FirebaseHandler {
     public void Download(Callable completeEvent)
     {
         firebaseCompleteEvent = completeEvent;
-        new RetreiveFirebaseTask().execute();
+        new RetrieveFirebaseTask().execute();
     }
 
     @SuppressLint("StaticFieldLeak")
-    class RetreiveFirebaseTask extends AsyncTask<Void, Void, String> {
+    class RetrieveFirebaseTask extends AsyncTask<Void, Void, String> {
         protected String doInBackground(Void... nothing)
         {
             try
@@ -91,6 +91,7 @@ public class FirebaseHandler {
     }
 
 
+    // Format the input data into a table
     private void DoLoad(String json)
     {
         try
