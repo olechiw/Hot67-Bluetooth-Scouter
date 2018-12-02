@@ -111,7 +111,7 @@ public class ViewerActivity extends AppCompatActivity {
         {
             if (!teamSearchView.getText().toString().trim().isEmpty())
                 teamSearchView.setText("");
-            teamsGroupButton.setText("TEAMS");
+            teamsGroupButton.setText("Show Teams");
             DataModel.ClearFilters();
             teamsGroupInput.setValue(0);
             UpdateUI();
@@ -285,7 +285,7 @@ public class ViewerActivity extends AppCompatActivity {
                     && teamSearchView.getText().toString().trim().isEmpty())
             {
                 clearButton.setVisibility(View.INVISIBLE);
-                teamsGroupButton.setText("TEAMS");
+                teamsGroupButton.setText("Show Teams");
             }
             else
                 clearButton.setVisibility(View.VISIBLE);
@@ -308,7 +308,7 @@ public class ViewerActivity extends AppCompatActivity {
             case Constants.ViewerTeamsGroupTypes.MATCH:
                 if (id != 0)
                 {
-                    teamsGroupButton.setText("Q" + id + " TEAMS");
+                    teamsGroupButton.setText("Q" + id + " Teams");
                     DataModel.ShowMatch(id);
                 }
                 else
@@ -320,7 +320,7 @@ public class ViewerActivity extends AppCompatActivity {
             case Constants.ViewerTeamsGroupTypes.ALLIANCE:
                 if (id != 0)
                 {
-                    teamsGroupButton.setText("A" + id + " TEAMS");
+                    teamsGroupButton.setText("A" + id + " Teams");
                     DataModel.ShowAlliance(id);
                 }
                 else
