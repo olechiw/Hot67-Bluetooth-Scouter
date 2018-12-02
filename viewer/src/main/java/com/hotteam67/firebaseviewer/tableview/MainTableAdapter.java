@@ -27,7 +27,7 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateCellViewHolder(ViewGroup parent, int viewType) {
+    public AbstractViewHolder onCreateCellViewHolder(ViewGroup parent, int viewType) {
         View layout;
 
         layout = LayoutInflater.from(mContext).inflate(R.layout.tableview_cell_layout,
@@ -60,7 +60,7 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateColumnHeaderViewHolder(ViewGroup parent, int viewType) {
+    public AbstractViewHolder onCreateColumnHeaderViewHolder(ViewGroup parent, int viewType) {
         View layout = LayoutInflater.from(mContext).inflate(R.layout
                 .tableview_column_header_layout, parent, false);
 
@@ -79,7 +79,7 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateRowHeaderViewHolder(ViewGroup parent, int viewType) {
+    public AbstractViewHolder onCreateRowHeaderViewHolder(ViewGroup parent, int viewType) {
 
         // Get Row Header xml Layout
         View layout = LayoutInflater.from(mContext).inflate(R.layout

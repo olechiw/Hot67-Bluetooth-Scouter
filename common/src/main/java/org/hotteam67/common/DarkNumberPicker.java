@@ -32,6 +32,13 @@ public class DarkNumberPicker extends LinearLayout
     private int minimum = 0;
     private int maximum = 100;
 
+
+    Runnable valueChangedListener;
+    public void setOnValueChangedListener(Runnable r)
+    {
+        valueChangedListener = r;
+    }
+
     private void Construct()
     {
         mainText = new EditText(getContext());
@@ -98,6 +105,7 @@ public class DarkNumberPicker extends LinearLayout
                 {
                     mainText.setText(String.valueOf(maximum));
                 }
+                if (valueChangedListener != null) valueChangedListener.run();
             }
         });
 

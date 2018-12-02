@@ -7,6 +7,5 @@
     <string-array name="teamGroupTypesArray">
         <item>Qualification Match</item>
         <item>Alliance</item>
-        <item>Custom</item>
     </string-array>
 </resources>

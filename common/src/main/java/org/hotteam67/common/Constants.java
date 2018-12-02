@@ -13,6 +13,11 @@ import java.util.UUID;
 
 public class Constants
 {
+    public static final class ViewerTeamsGroupTypes {
+        public static final String MATCH = "Qualification Match";
+        public static final String ALLIANCE = "Alliance";
+    }
+
     private static final int SCOUTER_TAG_LENGTH = 10;
     public static final String SCOUTER_TEAMS_TAG =          ":TEAM:,,,,";
     public static final String SCOUTER_SCHEMA_TAG =         ":SCHEMA:,,";

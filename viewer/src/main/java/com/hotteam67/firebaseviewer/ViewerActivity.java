@@ -11,17 +11,20 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 
 import com.evrencoskun.tableview.TableView;
 import com.hotteam67.firebaseviewer.data.DataModel;
@@ -29,10 +32,7 @@ import com.hotteam67.firebaseviewer.tableview.MainTableAdapter;
 import com.hotteam67.firebaseviewer.tableview.MainTableViewListener;
 
 import org.hotteam67.common.Constants;
-import org.hotteam67.common.FileHandler;
-
-import java.util.ArrayList;
-import java.util.Arrays;
+import org.hotteam67.common.DarkNumberPicker;
 
 public class ViewerActivity extends AppCompatActivity {
 
@@ -42,11 +42,15 @@ public class ViewerActivity extends AppCompatActivity {
     private ImageButton clearButton;
     private Button teamsGroupButton;
 
+    private View teamsGroupView;
+
     private EditText teamSearchView;
 
     private ProgressBar progressBar;
 
-    private TeamsGroupHandler teamsGroupHandler = new TeamsGroupHandler(this);
+    private DarkNumberPicker teamsGroupInput;
+    private Spinner teamsGroupType;
+
 
     /*
     Result for raw data activity, load the match number if one was selected
@@ -60,9 +64,7 @@ public class ViewerActivity extends AppCompatActivity {
             try
             {
                 Integer result = data.getIntExtra("Match Number", 0);
-                teamsGroupHandler.SetId(result);
-                teamsGroupHandler.SetType(TeamsGroupHandler.TEAM_GROUP_QUALS);
-                UpdateTeamsGroup();
+                teamsGroupInput.setValue(result);
             }
             catch (Exception e)
             {
@@ -111,7 +113,7 @@ public class ViewerActivity extends AppCompatActivity {
                 teamSearchView.setText("");
             teamsGroupButton.setText("TEAMS");
             DataModel.ClearFilters();
-            teamsGroupHandler.SetId(0);
+            teamsGroupInput.setValue(0);
             UpdateUI();
             clearButton.setVisibility(View.INVISIBLE);
         });
@@ -143,19 +145,29 @@ public class ViewerActivity extends AppCompatActivity {
             }
         });
 
-        teamsGroupButton = findViewById(R.id.teamsGroupButton);
-        teamsGroupHandler = new TeamsGroupHandler(this);
-        teamsGroupButton.setOnClickListener(v -> {
-            View dialogView = teamsGroupHandler.GetView();
-            AlertDialog dialog = new AlertDialog.Builder(this, android.R.style.Theme_Material_NoActionBar_Fullscreen)
-                    .setTitle("Team Groups").setOnDismissListener(dialogInterface ->
-            {
-                // ShowActiveTable based on contents when the view disappears
-                View view = ((AlertDialog) dialogInterface).findViewById(R.id.teamsGroupLayout);
-                teamsGroupHandler.LoadFromView(view);
+        teamsGroupView = findViewById(R.id.teamsGroupView);
+        teamsGroupView.setVisibility(View.GONE);
+        teamsGroupInput = findViewById(R.id.teamsGroupInput);
+        teamsGroupInput.setOnValueChangedListener(this::UpdateTeamsGroup);
+        teamsGroupType = findViewById(R.id.teamsGroupType);
+        teamsGroupType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 UpdateTeamsGroup();
-            }).setView(dialogView).show();
-            dialogView.findViewById(R.id.okButton).setOnClickListener(x -> dialog.dismiss());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        teamsGroupButton = findViewById(R.id.teamsGroupButton);
+        teamsGroupButton.setOnClickListener(v -> {
+            if (teamsGroupView.getVisibility() == View.GONE)
+                expand(teamsGroupView);
+            else
+                collapse(teamsGroupView);
         });
 
         TableView tableView = findViewById(R.id.mainTableView);
@@ -182,6 +194,60 @@ public class ViewerActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     Constants.REQUEST_ENABLE_PERMISSION);
         }
+    }
+
+    public static void expand(final View v) {
+        v.measure(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        final int targetHeight = v.getMeasuredHeight();
+
+        // Older versions of android (pre API 21) cancel animations for views with a height of 0.
+        v.getLayoutParams().height = 1;
+        v.setVisibility(View.VISIBLE);
+        Animation a = new Animation()
+        {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                v.getLayoutParams().height = interpolatedTime == 1
+                        ? ViewGroup.LayoutParams.WRAP_CONTENT
+                        : (int)(targetHeight * interpolatedTime);
+                v.requestLayout();
+            }
+
+            @Override
+            public boolean willChangeBounds() {
+                return true;
+            }
+        };
+
+        // 1dp/ms
+        a.setDuration((int)(targetHeight / v.getContext().getResources().getDisplayMetrics().density));
+        v.startAnimation(a);
+    }
+
+    public static void collapse(final View v) {
+        final int initialHeight = v.getMeasuredHeight();
+
+        Animation a = new Animation()
+        {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                if(interpolatedTime == 1){
+                    v.setVisibility(View.GONE);
+                }else{
+                    v.getLayoutParams().height = initialHeight - (int)(initialHeight * interpolatedTime);
+                    v.requestLayout();
+                }
+            }
+
+            @Override
+            public boolean willChangeBounds() {
+                return true;
+            }
+        };
+
+        // 1dp/ms
+        a.setDuration((int)(initialHeight / v.getContext().getResources().getDisplayMetrics().density));
+        v.startAnimation(a);
     }
 
     private void RefreshConnectionProperties()
@@ -215,9 +281,8 @@ public class ViewerActivity extends AppCompatActivity {
     {
         if (DataModel.GetTable() != null)
         {
-            if (teamsGroupHandler.GetId() == 0
-                    && teamSearchView.getText().toString().trim().isEmpty()
-                    && !teamsGroupHandler.GetType().equals(TeamsGroupHandler.TEAM_GROUP_CUSTOM))
+            if (teamsGroupInput.getValue() == 0
+                    && teamSearchView.getText().toString().trim().isEmpty())
             {
                 clearButton.setVisibility(View.INVISIBLE);
                 teamsGroupButton.setText("TEAMS");
@@ -230,11 +295,6 @@ public class ViewerActivity extends AppCompatActivity {
 
     private void LoadLocal()
     {
-        String customTeams = FileHandler.LoadContents(FileHandler.CUSTOM_TEAMS_FILE);
-        if (customTeams != null && !customTeams.trim().isEmpty())
-        {
-            teamsGroupHandler.SetCustomTeams(new ArrayList<>(Arrays.asList(customTeams.split("\n"))));
-        }
         DataModel.LoadSerializedTables();
         DataModel.LoadTBADataLocal();
     }
@@ -242,16 +302,14 @@ public class ViewerActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     private void UpdateTeamsGroup()
     {
-        String groupType = teamsGroupHandler.GetType();
-        Integer groupId = teamsGroupHandler.GetId();
-
-        switch (groupType)
+        int id = teamsGroupInput.getValue();
+        switch (teamsGroupType.getSelectedItem().toString())
         {
-            case TeamsGroupHandler.TEAM_GROUP_QUALS:
-                if (groupId != 0)
+            case Constants.ViewerTeamsGroupTypes.MATCH:
+                if (id != 0)
                 {
-                    teamsGroupButton.setText("Q" + groupId + " TEAMS");
-                    DataModel.ShowMatch(groupId);
+                    teamsGroupButton.setText("Q" + id + " TEAMS");
+                    DataModel.ShowMatch(id);
                 }
                 else
                 {
@@ -259,15 +317,17 @@ public class ViewerActivity extends AppCompatActivity {
                     UpdateUI();
                 }
                 break;
-            case TeamsGroupHandler.TEAM_GROUP_ELIMS:
-                teamsGroupButton.setText("A" + groupId + " TEAMS");
-                DataModel.ShowAlliance(groupId);
-                break;
-            case TeamsGroupHandler.TEAM_GROUP_CUSTOM:
-                teamsGroupButton.setText("C Teams");
-                FileHandler.Write(FileHandler.CUSTOM_TEAMS_FILE,
-                        TextUtils.join("\n", teamsGroupHandler.GetCustomTeams()));
-                DataModel.ShowTeams(teamsGroupHandler.GetCustomTeams());
+            case Constants.ViewerTeamsGroupTypes.ALLIANCE:
+                if (id != 0)
+                {
+                    teamsGroupButton.setText("A" + id + " TEAMS");
+                    DataModel.ShowAlliance(id);
+                }
+                else
+                {
+                    DataModel.ClearFilters();
+                    UpdateUI();
+                }
                 break;
         }
         UpdateUI();

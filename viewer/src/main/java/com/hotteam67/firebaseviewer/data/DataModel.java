@@ -10,10 +10,10 @@ import com.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
 import com.hotteam67.firebaseviewer.web.FirebaseHandler;
-import com.hotteam67.firebaseviewer.web.TBAHandler;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
+import org.hotteam67.common.TBAHandler;
 import org.json.JSONObject;
 
 import java.util.ArrayList;

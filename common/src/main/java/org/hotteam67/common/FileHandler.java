@@ -27,7 +27,6 @@ public final class FileHandler
     public static final String MATCHES_FILE = "Server/serverMatches.csv"; // Server unscouted matches (match schedule)
     public static final String TEAM_NAMES_FILE = "Viewer/teamNames.json";  // Viewer team name sjson
     public static final String RANKS_FILE = "Viewer/teamRanks.json"; // Viewer team ranks json
-    public static final String CUSTOM_TEAMS_FILE = "Viewer/customTeams.csv"; // Viewer list of custom teams
     public static final String ALLIANCES_FILE = "Viewer/alliances.csv"; // Viewer alliances list
     public static final String VIEWER_MATCHES_FILE = "Viewer/viewerMatches.csv"; // Viewer match schedule
     public static final String AVERAGES_CACHE = "Viewer/averagesCache"; // Cache of viewer average calculations
