@@ -124,6 +124,7 @@ public class ViewerActivity extends AppCompatActivity {
             RemoveAllFilters();
             teamsGroupInput.setValue(0);
             UpdateUI();
+            averagesTable.sortColumn(1, SortState.ASCENDING);
             clearButton.setVisibility(View.INVISIBLE);
         });
         clearButton.setVisibility(View.INVISIBLE);
@@ -193,6 +194,9 @@ public class ViewerActivity extends AppCompatActivity {
 
         maximumsFilter = new MultiFilter(maximumsTable);
         averagesFilter = new MultiFilter(averagesTable);
+
+        averagesTable.SetSiblingTableView(maximumsTable);
+        maximumsTable.SetSiblingTableView(averagesTable);
 
         RefreshConnectionProperties();
 
@@ -287,10 +291,13 @@ public class ViewerActivity extends AppCompatActivity {
             {
                 runOnUiThread(() -> {
                     EndProgressAnimation();
-                    ((MainTableAdapter)averagesTable.getAdapter()).setAllItems(DataModel.GetAverages());
-                    ((MainTableAdapter)maximumsTable.getAdapter()).setAllItems(DataModel.GetMaximums());
-                    UpdateUI();
-                    averagesTable.sortColumn(1, SortState.ASCENDING);
+                    if (averagesTable != null && maximumsTable != null && DataModel.GetAverages() != null && DataModel.GetMaximums() != null)
+                    {
+                        ((MainTableAdapter) averagesTable.getAdapter()).setAllItems(DataModel.GetAverages());
+                        ((MainTableAdapter) maximumsTable.getAdapter()).setAllItems(DataModel.GetMaximums());
+                        UpdateUI();
+                        averagesTable.sortColumn(1, SortState.ASCENDING);
+                    }
                 });
             }
         });
@@ -299,11 +306,11 @@ public class ViewerActivity extends AppCompatActivity {
     private void UpdateUINetwork()
     {
         DataModel.RefreshTable(() -> runOnUiThread(() -> {
-            ((MainTableAdapter)averagesTable.getAdapter()).setAllItems(DataModel.GetAverages());
-            ((MainTableAdapter)maximumsTable.getAdapter()).setAllItems(DataModel.GetMaximums());
-            UpdateUI();
-            averagesTable.hideColumn(0);
-            maximumsTable.hideColumn(0);
+            if (averagesTable != null && maximumsTable != null && DataModel.GetAverages() != null && DataModel.GetMaximums() != null) {
+                ((MainTableAdapter) averagesTable.getAdapter()).setAllItems(DataModel.GetAverages());
+                ((MainTableAdapter) maximumsTable.getAdapter()).setAllItems(DataModel.GetMaximums());
+                UpdateUI();
+            }
 
         }));
     }
@@ -318,6 +325,7 @@ public class ViewerActivity extends AppCompatActivity {
         }
         else
             clearButton.setVisibility(View.VISIBLE);
+
     }
 
     private void LoadLocal()
@@ -359,8 +367,8 @@ public class ViewerActivity extends AppCompatActivity {
                 {
                     teamsGroupButton.setText("A" + id + " Teams");
                     RemoveAllFilters();
-                    for (String t : DataModel.GetAlliance(id))
-                        Filter(Constants.TEAM_NUMBER_COLUMN, t, true);
+                    for (String t : DataModel.GetAlliance(id - 1))
+                        Filter(Constants.TEAM_NUMBER_COLUMN, t);
                 }
                 else
                 {

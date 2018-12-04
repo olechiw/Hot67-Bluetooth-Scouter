@@ -19,6 +19,8 @@ import com.evrencoskun.tableview.filter.FilterChangedListener;
 import com.evrencoskun.tableview.filter.FilterItem;
 import com.evrencoskun.tableview.filter.FilterType;
 import com.evrencoskun.tableview.filter.IFilterableModel;
+import com.evrencoskun.tableview.sort.SortState;
+import com.hotteam67.firebaseviewer.data.MultiFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +32,7 @@ public class MultiFilterTableView extends TableView {
     private List<List<IFilterableModel>> originalCellDataStore, originalCellData, filteredCellList;
     private List originalRowDataStore, originalRowData, filteredRowList;
 
+    private MultiFilterTableView sibling;
 
     public MultiFilterTableView(@NonNull Context context) {
         super(context);
@@ -42,6 +45,11 @@ public class MultiFilterTableView extends TableView {
     public MultiFilterTableView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int
             defStyleAttr) {
         super(context, attrs, defStyleAttr);
+    }
+
+    public void SetSiblingTableView(MultiFilterTableView sibling)
+    {
+        this.sibling = sibling;
     }
 
     @Override
@@ -61,6 +69,19 @@ public class MultiFilterTableView extends TableView {
     }
 
     @Override
+    public void sortColumn(int column, SortState sort)
+    {
+        sortColumn(column, sort, false);
+    }
+
+    public void sortColumn(int column, SortState sort, boolean skipSibling)
+    {
+        super.sortColumn(column, sort);
+        if (!skipSibling && sibling != null)
+            sibling.sortColumn(column, sort, true);
+    }
+
+    @Override
     public void filter(Filter filter)
     {
         filter(filter, false);
@@ -68,6 +89,11 @@ public class MultiFilterTableView extends TableView {
 
     @SuppressWarnings("unchecked")
     public void filter(Filter filter, boolean doContains) {
+        filter(filter, doContains, false);
+    }
+
+    public void filter(Filter filter, boolean doContains, boolean skipSibling)
+    {
         if (originalCellDataStore == null || originalRowDataStore == null) {
             return;
         }
@@ -125,6 +151,10 @@ public class MultiFilterTableView extends TableView {
         // Sets the filtered data to the TableView.
         mRowHeaderRecyclerViewAdapter.setItems(filteredRowList, true);
         mCellRecyclerViewAdapter.setItems(filteredCellList, true);
+        if (!skipSibling && sibling != null)
+        {
+            sibling.filter(filter, doContains, true);
+        }
     }
 
     @SuppressWarnings("unchecked")
