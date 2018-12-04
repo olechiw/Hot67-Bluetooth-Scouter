@@ -27,6 +27,7 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 
 import com.evrencoskun.tableview.TableView;
+import com.evrencoskun.tableview.sort.SortState;
 import com.hotteam67.firebaseviewer.data.DataModel;
 import com.hotteam67.firebaseviewer.tableview.MainTableAdapter;
 import com.hotteam67.firebaseviewer.tableview.MainTableViewListener;
@@ -182,6 +183,8 @@ public class ViewerActivity extends AppCompatActivity {
         // Create TableView Adapter
         tableAdapter = new MainTableAdapter(this);
         tableView.setAdapter(tableAdapter);
+        tableView.getColumnSortHandler().setEnableAnimation(true);
+
 
         // Create listener
         tableView.setTableViewListener(new MainTableViewListener(tableView, tableAdapter));
@@ -272,8 +275,8 @@ public class ViewerActivity extends AppCompatActivity {
             {
                 runOnUiThread(() -> {
                     EndProgressAnimation();
-                    DataModel.ClearFilters(); // Clears and sorts
                     UpdateUI();
+                    tableAdapter.getTableView().sortColumn(0, SortState.ASCENDING);
                 });
             }
         });

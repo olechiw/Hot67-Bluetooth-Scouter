@@ -31,7 +31,7 @@ public class CellViewHolder extends AbstractViewHolder {
                 Gravity.CENTER_VERTICAL);
 
         // Set text
-        cell_textview.setText(String.valueOf(cellModel.getData()));
+        cell_textview.setText(cellModel.getData());
 
         // It is necessary to remeasure itself.
         cell_container.getLayoutParams().width = LinearLayout.LayoutParams.WRAP_CONTENT;

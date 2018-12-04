@@ -64,7 +64,7 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         View layout = LayoutInflater.from(mContext).inflate(R.layout
                 .tableview_column_header_layout, parent, false);
 
-        return new ColumnHeaderViewHolder(layout, getTableView());
+        return new ColumnHeaderViewHolder(layout);
     }
 
     @Override

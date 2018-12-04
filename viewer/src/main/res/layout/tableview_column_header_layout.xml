@@ -32,18 +32,6 @@
                 android:textColor="@color/unselected_text_color"
                 android:textSize="@dimen/table_view_default_text_size"
                 tools:text="Header Data"/>
-
-            <ImageButton
-                android:id="@+id/column_header_sort_imageButton"
-                android:layout_width="15dp"
-                android:layout_height="15dp"
-                android:layout_gravity="end|center"
-                android:layout_marginLeft="4dp"
-                android:background="@android:color/transparent"
-                android:paddingRight="-5dp"
-                android:scaleType="fitXY"
-                android:visibility="gone"
-                app:srcCompat="@drawable/ic_down"/>
         </LinearLayout>
 
         <View

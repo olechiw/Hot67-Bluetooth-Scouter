@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.evrencoskun.tableview.ITableView;
 import com.evrencoskun.tableview.listener.ITableViewListener;
+import com.evrencoskun.tableview.sort.SortState;
 import com.hotteam67.firebaseviewer.ViewerActivity;
 import com.hotteam67.firebaseviewer.RawDataActivity;
 import com.hotteam67.firebaseviewer.data.ColumnSchema;
@@ -14,6 +15,7 @@ import com.hotteam67.firebaseviewer.data.DataModel;
 import com.hotteam67.firebaseviewer.data.ScatterPlot;
 import com.hotteam67.firebaseviewer.data.DataTable;
 import com.hotteam67.firebaseviewer.data.Sort;
+import com.hotteam67.firebaseviewer.tableview.holder.ColumnHeaderViewHolder;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
@@ -52,7 +54,9 @@ public class MainTableViewListener implements ITableViewListener {
         try {
             String teamNumber = DataModel.GetTable().GetRowHeaders().get(row).getData();
 
-            DataTable table = Sort.BubbleSortAscendingByRowHeader(GetFormattedRawData(teamNumber));
+            DataTable table = GetFormattedRawData(teamNumber);
+            if (table == null) return;
+            table = Sort.BubbleSortAscendingByRowHeader(table);
 
             String calculatedColumnName =
                     DataModel.GetTable().GetColumns().get(column).getData();
@@ -77,7 +81,7 @@ public class MainTableViewListener implements ITableViewListener {
             // Get each value and put in a single array
             for (List<CellModel> cells : table.GetCells())
             {
-                String value = String.valueOf(cells.get(index).getData());
+                String value = cells.get(index).getData();
                 if (value.equals("N/A"))
                     continue;
                 if (value.equals("true") || value.equals("false"))
@@ -115,19 +119,20 @@ public class MainTableViewListener implements ITableViewListener {
 
         if (adapter.GetContext() instanceof RawDataActivity)
             return;
+        else if (!(columnViewHolder instanceof ColumnHeaderViewHolder))
+            return;
 
         if (lastColumnClicked == column)
         {
             lastColumnClicked = -1;
-            DataModel.Sort(column, true);
+            adapter.getTableView().sortColumn(column, SortState.ASCENDING);
         }
         else
         {
             lastColumnClicked = column;
-            DataModel.Sort(column, false);
+            adapter.getTableView().sortColumn(column, SortState.DESCENDING);
         }
-
-        ((ViewerActivity)adapter.GetContext()).UpdateUI();
+        adapter.getTableView().scrollToRowPosition(0);
     }
 
 
@@ -227,7 +232,7 @@ public class MainTableViewListener implements ITableViewListener {
                     // columns.add(new ColumnHeaderModel("Match Number"));
                     for (List<CellModel> row : cells) {
                         CellModel value = row.get(matchNumberColumnIndex);
-                        String matchNumber = value.getData().toString();
+                        String matchNumber = value.getData();
                         rows.set(cells.indexOf(row), new RowHeaderModel(matchNumber));
                         row.remove(matchNumberColumnIndex);
                         // row.add(value); // Add to end for sorting

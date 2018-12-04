@@ -10,14 +10,14 @@ import java.io.Serializable;
 
 public class CellModel implements ISortableModel, Serializable {
     private final String mId;
-    private final Object mData;
+    private final String mData;
 
-    public CellModel(String pId, Object mData) {
+    public CellModel(String pId, String mData) {
         this.mId = pId;
         this.mData = mData;
     }
 
-    public Object getData() {
+    public String getData() {
         return mData;
     }
 
@@ -28,7 +28,21 @@ public class CellModel implements ISortableModel, Serializable {
 
     @Override
     public Object getContent() {
-        return mData;
+        try
+        {
+            return Double.valueOf(mData);
+        }
+        catch (Exception e)
+        {
+            switch (mData) {
+                case "TRUE":
+                    return 1.0;
+                case "FALSE":
+                    return 0.0;
+                default:
+                    return 0.0;
+            }
+        }
     }
 
 }

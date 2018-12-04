@@ -20,33 +20,11 @@ import com.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 public class ColumnHeaderViewHolder extends AbstractSorterViewHolder {
     private final LinearLayout column_header_container;
     private final TextView column_header_textview;
-    private final ImageButton column_header_sort_button;
-    private final ITableView tableView;
 
-    public ColumnHeaderViewHolder(View itemView, ITableView pTableView) {
+    public ColumnHeaderViewHolder(View itemView) {
         super(itemView);
-        tableView = pTableView;
         column_header_textview = itemView.findViewById(R.id.column_header_textView);
         column_header_container = itemView.findViewById(R.id.column_header_container);
-        column_header_sort_button = itemView.findViewById(R.id.column_header_sort_imageButton);
-
-        // Set click listener to the sort button
-        // Default one
-        View.OnClickListener mSortButtonClickListener = view ->
-        {
-            if (getSortState() == SortState.ASCENDING)
-            {
-                tableView.sortColumn(getAdapterPosition(), SortState.DESCENDING);
-            } else if (getSortState() == SortState.DESCENDING)
-            {
-                tableView.sortColumn(getAdapterPosition(), SortState.ASCENDING);
-            } else
-            {
-                // Default one
-                tableView.sortColumn(getAdapterPosition(), SortState.DESCENDING);
-            }
-        };
-        column_header_sort_button.setOnClickListener(mSortButtonClickListener);
     }
 
     public void setColumnHeaderModel(ColumnHeaderModel pColumnHeaderModel) {
@@ -97,25 +75,10 @@ public class ColumnHeaderViewHolder extends AbstractSorterViewHolder {
         // It is necessary to remeasure itself.
         column_header_container.getLayoutParams().width = LinearLayout.LayoutParams.WRAP_CONTENT;
 
-        controlSortState(pSortState);
-
         column_header_textview.requestLayout();
-        column_header_sort_button.requestLayout();
         column_header_container.requestLayout();
         itemView.requestLayout();
     }
 
-    private void controlSortState(SortState pSortState) {
-        if (pSortState == SortState.ASCENDING) {
-            column_header_sort_button.setVisibility(View.VISIBLE);
-            column_header_sort_button.setImageResource(R.drawable.ic_down);
-
-        } else if (pSortState == SortState.DESCENDING) {
-            column_header_sort_button.setVisibility(View.VISIBLE);
-            column_header_sort_button.setImageResource(R.drawable.ic_up);
-        } else {
-            column_header_sort_button.setVisibility(View.GONE);
-        }
-    }
 
 }

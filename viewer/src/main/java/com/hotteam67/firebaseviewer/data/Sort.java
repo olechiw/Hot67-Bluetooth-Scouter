@@ -61,6 +61,7 @@ public final class Sort {
     public static DataTable SortByColumn(DataTable input, int column,
                                          boolean ascending)
     {
+        if (input == null) return null;
         Constants.Time("Sort()");
         List<ColumnHeaderModel> columns = input.GetColumns();
         List<List<CellModel>> newCells = input.GetCells();
@@ -68,8 +69,8 @@ public final class Sort {
 
         List<List<CellModel>> oldCells = new ArrayList<>(newCells);
 
-        newCells = com.annimon.stream.Stream.of(newCells).sorted((cells1, cells2) -> Compare(cells1.get(column).getData().toString(),
-                cells2.get(column).getData().toString())).collect(com.annimon.stream.Collectors.toList());
+        newCells = com.annimon.stream.Stream.of(newCells).sorted((cells1, cells2) -> Compare(cells1.get(column).getData(),
+                cells2.get(column).getData())).collect(com.annimon.stream.Collectors.toList());
 
         if (!ascending)
             Collections.reverse(newCells);
