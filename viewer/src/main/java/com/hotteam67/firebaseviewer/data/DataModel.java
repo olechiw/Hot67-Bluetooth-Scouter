@@ -13,11 +13,13 @@ import com.hotteam67.firebaseviewer.web.FirebaseHandler;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
+import org.hotteam67.common.OnDownloadResultListener;
 import org.hotteam67.common.TBAHandler;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class DataModel
@@ -195,13 +197,18 @@ public class DataModel
                 databaseUrl, eventName, apiKey);
 
         // Null child to get all raw data
-        model.Download(() -> {
+        model.Download(new OnDownloadResultListener<HashMap<String, Object>>() {
+            @Override
+            public void onComplete(HashMap<String, Object> stringObjectHashMap) {
+                rawData = new DataTable(model.getResult(), ColumnSchema.CalculatedColumnsRawNames(), ColumnSchema.SumColumns());
 
-            rawData = new DataTable(model.getResult(), ColumnSchema.CalculatedColumnsRawNames(), ColumnSchema.SumColumns());
+                RunCalculations(onCompleteEvent);
+            }
 
-            RunCalculations(onCompleteEvent);
-
-            return null;
+            @Override
+            public void onFail() {
+                dataLoadEvent.OnCompleteProgress();
+            }
         });
     }
 
@@ -296,45 +303,66 @@ public class DataModel
             StringBuilder s = new StringBuilder();
 
             // Call api and load into csv
-            TBAHandler.Matches(eventKey, matches -> {
-                try {
-                    for (List<List<String>> m : matches) {
-                        List<String> redTeams = m.get(0);
-                        List<String> blueTeams = m.get(1);
-                        for (String t : redTeams) {
-                            s.append(t.replace("frc", Constants.EMPTY)).append(",");
+            TBAHandler.Matches(eventKey, new OnDownloadResultListener<List<List<List<String>>>>() {
+                @Override
+                public void onComplete(List<List<List<String>>> matches) {
+                    try {
+                        for (List<List<String>> m : matches) {
+                            List<String> redTeams = m.get(0);
+                            List<String> blueTeams = m.get(1);
+                            for (String t : redTeams) {
+                                s.append(t.replace("frc", Constants.EMPTY)).append(",");
+                            }
+                            for (int t = 0; t < blueTeams.size(); ++t) {
+                                s.append(blueTeams.get(t).replace("frc", Constants.EMPTY));
+                                if (t + 1 != blueTeams.size())
+                                    s.append(",");
+                            }
+                            s.append("\n");
                         }
-                        for (int t = 0; t < blueTeams.size(); ++t) {
-                            s.append(blueTeams.get(t).replace("frc", Constants.EMPTY));
-                            if (t + 1 != blueTeams.size())
-                                s.append(",");
-                        }
-                        s.append("\n");
+                        FileHandler.Write(FileHandler.VIEWER_MATCHES_FILE, s.toString());
                     }
-                    FileHandler.Write(FileHandler.VIEWER_MATCHES_FILE, s.toString());
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
+
+                @Override
+                public void onFail() {
                 }
+
             });
 
             // Load into json
             try {
-                TBAHandler.TeamNames(eventKey, teamNames -> {
-                    FileHandler.Write(FileHandler.TEAM_NAMES_FILE, teamNames.toString());
-                    teamNumbersNames = teamNames;
-                });
+                TBAHandler.TeamNames(eventKey, new OnDownloadResultListener<JSONObject>() {
+                            @Override
+                            public void onComplete(JSONObject teamNames) {
+                                FileHandler.Write(FileHandler.TEAM_NAMES_FILE, teamNames.toString());
+                                teamNumbersNames = teamNames;
+                            }
+
+                            @Override
+                            public void onFail() {
+                            }
+                        });
             }
             catch (Exception e)
             {
                 e.printStackTrace();
             }
             try {
-                TBAHandler.Rankings(eventKey, rankings ->
-                        {
-                            FileHandler.Write(FileHandler.RANKS_FILE, rankings.toString());
-                            teamNumbersRanks = rankings;
+                TBAHandler.Rankings(eventKey, new OnDownloadResultListener<JSONObject>() {
+                            @Override
+                            public void onComplete(JSONObject rankings) {
+                                FileHandler.Write(FileHandler.RANKS_FILE, rankings.toString());
+                                teamNumbersRanks = rankings;
+                            }
+
+                            @Override
+                            public void onFail() {
+                            }
                         }
                 );
             }
@@ -343,16 +371,23 @@ public class DataModel
                 e.printStackTrace();
             }
             try {
-                TBAHandler.Alliances(eventKey, a ->
-                {
-                    alliances = a;
-                    StringBuilder alliancesString = new StringBuilder();
-                    for (List<String> alliance : alliances)
-                    {
-                        alliancesString.append(TextUtils.join(",", alliance));
-                        alliancesString.append("\n");
+                TBAHandler.Alliances(eventKey, new OnDownloadResultListener<List<List<String>>>() {
+                    @Override
+                    public void onComplete(List<List<String>> a) {
+                        alliances = a;
+                        StringBuilder alliancesString = new StringBuilder();
+                        for (List<String> alliance : alliances)
+                        {
+                            alliancesString.append(TextUtils.join(",", alliance));
+                            alliancesString.append("\n");
+                        }
+                        FileHandler.Write(FileHandler.ALLIANCES_FILE, alliancesString.toString());
                     }
-                    FileHandler.Write(FileHandler.ALLIANCES_FILE, alliancesString.toString());
+
+                    @Override
+                    public void onFail() {
+                    }
+
                 });
             }
             catch (Exception e)

@@ -28,6 +28,7 @@ import android.widget.ImageButton;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
+import org.hotteam67.common.OnDownloadResultListener;
 import org.hotteam67.common.SchemaHandler;
 import org.hotteam67.common.TBAHandler;
 import org.json.JSONObject;
@@ -247,39 +248,46 @@ public class ServerActivity extends BluetoothServerActivity {
     private void downloadEventMatches()
     {
         GetString("Enter Event Key:", "", eventKey ->
-                TBAHandler.Matches(eventKey, result ->
-                {
-                    try
-                    {
-                        StringBuilder matchesBuilder = new StringBuilder();
-
-                        for (List<List<String>> match : result)
+                TBAHandler.Matches(eventKey, new OnDownloadResultListener<List<List<List<String>>>>() {
+                    @Override
+                    public void onComplete(List<List<List<String>>> result) {
+                        try
                         {
-                            List<String> redTeams = match.get(0);
-                            List<String> blueTeams = match.get(1);
-                            StringBuilder rowBuilder = new StringBuilder();
+                            StringBuilder matchesBuilder = new StringBuilder();
 
-                            for (int t = 0; t < redTeams.size(); ++t)
+                            for (List<List<String>> match : result)
                             {
-                                rowBuilder.append(redTeams.get(t));
-                                rowBuilder.append(",");
-                            }
-                            for (int t = 0; t < blueTeams.size(); ++t)
-                            {
-                                rowBuilder.append(blueTeams.get(t));
-                                if (t + 1 < blueTeams.size())
+                                List<String> redTeams = match.get(0);
+                                List<String> blueTeams = match.get(1);
+                                StringBuilder rowBuilder = new StringBuilder();
+
+                                for (int t = 0; t < redTeams.size(); ++t)
+                                {
+                                    rowBuilder.append(redTeams.get(t));
                                     rowBuilder.append(",");
+                                }
+                                for (int t = 0; t < blueTeams.size(); ++t)
+                                {
+                                    rowBuilder.append(blueTeams.get(t));
+                                    if (t + 1 < blueTeams.size())
+                                        rowBuilder.append(",");
+                                }
+                                rowBuilder.append("\n");
+                                matchesBuilder.append(rowBuilder.toString());
                             }
-                            rowBuilder.append("\n");
-                            matchesBuilder.append(rowBuilder.toString());
+                            MessageBox("Downloaded Matches: " +
+                                    matchesBuilder.toString().split("\n").length);
+                            FileHandler.Write(FileHandler.MATCHES_FILE, matchesBuilder.toString());
                         }
-                        MessageBox("Downloaded Matches: " +
-                                        matchesBuilder.toString().split("\n").length);
-                        FileHandler.Write(FileHandler.MATCHES_FILE, matchesBuilder.toString());
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
                     }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
+
+                    @Override
+                    public void onFail() {
+                        MessageBox("Failed to download matches with key: " + eventKey);
                     }
                 }));
     }

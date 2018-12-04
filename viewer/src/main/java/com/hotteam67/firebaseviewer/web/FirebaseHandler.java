@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.Callable;
 
+import org.hotteam67.common.OnDownloadResultListener;
 import org.json.JSONObject;
 
 
@@ -26,7 +27,7 @@ public class FirebaseHandler {
     private final String firebaseUrl;
     private final String firebaseApiKey;
 
-    private Callable firebaseCompleteEvent = null;
+    private OnDownloadResultListener<HashMap<String, Object>> firebaseCompleteEvent = null;
 
     private HashMap<String, Object> results = null;
 
@@ -37,7 +38,7 @@ public class FirebaseHandler {
         firebaseApiKey = apiKey;
     }
 
-    public void Download(Callable completeEvent)
+    public void Download(OnDownloadResultListener<HashMap<String, Object>> completeEvent)
     {
         firebaseCompleteEvent = completeEvent;
         new RetrieveFirebaseTask().execute();
@@ -96,6 +97,11 @@ public class FirebaseHandler {
     {
         try
         {
+            if (json == null || json.trim().isEmpty()) {
+                firebaseCompleteEvent.onFail();
+                return;
+            }
+
             results = new HashMap<>();
             JSONObject jsonObject = new JSONObject(json);
 
@@ -119,8 +125,10 @@ public class FirebaseHandler {
         }
         catch (Exception e)
         {
+            firebaseCompleteEvent.onFail();
             results = new HashMap<>();
             e.printStackTrace();
+            return;
         }
         DoFinish();
     }
@@ -129,7 +137,7 @@ public class FirebaseHandler {
     private void DoFinish()
     {
         try {
-            firebaseCompleteEvent.call();
+            firebaseCompleteEvent.onComplete(getResult());
         }
         catch (Exception e)
         {
