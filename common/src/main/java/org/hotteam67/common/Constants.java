@@ -13,6 +13,8 @@ import java.util.UUID;
 
 public class Constants
 {
+    public static final int TEAM_NUMBER_COLUMN = 0;
+
     public static final class ViewerTeamsGroupTypes {
         public static final String MATCH = "Qualification Match";
         public static final String ALLIANCE = "Alliance";

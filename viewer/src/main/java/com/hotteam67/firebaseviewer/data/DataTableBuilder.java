@@ -100,8 +100,10 @@ class DataTableBuilder implements Serializable {
         {
             try {
                 String teamNumber = row.getData();
+                // Already seen, add to existing list for team
                 if (teamRows.containsKey(teamNumber))
                     teamRows.get(teamNumber).add(rawRows.get(i));
+                // Newly seen team, make a new list of matches for them
                 else {
                     teamNumbers.add(teamNumber);
                     List<List<CellModel>> rows = new ArrayList<>();
@@ -117,7 +119,7 @@ class DataTableBuilder implements Serializable {
         }
 
         /*
-        Create a calculated row for each teamNumber
+        Create a calculated row for each teamNumber using each of the stored matches
          */
         int current_row = 0;
         for (String teamNumber : teamNumbers)
@@ -146,60 +148,8 @@ class DataTableBuilder implements Serializable {
                 // Add cell to row
                 row.add(new CellModel(current_row + "_" + column, value));
             }
-
-            if (calculationType == Calculation.AVERAGE)
-            {
-                // Add adjusted-average columns
-                for (ColumnSchema.OutlierAdjustedColumn column : outlierAdjustedColumns)
-                {
-                    String targetColumn = column.sourceColumnName;
-                    String adjustmentColumn = column.adjustmentColumnName;
-
-                    if (!calculatedColumns.contains(targetColumn) || !calculatedColumns.contains(adjustmentColumn))
-                        continue;
-
-                    int targetIndex = calculatedColumns.indexOf(targetColumn);
-                    int adjustmentIndex = calculatedColumns.indexOf(adjustmentColumn);
-
-                    List<String> targetValues = new ArrayList<>();
-                    List<String> adjustmentValues = new ArrayList<>();
-
-                    try
-                    {
-                        for (List<CellModel> match : matches)
-                        {
-                            targetValues.add(match.get(targetIndex).getData());
-                            adjustmentValues.add(match.get(adjustmentIndex).getData());
-                        }
-
-                        List<String> outliers = new ArrayList<>();
-                        for (String value : targetValues)
-                        {
-                            int index = targetValues.indexOf(value);
-                            if (Outliers.IsBelowQuartile(value, targetValues, column.sourceQuartileDisallowed) &&
-                                    !Outliers.IsBelowQuartile(adjustmentValues.get(index), adjustmentValues, column.adjustmentQuartileDisallowed))
-                            {
-                                outliers.add(value);
-                            }
-                        }
-                        targetValues.removeAll(outliers);
-
-                        String cellValue = String.valueOf(doCalculatedColumn(column.columnName, targetValues, Calculation.AVERAGE));
-                        CellModel cell = new CellModel("0_0", cellValue);
-
-                        row.add(0, cell);
-
-                        if (current_row == 0)
-                        {
-                            calcColumnHeaders.add(0, new ColumnHeaderModel(column.columnName));
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-            }
+            // Team number at end
+            row.add(0, new CellModel("0_0", teamNumber));
 
             // Add row to calculated list
             calcCells.add(row);
@@ -208,24 +158,27 @@ class DataTableBuilder implements Serializable {
             current_row++;
         }
 
-        for (RowHeaderModel rowHeaderModel : calcRowHeaders)
+        for (int r = 0; r < calcCells.size(); ++r )
         {
-            String team = rowHeaderModel.getData();
+            String team = calcCells.get(r).get(0).getData();
             try {
                 String teamRank = (String)  new JSONObject(teamRanksJson).get(team);
-                calcCells.get(calcRowHeaders.indexOf(rowHeaderModel)).add(0,
+                calcCells.get(r).add(1,
                         new CellModel("0_0", teamRank));
             }
             catch (Exception e)
             {
                 //e.printStackTrace();
-                calcCells.get(calcRowHeaders.indexOf(rowHeaderModel)).add(0,
+                calcCells.get(r).add(1,
                         new CellModel("0_0", ""));
             }
         }
 
-        calcColumnHeaders.add(0, new ColumnHeaderModel("R"));
-        calculatedColumns.add(0, "R");
+        // Rank and team number are the two non-calculated columns, so add them manually
+        calcColumnHeaders.add(0, new ColumnHeaderModel("Team"));
+        calculatedColumns.add(0, "Team Number");
+        calcColumnHeaders.add(1, new ColumnHeaderModel("R"));
+        calculatedColumns.add(1, "R");
 
         List<String> extraTeams = new ArrayList<>();
         // Do N/A Teams

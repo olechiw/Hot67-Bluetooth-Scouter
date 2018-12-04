@@ -80,6 +80,15 @@ public class DataModel
                 outputAverages : outputMaximums;
     }
 
+    public static synchronized DataTable GetAverages()
+    {
+        return outputAverages;
+    }
+    public static synchronized DataTable GetMaximums()
+    {
+        return outputMaximums;
+    }
+
     /*
     Get the teamnumbersnames json
      */
@@ -493,49 +502,19 @@ public class DataModel
     /*
     Show a designated alliance's teams
      */
-    public static void ShowAlliance(Integer seatNumber)
+    public static List<String> GetAlliance(Integer seatNumber)
     {
         try
         {
-            if (seatNumber <= 0 || seatNumber > alliances.size())
-            {
-                SetTeamNumberFilter();
-                return;
-            }
-
-            List<String> alliance = alliances.get(seatNumber - 1);
-            outputMaximums = maximums;
-            outputAverages = averages;
-            SetTeamNumberFilter(Stream.of(alliance.toArray()).toArray(String[]::new));
+            return alliances.get(seatNumber);
         }
         catch (Exception e)
         {
             e.printStackTrace();
+            return new ArrayList<>();
         }
     }
 
-    /*
-    Show Custom teams
-     */
-    public static void ShowTeams(List<String> teams)
-    {
-        try
-        {
-            if (teams == null || teams.size() == 0)
-            {
-                SetTeamNumberFilter();
-                return;
-            }
-
-            outputMaximums = maximums;
-            outputAverages = averages;
-            SetTeamNumberFilter(Stream.of(teams.toArray()).toArray(String[]::new));
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
 
     /*
     Sort by a target column
@@ -599,122 +578,22 @@ public class DataModel
         }
     }
 
-    /*
-    When the match search text changes
-     */
-    public static synchronized void ShowMatch(Integer matchNumber)
-    {
-        try
-        {
-            if (matchNumber <= 0)
-            {
-                SetTeamNumberFilter(Constants.EMPTY);
-                return;
-            }
-            outputMaximums = GetMatchForTable(matchNumber, maximums);
-            outputAverages = GetMatchForTable(matchNumber, averages);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
 
-    private static synchronized DataTable GetMatchForTable(Integer matchNumber, DataTable table)
+    public static synchronized TBAHandler.Match GetMatch(Integer matchNumber)
     {
         if (matchNumber <= redTeamsQuals.size() && matchNumber <= blueTeamsQuals.size())
         {
-            List<String> red = new ArrayList<>(
+            TBAHandler.Match m = new TBAHandler.Match();
+            m.redTeams = new ArrayList<>(
                     Arrays.asList(redTeamsQuals.get(matchNumber - 1).split(",")));
-            List<String> blue = new ArrayList<>(
+            m.blueTeams = new ArrayList<>(
                     Arrays.asList(blueTeamsQuals.get(matchNumber - 1).split(",")));
 
-            List<String> filters = new ArrayList<>();
-            filters.addAll(red);
-            filters.addAll(blue);
-
-            List<RowHeaderModel> rows = new ArrayList<>();
-            List<List<CellModel>> cells = new ArrayList<>();
-            List<ColumnHeaderModel> columns = new ArrayList<>(table.GetColumns());
-
-            for (String team : filters)
-            {
-                SetTeamNumberFilter(team);
-                rows.addAll(table.GetRowHeaders());
-
-                for (List<CellModel> cell : table.GetCells())
-                {
-                    List<CellModel> newRow = new ArrayList<>(cell);
-                    cells.add(newRow);
-                }
-            }
-
-            DataTable processor = new DataTable(columns, cells, rows);
-            processor.SetTeamNumberFilter(Constants.EMPTY);
-
-            List<ColumnHeaderModel> columnHeaderModels = processor.GetColumns();
-            columnHeaderModels.add(0, new ColumnHeaderModel(Constants.ALLIANCE));
-
-            List<List<CellModel>> outputCells = processor.GetCells();
-            for (int i = 0; i < outputCells.size(); ++i)
-            {
-                String teamNumber = processor.GetRowHeaders().get(i).getData();
-
-                if (red.contains(teamNumber))
-                {
-                    outputCells.get(i).add(0, new CellModel(i + "_00", Constants.RED));
-                }
-                else {
-                    outputCells.get(i).add(0, new CellModel(i + "_00", Constants.BLUE));
-                    blue.remove(teamNumber);
-                }
-                red.remove(teamNumber);
-                blue.remove(teamNumber);
-            }
-
-            List<RowHeaderModel> rowHeaders = processor.GetRowHeaders();
-
-            int firstRowSize = 0;
-            if (outputCells.size() > 0)
-            {
-                firstRowSize = outputCells.get(0).size() - 1; // -1 for alliance
-            }
-            for (String team : red)
-            {
-                List<CellModel> row = new ArrayList<>();
-                row.add(new CellModel("0", Constants.RED));
-
-                for (int i = 0; i < firstRowSize; ++i)
-                {
-                    row.add(new CellModel("0", Constants.N_A));
-                }
-
-
-                outputCells.add(row);
-                rowHeaders.add(new RowHeaderModel(team));
-            }
-            for (String team : blue)
-            {
-                List<CellModel> row = new ArrayList<>();
-                row.add(new CellModel("0", Constants.BLUE));
-
-                for (int i = 0; i < firstRowSize; ++i)
-                {
-                    row.add(new CellModel("0", Constants.N_A));
-                }
-
-                outputCells.add(row);
-                rowHeaders.add(new RowHeaderModel(team));
-            }
-
-            DataTable newProcessor = new DataTable(columnHeaderModels, outputCells, rowHeaders);
-
-            //Sort by alliance
-            return Sort.SortByColumn(newProcessor, 0, false);
+            return m;
         }
         else
         {
-            return table;
+            return null;
         }
     }
 

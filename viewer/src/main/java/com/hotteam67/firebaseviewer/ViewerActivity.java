@@ -27,18 +27,25 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 
 import com.evrencoskun.tableview.TableView;
+import com.evrencoskun.tableview.filter.Filter;
 import com.evrencoskun.tableview.sort.SortState;
 import com.hotteam67.firebaseviewer.data.DataModel;
+import com.hotteam67.firebaseviewer.data.MultiFilter;
 import com.hotteam67.firebaseviewer.tableview.MainTableAdapter;
 import com.hotteam67.firebaseviewer.tableview.MainTableViewListener;
+import com.hotteam67.firebaseviewer.tableview.MultiFilterTableView;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.DarkNumberPicker;
 import org.hotteam67.common.InterceptAllLayout;
+import org.hotteam67.common.TBAHandler;
 
 public class ViewerActivity extends AppCompatActivity {
 
-    private MainTableAdapter tableAdapter;
+    private MultiFilterTableView averagesTable;
+    private MultiFilter averagesFilter;
+    private MultiFilterTableView maximumsTable;
+    private MultiFilter maximumsFilter;
 
     private ImageButton refreshButton;
     private ImageButton clearButton;
@@ -114,7 +121,7 @@ public class ViewerActivity extends AppCompatActivity {
             if (!teamSearchView.getText().toString().trim().isEmpty())
                 teamSearchView.setText("");
             teamsGroupButton.setText("Show Teams");
-            DataModel.ClearFilters();
+            RemoveAllFilters();
             teamsGroupInput.setValue(0);
             UpdateUI();
             clearButton.setVisibility(View.INVISIBLE);
@@ -136,8 +143,8 @@ public class ViewerActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable editable) {
                 try {
-                    DataModel.ClearFilters();
-                    DataModel.SetTeamNumberFilter(editable.toString());
+                    RemoveAllFilters();
+                    Filter(Constants.TEAM_NUMBER_COLUMN, editable.toString(), true);
                     UpdateUI();
                 }
                 catch (Exception e)
@@ -178,16 +185,14 @@ public class ViewerActivity extends AppCompatActivity {
         tableViewFrame.setInterceptEvent(() -> collapse(teamsGroupView));
 
 
-        TableView tableView = findViewById(R.id.mainTableView);
+        averagesTable = findViewById(R.id.averagesTableView);
+        maximumsTable = findViewById(R.id.maximumsTableView);
 
-        // Create TableView Adapter
-        tableAdapter = new MainTableAdapter(this);
-        tableView.setAdapter(tableAdapter);
-        tableView.getColumnSortHandler().setEnableAnimation(true);
+        setupTableView(averagesTable);
+        setupTableView(maximumsTable);
 
-
-        // Create listener
-        tableView.setTableViewListener(new MainTableViewListener(tableView, tableAdapter));
+        maximumsFilter = new MultiFilter(maximumsTable);
+        averagesFilter = new MultiFilter(averagesTable);
 
         RefreshConnectionProperties();
 
@@ -204,6 +209,13 @@ public class ViewerActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     Constants.REQUEST_ENABLE_PERMISSION);
         }
+    }
+
+    private void setupTableView(TableView v)
+    {
+        MainTableAdapter adapter = new MainTableAdapter(this);
+        v.setAdapter(adapter);
+        v.setTableViewListener(new MainTableViewListener(v, adapter));
     }
 
     public static void expand(final View v) {
@@ -275,8 +287,10 @@ public class ViewerActivity extends AppCompatActivity {
             {
                 runOnUiThread(() -> {
                     EndProgressAnimation();
+                    ((MainTableAdapter)averagesTable.getAdapter()).setAllItems(DataModel.GetAverages());
+                    ((MainTableAdapter)maximumsTable.getAdapter()).setAllItems(DataModel.GetMaximums());
                     UpdateUI();
-                    tableAdapter.getTableView().sortColumn(0, SortState.ASCENDING);
+                    averagesTable.sortColumn(1, SortState.ASCENDING);
                 });
             }
         });
@@ -284,24 +298,26 @@ public class ViewerActivity extends AppCompatActivity {
 
     private void UpdateUINetwork()
     {
-        DataModel.RefreshTable(() ->
-                runOnUiThread(this::UpdateUI));
+        DataModel.RefreshTable(() -> runOnUiThread(() -> {
+            ((MainTableAdapter)averagesTable.getAdapter()).setAllItems(DataModel.GetAverages());
+            ((MainTableAdapter)maximumsTable.getAdapter()).setAllItems(DataModel.GetMaximums());
+            UpdateUI();
+            averagesTable.hideColumn(0);
+            maximumsTable.hideColumn(0);
+
+        }));
     }
 
     public void UpdateUI()
     {
-        if (DataModel.GetTable() != null)
+        if (teamsGroupInput.getValue() == 0
+                && teamSearchView.getText().toString().trim().isEmpty())
         {
-            if (teamsGroupInput.getValue() == 0
-                    && teamSearchView.getText().toString().trim().isEmpty())
-            {
-                clearButton.setVisibility(View.INVISIBLE);
-                teamsGroupButton.setText("Show Teams");
-            }
-            else
-                clearButton.setVisibility(View.VISIBLE);
-            tableAdapter.setAllItems(DataModel.GetTable());
+            clearButton.setVisibility(View.INVISIBLE);
+            teamsGroupButton.setText("Show Teams");
         }
+        else
+            clearButton.setVisibility(View.VISIBLE);
     }
 
     private void LoadLocal()
@@ -317,31 +333,59 @@ public class ViewerActivity extends AppCompatActivity {
         switch (teamsGroupType.getSelectedItem().toString())
         {
             case Constants.ViewerTeamsGroupTypes.MATCH:
-                if (id != 0)
+                if (id == 0)
                 {
-                    teamsGroupButton.setText("Q" + id + " Teams");
-                    DataModel.ShowMatch(id);
+                    RemoveAllFilters();
+                    break;
                 }
-                else
+                teamsGroupButton.setText("Q" + id + " Teams");
+                TBAHandler.Match m = DataModel.GetMatch(id);
+
+                if (m == null)
                 {
-                    DataModel.ClearFilters();
-                    UpdateUI();
+                    RemoveAllFilters();
+                    break;
                 }
+
+                averagesFilter.removeFilter(Constants.TEAM_NUMBER_COLUMN);
+                maximumsFilter.removeFilter(Constants.TEAM_NUMBER_COLUMN);
+                for (String red : m.redTeams) Filter(Constants.TEAM_NUMBER_COLUMN, red);
+                for (String blue : m.blueTeams) Filter(Constants.TEAM_NUMBER_COLUMN, blue);
+
+
                 break;
             case Constants.ViewerTeamsGroupTypes.ALLIANCE:
                 if (id != 0)
                 {
                     teamsGroupButton.setText("A" + id + " Teams");
-                    DataModel.ShowAlliance(id);
+                    RemoveAllFilters();
+                    for (String t : DataModel.GetAlliance(id))
+                        Filter(Constants.TEAM_NUMBER_COLUMN, t, true);
                 }
                 else
                 {
-                    DataModel.ClearFilters();
-                    UpdateUI();
+                    RemoveAllFilters();
                 }
                 break;
         }
         UpdateUI();
+    }
+
+    private synchronized void RemoveAllFilters()
+    {
+        averagesFilter.removeFilter(Constants.TEAM_NUMBER_COLUMN);
+        maximumsFilter.removeFilter(Constants.TEAM_NUMBER_COLUMN);
+    }
+
+    private synchronized void Filter(int column, String s)
+    {
+        Filter(column, s, false);
+    }
+
+    private synchronized void Filter(int column, String s, boolean doContains)
+    {
+        averagesFilter.set(column, s, doContains);
+        maximumsFilter.set(column, s, doContains);
     }
 
     /*
@@ -352,9 +396,21 @@ public class ViewerActivity extends AppCompatActivity {
 
         ((Button)v).setText((((Button) v).getText().toString().equals("MAX")) ?
                 "AVG" : "MAX");
+        View active = GetActiveTable();
+        View inActive = GetInactiveTable();
+        active.setVisibility(View.GONE);
+        inActive.setVisibility(View.VISIBLE);
+//         UpdateUI();
+    }
 
-        DataModel.SwitchCalculation();
-        UpdateUI();
+    private synchronized TableView GetActiveTable()
+    {
+        return (averagesTable.getVisibility() == View.VISIBLE) ? averagesTable : maximumsTable;
+    }
+
+    private synchronized TableView GetInactiveTable()
+    {
+        return (averagesTable.getVisibility() == View.VISIBLE) ? maximumsTable : averagesTable;
     }
 
     /*

@@ -1,5 +1,6 @@
 package com.hotteam67.firebaseviewer.tableview.tablemodel;
 
+import com.evrencoskun.tableview.filter.IFilterableModel;
 import com.evrencoskun.tableview.sort.ISortableModel;
 
 import java.io.Serializable;
@@ -8,7 +9,7 @@ import java.io.Serializable;
  * Created by evrencoskun on 27.11.2017.
  */
 
-public class CellModel implements ISortableModel, Serializable {
+public class CellModel implements ISortableModel, IFilterableModel, Serializable {
     private final String mId;
     private final String mData;
 
@@ -45,4 +46,8 @@ public class CellModel implements ISortableModel, Serializable {
         }
     }
 
+    @Override
+    public String getFilterableKeyword() {
+        return String.valueOf(mData);
+    }
 }

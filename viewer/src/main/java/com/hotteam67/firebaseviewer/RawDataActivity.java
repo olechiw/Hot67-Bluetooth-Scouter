@@ -11,6 +11,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.evrencoskun.tableview.TableView;
+import com.evrencoskun.tableview.sort.SortState;
 import com.hotteam67.firebaseviewer.data.DataTable;
 import com.hotteam67.firebaseviewer.tableview.MainTableAdapter;
 import com.hotteam67.firebaseviewer.tableview.MainTableViewListener;
@@ -67,13 +68,12 @@ public class RawDataActivity extends AppCompatActivity {
                     return;
                 }
 
-                dataTable = Sort.BubbleSortAscendingByRowHeader(dataTable);
-
                 TableView table = findViewById(R.id.mainTableView);
                 MainTableAdapter adapter = new MainTableAdapter(this);
                 table.setAdapter(adapter);
                 table.setTableViewListener(new MainTableViewListener(table, adapter));
                 adapter.setAllItems(dataTable);
+                table.sortRowHeader(SortState.ASCENDING);
             }
         }
         catch (Exception e)
