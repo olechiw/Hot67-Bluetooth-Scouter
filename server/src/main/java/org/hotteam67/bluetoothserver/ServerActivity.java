@@ -248,17 +248,17 @@ public class ServerActivity extends BluetoothServerActivity {
     private void downloadEventMatches()
     {
         GetString("Enter Event Key:", "", eventKey ->
-                TBAHandler.Matches(eventKey, new OnDownloadResultListener<List<List<List<String>>>>() {
+                TBAHandler.Matches(eventKey, new OnDownloadResultListener<List<TBAHandler.Match>>() {
                     @Override
-                    public void onComplete(List<List<List<String>>> result) {
+                    public void onComplete(List<TBAHandler.Match> result) {
                         try
                         {
                             StringBuilder matchesBuilder = new StringBuilder();
 
-                            for (List<List<String>> match : result)
+                            for (TBAHandler.Match match : result)
                             {
-                                List<String> redTeams = match.get(0);
-                                List<String> blueTeams = match.get(1);
+                                List<String> redTeams = match.redTeams;
+                                List<String> blueTeams = match.blueTeams;
                                 StringBuilder rowBuilder = new StringBuilder();
 
                                 for (int t = 0; t < redTeams.size(); ++t)

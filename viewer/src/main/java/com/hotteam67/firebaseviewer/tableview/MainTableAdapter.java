@@ -96,7 +96,13 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         RowHeaderModel rowHeaderModel = (RowHeaderModel) p_jValue;
 
         RowHeaderViewHolder rowHeaderViewHolder = (RowHeaderViewHolder) holder;
-        rowHeaderViewHolder.row_header_textview.setText(String.valueOf(rowHeaderModel.getData()));
+        try {
+            rowHeaderViewHolder.row_header_textview.setText(String.valueOf(rowHeaderModel.getData()));
+        }
+        catch (Exception e)
+        {
+            rowHeaderViewHolder.row_header_textview.setText("ERROR");
+        }
 
     }
 

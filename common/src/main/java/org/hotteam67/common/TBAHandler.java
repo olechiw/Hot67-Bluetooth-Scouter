@@ -1,5 +1,7 @@
 package org.hotteam67.common;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -75,6 +77,12 @@ public class TBAHandler {
         }
     }
 
+    public static class Match
+    {
+        public List<String> redTeams = new ArrayList<>();
+        public List<String> blueTeams = new ArrayList<>();
+    }
+
     // Gets rankings as returns as jsonobjct
     public static void Rankings(String eventCode, OnDownloadResultListener<JSONObject> returnEvent)
     {
@@ -110,6 +118,7 @@ public class TBAHandler {
                         }
                         catch (Exception e)
                         {
+                            // Put no team name
                             returnObject.put(team.replace("frc", ""), "");
                         }
                     }
@@ -130,7 +139,7 @@ public class TBAHandler {
     }
 
     // Returns lists of 3 red teams, and 3 blue teams, red first: [[r1, r2, r3], [b1, b2, b3]]
-    public static void Matches(String eventCode, OnDownloadResultListener<List<List<List<String>>>> returnEvent)
+    public static void Matches(String eventCode, final OnDownloadResultListener<List<Match>> returnEvent)
     {
         String url = Constants.TBA.BASE_URL;
 
@@ -140,38 +149,31 @@ public class TBAHandler {
         RetrieveUrl retrieveUrl = new RetrieveUrl(new OnDownloadResultListener<String>() {
             @Override
             public void onComplete(String result) {
-                JSONArray resultArray;
-                List<List<List<String>>> matches = new ArrayList<>();
+
                 try {
-                    resultArray = new JSONArray(result);
-                    for (int i = 0; i < resultArray.length(); ++i) {
-                        matches.add(null);
-                    }
+                    JSONArray resultArray = new JSONArray(result);
+                    List<Match> matches = new ArrayList<>();
+
                     for (int i = 0; i < resultArray.length(); ++i) {
                         JSONObject matchObject = resultArray.getJSONObject(i);
+                        Match match = new Match();
+
+                        // Only qual schedule
                         if (!matchObject.get("comp_level").equals("qm")) continue;
-                        JSONObject allianceObject = (JSONObject) matchObject.get("alliances");
-                        JSONObject blue = (JSONObject) allianceObject.get("blue");
-                        JSONObject red = (JSONObject) allianceObject.get("red");
-                        List<List<String>> alliances = new ArrayList<>();
+
+                        JSONObject allianceObject = matchObject.getJSONObject("alliances");
+                        JSONObject blue = allianceObject.getJSONObject("alliances").getJSONObject("blue");
+                        JSONObject red = allianceObject.getJSONObject("alliances").getJSONObject("red");
 
                         JSONArray redTeamKeys = (JSONArray) red.get("team_keys");
-                        ArrayList<String> redTeams = new ArrayList<>();
-                        redTeams.add(((String) redTeamKeys.get(0)).replace("frc", ""));
-                        redTeams.add(((String) redTeamKeys.get(1)).replace("frc", ""));
-                        redTeams.add(((String) redTeamKeys.get(2)).replace("frc", ""));
+                        for (int r = 0; r < redTeamKeys.length(); ++r)
+                            match.redTeams.add(((String) redTeamKeys.get(r)).replace("frc", ""));
 
                         JSONArray blueTeamKeys = (JSONArray) blue.get("team_keys");
-                        ArrayList<String> blueTeams = new ArrayList<>();
-                        blueTeams.add(((String) blueTeamKeys.get(0)).replace("frc", ""));
-                        blueTeams.add(((String) blueTeamKeys.get(1)).replace("frc", ""));
-                        blueTeams.add(((String) blueTeamKeys.get(2)).replace("frc", ""));
+                        for (int b = 0; b < blueTeamKeys.length(); ++b)
+                            match.blueTeams.add(((String) blueTeamKeys.get(b)).replace("frc", ""));
 
-                        alliances.add(redTeams);
-                        alliances.add(blueTeams);
-
-                        int matchNumber = (int) matchObject.get("match_number");
-                        matches.set(matchNumber - 1, alliances);
+                        matches.add(match);
                     }
                     matches.removeAll(Collections.singleton(null));
                     returnEvent.onComplete(matches);
@@ -187,7 +189,7 @@ public class TBAHandler {
         }); retrieveUrl.execute(url);
     }
 
-    // Gets team names and returns as jsonobject
+    // Gets team names and returns as jsonobject, team number as key team name as value
     public static void TeamNames(String eventCode, OnDownloadResultListener<JSONObject> returnEvent)
     {
         String url = Constants.TBA.BASE_URL;
@@ -220,6 +222,7 @@ public class TBAHandler {
         }); retrieveUrl.execute(url);
     }
 
+    // Get alliances and return as list of list of string team numbers
     public static void Alliances(String eventCode, OnDownloadResultListener<List<List<String>>> returnEvent)
     {
         String url = Constants.TBA.BASE_URL;

@@ -303,18 +303,18 @@ public class DataModel
             StringBuilder s = new StringBuilder();
 
             // Call api and load into csv
-            TBAHandler.Matches(eventKey, new OnDownloadResultListener<List<List<List<String>>>>() {
+            TBAHandler.Matches(eventKey, new OnDownloadResultListener<List<TBAHandler.Match>>() {
                 @Override
-                public void onComplete(List<List<List<String>>> matches) {
+                public void onComplete(List<TBAHandler.Match> matches) {
                     try {
-                        for (List<List<String>> m : matches) {
-                            List<String> redTeams = m.get(0);
-                            List<String> blueTeams = m.get(1);
+                        for (TBAHandler.Match m : matches) {
+                            List<String> redTeams = m.redTeams;
+                            List<String> blueTeams = m.blueTeams;
                             for (String t : redTeams) {
-                                s.append(t.replace("frc", Constants.EMPTY)).append(",");
+                                s.append(t).append(",");
                             }
                             for (int t = 0; t < blueTeams.size(); ++t) {
-                                s.append(blueTeams.get(t).replace("frc", Constants.EMPTY));
+                                s.append(blueTeams.get(t));
                                 if (t + 1 != blueTeams.size())
                                     s.append(",");
                             }
