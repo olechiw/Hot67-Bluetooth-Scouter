@@ -83,14 +83,8 @@ public class RawDataActivity extends AppCompatActivity {
     }
 
 
-    public void doEndWithMatchNumber(int yPosition) {
-        int matchNumber = -1;
-        try
-        {
-            matchNumber = Integer.valueOf(dataTable.GetRowHeaders().get(yPosition).getData());
-        } catch (Exception ignored) {}
-        if (matchNumber == -1)
-            return;
+    public void doEndWithMatchNumber(int matchNumber) {
+        if (matchNumber == -1) return;
         Intent result = new Intent();
         result.putExtra("Match Number", matchNumber);
         setResult(Activity.RESULT_OK, result);

@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
 import com.evrencoskun.tableview.ITableView;
+import com.evrencoskun.tableview.filter.IFilterableModel;
 import com.evrencoskun.tableview.listener.ITableViewListener;
 import com.evrencoskun.tableview.sort.SortState;
 import com.hotteam67.firebaseviewer.ViewerActivity;
@@ -52,8 +53,7 @@ public class MainTableViewListener implements ITableViewListener {
             return;
 
         try {
-            String teamNumber = DataModel.GetTable().GetRowHeaders().get(row).getData();
-
+            String teamNumber = GetRowHeaderValue(row);
             DataTable table = GetFormattedRawData(teamNumber);
             if (table == null) return;
             table = Sort.BubbleSortAscendingByRowHeader(table);
@@ -101,9 +101,22 @@ public class MainTableViewListener implements ITableViewListener {
             ScatterPlot.Show(
                     values, adapter.GetContext(), title);
         }
-        catch (Exception e)
+        catch (Exception ignored)
+        {
+
+        }
+    }
+
+    public String GetRowHeaderValue(int row)
+    {
+        List rowHeaders = adapter.getRowHeaderRecyclerViewAdapter().getItems();
+        try
+        {
+            return ((RowHeaderModel)rowHeaders.get(row)).getData();
+        } catch (Exception e)
         {
             e.printStackTrace();
+            return "-1";
         }
     }
 
@@ -145,12 +158,17 @@ public class MainTableViewListener implements ITableViewListener {
     public void onRowHeaderClicked(@NonNull RecyclerView.ViewHolder p_jRowHeaderView, int
             p_nYPosition) {
 
+
         if (adapter.GetContext() instanceof  RawDataActivity) {
-            ((RawDataActivity) adapter.GetContext()).doEndWithMatchNumber(p_nYPosition);
+            try {
+                ((RawDataActivity) adapter.GetContext()).doEndWithMatchNumber(Integer.valueOf(GetRowHeaderValue(p_nYPosition)));
+            } catch (Exception e)
+            { e.printStackTrace(); }
+
             return;
         }
 
-        String teamNumber = DataModel.GetTable().GetRowHeaders().get(p_nYPosition).getData();
+        String teamNumber = GetRowHeaderValue(p_nYPosition);
 
             Log.d("HotTeam67", "Set team number filter: " + teamNumber);
 
