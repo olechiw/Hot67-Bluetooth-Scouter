@@ -55,6 +55,7 @@ public class MultiFilter extends Filter {
             ((MultiFilterTableView) tableView).filter(this, doContains);
         else
             tableView.filter(this);
+        tableView.hideColumn(0);
     }
 
     /**
@@ -68,6 +69,7 @@ public class MultiFilter extends Filter {
 
     public void removeFilter(int column)
     {
+        if (filterItems.size() == 0) return;
         for (Iterator<FilterItem> filterItemIterator = filterItems.iterator(); filterItemIterator.hasNext();)
         {
             final FilterItem item = filterItemIterator.next();
