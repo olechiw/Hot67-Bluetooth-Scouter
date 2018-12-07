@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -357,8 +358,18 @@ public class ViewerActivity extends AppCompatActivity {
 
                 averagesFilter.removeFilter(Constants.TEAM_NUMBER_COLUMN);
                 maximumsFilter.removeFilter(Constants.TEAM_NUMBER_COLUMN);
-                for (String red : m.redTeams) Filter(Constants.TEAM_NUMBER_COLUMN, red);
-                for (String blue : m.blueTeams) Filter(Constants.TEAM_NUMBER_COLUMN, blue);
+                for (String red : m.redTeams)
+                {
+                    ((MainTableAdapter)averagesTable.getAdapter()).SetRowHeaderHighlight(red, Color.RED);
+                    ((MainTableAdapter)maximumsTable.getAdapter()).SetRowHeaderHighlight(red, Color.RED);
+                    Filter(Constants.TEAM_NUMBER_COLUMN, red);
+                }
+                for (String blue : m.blueTeams)
+                {
+                    ((MainTableAdapter)averagesTable.getAdapter()).SetRowHeaderHighlight(blue, Color.BLUE);
+                    ((MainTableAdapter)maximumsTable.getAdapter()).SetRowHeaderHighlight(blue, Color.BLUE);
+                    Filter(Constants.TEAM_NUMBER_COLUMN, blue);
+                }
 
 
                 break;
@@ -383,6 +394,9 @@ public class ViewerActivity extends AppCompatActivity {
     {
         averagesFilter.removeFilter(Constants.TEAM_NUMBER_COLUMN);
         maximumsFilter.removeFilter(Constants.TEAM_NUMBER_COLUMN);
+
+        ((MainTableAdapter)averagesTable.getAdapter()).RemoveAllRowHeaderHighlights();
+        ((MainTableAdapter)maximumsTable.getAdapter()).RemoveAllRowHeaderHighlights();
     }
 
     private synchronized void Filter(int column, String s)

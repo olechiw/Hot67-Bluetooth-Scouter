@@ -21,6 +21,7 @@ import com.evrencoskun.tableview.filter.FilterType;
 import com.evrencoskun.tableview.filter.IFilterableModel;
 import com.evrencoskun.tableview.sort.SortState;
 import com.hotteam67.firebaseviewer.data.MultiFilter;
+import com.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 
 import java.util.ArrayList;
 import java.util.List;

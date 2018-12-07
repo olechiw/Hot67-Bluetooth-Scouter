@@ -16,6 +16,10 @@ import com.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 /**
  * Created by evrencoskun on 27.11.2017.
  */
@@ -24,6 +28,24 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         CellModel> {
     public MainTableAdapter(Context p_jContext) {
         super(p_jContext);
+    }
+
+    private HashMap<String, Integer> rowHeaderHighlights = new HashMap<>();
+
+    public void SetRowHeaderHighlight(String rowHeader, Integer color)
+    {
+        rowHeaderHighlights.put(rowHeader, color);
+    }
+
+    public void RemoveRowHeaderHighlight(String rowHeader)
+    {
+        if (rowHeaderHighlights.containsKey(rowHeader))
+            rowHeaderHighlights.remove(rowHeader);
+    }
+
+    public void RemoveAllRowHeaderHighlights()
+    {
+        rowHeaderHighlights = new HashMap<>();
     }
 
     @Override
@@ -41,6 +63,9 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     public void onBindCellViewHolder(AbstractViewHolder holder, Object value, int
             xPosition, int yPosition) {
         CellModel cell = (CellModel) value;
+        String rowHeader = getRowHeaderItem(xPosition).getData();
+        if (rowHeaderHighlights.containsKey(rowHeader))
+            holder.setBackgroundColor(rowHeaderHighlights.get(rowHeader));
 
         if (holder instanceof CellViewHolder) {
             // Get the holder to update cell item text

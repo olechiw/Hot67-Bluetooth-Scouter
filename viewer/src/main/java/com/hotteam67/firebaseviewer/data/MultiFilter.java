@@ -55,7 +55,6 @@ public class MultiFilter extends Filter {
             ((MultiFilterTableView) tableView).filter(this, doContains);
         else
             tableView.filter(this);
-        tableView.hideColumn(0);
     }
 
     /**
