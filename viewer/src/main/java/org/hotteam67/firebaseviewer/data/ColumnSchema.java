@@ -5,10 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Jakob on 4/7/2018.
+ * The viewer schema for columns, adds a preferred order for tags found in the JSON pulled from
+ * Firebase
  */
 
 public class ColumnSchema {
+    /**
+     * The calculated columns desired names, in the same order as the raw names
+     */
     public static List<String> CalculatedColumns()
     {
         List<String> calculatedColumns = new ArrayList<>();
@@ -29,6 +33,10 @@ public class ColumnSchema {
         return  calculatedColumns;
     }
 
+    /**
+     * The calculated columns raw names, in the same order as the calculated names
+     * @return a list of the raw names corresponding in index to the calculated
+     */
     public static List<String> CalculatedColumnsRawNames()
     {
         List<String> calculatedColumnsIndices = new ArrayList<>();
@@ -49,6 +57,10 @@ public class ColumnSchema {
         return calculatedColumnsIndices;
     }
 
+    /**
+     * List of columns to sum, with a special class, before doing maximum/average calcs
+     * @return List of sumcolumns
+     */
     public static List<SumColumn> SumColumns()
     {
         SumColumn column = new SumColumn();
@@ -68,6 +80,10 @@ public class ColumnSchema {
         return sumColumns;
     }
 
+    /**
+     * A special outlier adjust column list, currently not used
+     * @return a list of outlieradjusted columns, fancy but pretty much useless
+     */
     public static List<OutlierAdjustedColumn> OutlierAdjustedColumns()
     {
         List<OutlierAdjustedColumn> columns = new ArrayList<>();
@@ -83,12 +99,18 @@ public class ColumnSchema {
         return columns;
     }
 
+    /**
+     * Sum column, can be serialized for easier loading and saving of the table to/from memory
+     */
     public static class SumColumn implements Serializable
     {
         public List<String> columnsNames;
         public String columnName;
     }
 
+    /**
+     * Outlier adjusted column, also serializable, fancy and useless atm
+     */
     public static class OutlierAdjustedColumn implements Serializable
     {
         public String columnName;

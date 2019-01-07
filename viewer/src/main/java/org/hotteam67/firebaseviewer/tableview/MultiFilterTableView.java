@@ -26,6 +26,13 @@ import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A TableView, but rewritten to support the MultiFilter, so filters are now inclusive and not exclusive.
+ * This means a filter containing 67 and 33 is an OR which allows either to pass. Most of this code
+ * is the SAME as the generic tableview.
+ * Also has a sibling functionality where it will update the filter for another given table,
+ * which is used for keeping Averages and Maximums in sync
+ */
 public class MultiFilterTableView extends TableView {
 
     private CellRecyclerViewAdapter mCellRecyclerViewAdapter;
@@ -33,6 +40,9 @@ public class MultiFilterTableView extends TableView {
     private List<List<IFilterableModel>> originalCellDataStore, originalCellData, filteredCellList;
     private List originalRowDataStore, originalRowData, filteredRowList;
 
+    /**
+     * The sibling table view to sync filters with
+     */
     private MultiFilterTableView sibling;
 
     public MultiFilterTableView(@NonNull Context context) {
@@ -48,6 +58,10 @@ public class MultiFilterTableView extends TableView {
         super(context, attrs, defStyleAttr);
     }
 
+    /**
+     * Set the sibling table view to sync the filter with. One of only two changed functions
+     * @param sibling the sibling table view to sync filters to
+     */
     public void SetSiblingTableView(MultiFilterTableView sibling)
     {
         this.sibling = sibling;
@@ -93,6 +107,13 @@ public class MultiFilterTableView extends TableView {
         filter(filter, doContains, false);
     }
 
+    /**
+     * The modified filter function
+     * @param filter the filter class to use
+     * @param doContains whether to use contains() or equals(), contains() if true
+     * @param skipSibling whether to skip the sibling table provided, set to true if this filter update
+     *                    was already triggered by a sibling, to prevent Stack Overflow
+     */
     public void filter(Filter filter, boolean doContains, boolean skipSibling)
     {
         if (originalCellDataStore == null || originalRowDataStore == null) {

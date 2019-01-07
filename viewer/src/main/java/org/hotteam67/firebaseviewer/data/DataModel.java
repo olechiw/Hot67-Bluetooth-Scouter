@@ -19,6 +19,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * The entirely static datamodel class that holds all of the data in memory, and runs calculations
+ */
 public class DataModel
 {
     /*

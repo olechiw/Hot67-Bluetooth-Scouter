@@ -12,8 +12,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/*
-A total rebuild of the filter class which allows multiple terms
+/**
+ * An extension of the filter class that overrides the functions with total rework of the source,
+ * using multiple filters instead of just one. ex. adding a team 67 filter doesnt remove team 33,
+ * and instead allows both to pass
  */
 
 public class MultiFilter extends Filter {
@@ -26,7 +28,10 @@ public class MultiFilter extends Filter {
         tableView = view;
     }
 
-    // Modified, nothing is protected so we need to redeclare and overwrite previous stuff
+    /**
+     * Modified to return the new filter items
+     * @return filter items to allow through
+     */
     @Override
     public List<FilterItem> getFilterItems()
     {
@@ -34,7 +39,12 @@ public class MultiFilter extends Filter {
     }
 
 
-    // Modified, no longer updates, just adds to the end/removes all existing
+    /**
+     * Modified to no longer update existing filters for a column, just adds more for it
+     * @param column the column to add a filter to
+     * @param filter the string value to allow to pass
+     * @param doContains whether to use .contains() or .equals(), .contains() if true
+     */
     public void set(int column, String filter, boolean doContains) {
         final FilterItem filterItem = new FilterItem(
                 column == -1 ? FilterType.ALL : FilterType.COLUMN,
@@ -59,7 +69,6 @@ public class MultiFilter extends Filter {
 
     /**
      * Adds new filter item to the list of this class.
-     *
      * @param filterItem The filter item to be added to the list.
      */
     private void add(FilterItem filterItem) {
@@ -73,21 +82,6 @@ public class MultiFilter extends Filter {
         {
             final FilterItem item = filterItemIterator.next();
             if (column == item.getColumn()) filterItemIterator.remove();
-        }
-        tableView.filter(this);
-    }
-
-    // Modified, should now iterate and take out ALL matching filters
-    private void remove(int column, FilterItem filterItem) {
-        // This would remove a FilterItem from the Filter list when the filter is cleared.
-        // Used Iterator for removing instead of canonical loop to prevent ConcurrentModificationException.
-        for (Iterator<FilterItem> filterItemIterator = filterItems.iterator(); filterItemIterator.hasNext(); ) {
-            final FilterItem item = filterItemIterator.next();
-            if (column == -1 && item.getFilterType().equals(filterItem.getFilterType())) {
-                filterItemIterator.remove();
-            } else if (item.getColumn() == filterItem.getColumn()) {
-                filterItemIterator.remove();
-            }
         }
         tableView.filter(this);
     }
