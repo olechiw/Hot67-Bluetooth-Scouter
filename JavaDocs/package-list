@@ -1,9 +1,9 @@
-com.hotteam67.firebaseviewer
-com.hotteam67.firebaseviewer.data
-com.hotteam67.firebaseviewer.tableview
-com.hotteam67.firebaseviewer.tableview.holder
-com.hotteam67.firebaseviewer.tableview.tablemodel
-com.hotteam67.firebaseviewer.web
 org.hotteam67.bluetoothserver
 org.hotteam67.common
+org.hotteam67.firebaseviewer
+org.hotteam67.firebaseviewer.data
+org.hotteam67.firebaseviewer.tableview
+org.hotteam67.firebaseviewer.tableview.holder
+org.hotteam67.firebaseviewer.tableview.tablemodel
+org.hotteam67.firebaseviewer.web
 org.hotteam67.scouter

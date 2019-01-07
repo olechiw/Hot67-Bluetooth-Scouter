@@ -5,7 +5,7 @@ android {
     }
     compileSdkVersion 27
     defaultConfig {
-        applicationId "com.hotteam67.firebaseviewer"
+        applicationId "org.hotteam67.firebaseviewer"
         minSdkVersion 22
         targetSdkVersion 27
         versionName '13'

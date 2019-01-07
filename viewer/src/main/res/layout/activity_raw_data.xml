@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.hotteam67.firebaseviewer.RawDataActivity">
+    tools:context="org.hotteam67.firebaseviewer.RawDataActivity">
     <com.evrencoskun.tableview.TableView
         android:id="@+id/mainTableView"
         android:layout_width="match_parent"
