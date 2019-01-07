@@ -429,8 +429,8 @@ public class ScoutActivity extends BluetoothClientActivity
     }
 
     /**
-     *
-     * @param match
+     * Send a match over bluetooth
+     * @param match completed JSON object to send
      */
     private void SendMatch(JSONObject match)
     {
@@ -450,8 +450,9 @@ public class ScoutActivity extends BluetoothClientActivity
         }
     }
 
-    /*
-    Get current match values as JSON string
+    /**
+     * Get the current values of user input
+     * @return a JSON Object with values, notes, and team/match number
      */
     private JSONObject GetCurrentInputValues()
     {
@@ -481,8 +482,8 @@ public class ScoutActivity extends BluetoothClientActivity
         }
     }
 
-    /*
-    Load matches from the file into memory
+    /**
+     * Load matches from the file into memory (Array<JSONObject> matches)
      */
     private void LoadMatches()
     {
@@ -511,8 +512,10 @@ public class ScoutActivity extends BluetoothClientActivity
         }
     }
 
-    /*
-    Decide what to do with received bluetooth message
+    /**
+     * Process given bluetooth input
+     * @param msg the message sent to the main thread from a bluetooth thread
+     *            Found in BluetoothClientActivity
      */
     private synchronized void ProcessBluetoothInput(Message msg)
     {
@@ -620,8 +623,9 @@ public class ScoutActivity extends BluetoothClientActivity
         }
     }
 
-    /*
-    Handle messages from other threads
+    /**
+     * Overriden from BluetoothClientActivity
+     * @param msg the message sent to the thread
      */
     @Override
     protected synchronized void handle(Message msg)
@@ -641,8 +645,8 @@ public class ScoutActivity extends BluetoothClientActivity
     }
 
 
-    /*
-    Count down for 15 seconds and then send the current match over bluetooth
+    /**
+     * Count down for 15 seconds and then submit the current match, unless the dialog is canceled
      */
     private void SubmitCountDown()
     {
@@ -687,8 +691,10 @@ public class ScoutActivity extends BluetoothClientActivity
         }.start();
     }
 
-    /*
-    Confirmation box to prevent unnecessary disconnects
+    /**
+     * Trigger a confirmation box to prevent certain disconnects - exit
+     * @param item
+     * @return
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
@@ -702,8 +708,11 @@ public class ScoutActivity extends BluetoothClientActivity
         }
     }
 
-    /*
-    Confirmation box to prevent unnecessary disconnects
+    /**
+     * Trigger a confirmation box to prevent certain disconnects - back button
+     * @param keyCode
+     * @param event
+     * @return
      */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
@@ -715,8 +724,11 @@ public class ScoutActivity extends BluetoothClientActivity
         return super.onKeyDown(keyCode, event);
     }
 
-    /*
-    Run Post-Bluetooth setup once perms are authorized
+    /**
+     * Run setup after bluetooth once bluetooth is setup
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
