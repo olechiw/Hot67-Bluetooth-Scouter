@@ -19,14 +19,35 @@ import org.hotteam67.firebaseviewer.data.Sort;
 
 import org.hotteam67.common.Constants;
 
+/**
+ * Activity for displaying the raw data selected for a match, and potentially returning a selected
+ * match number to filter by
+ */
 public class RawDataActivity extends AppCompatActivity {
 
+    /**
+     * The attribute for the intent extra containing raw data to display (the actual matches)
+     */
     public static final String RAW_DATA_ATTRIBUTE = "raw_data_attribute";
+    /**
+     * The attribute for the intent extra containing the team number
+     */
     public static final String TEAM_NUMBER_ATTRIBUTE = "team_number_attribute";
+    /**
+     * The attribute for the intent extra containing the team name
+     */
     public static final String TEAM_NAME_ATTRIBUTE = "team_name_attribute";
 
+    /**
+     * The data table (in memory) that contains all of the raw data
+     */
     private DataTable dataTable;
 
+    /**
+     * Constructor, create the title out of team number and team name, and load the raw data from the
+     * intent
+     * @param savedInstanceState ignored
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,6 +106,11 @@ public class RawDataActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * If there is a match number selected, this is called and ends the activity after giving it
+     * the match number as a result
+     * @param matchNumber
+     */
     public void doEndWithMatchNumber(int matchNumber) {
         if (matchNumber == -1) return;
         Intent result = new Intent();
