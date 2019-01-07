@@ -10,10 +10,19 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 
+/**
+ * Simple preferences activity, loads preferences from xml and saves them to shared preferences
+ * to be accessed in ServerActivity
+ */
 public class PreferencesActivity extends AppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener
 {
 
+    /**
+     * Makes the back button work
+     * @param item
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
@@ -25,6 +34,10 @@ public class PreferencesActivity extends AppCompatActivity
         return true;
     }
 
+    /**
+     * Constructor adds a back button and loads simple UI
+     * @param savedInstanceState saved state is ignored
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -46,6 +59,9 @@ public class PreferencesActivity extends AppCompatActivity
 
     private SimplePreferences prefs;
 
+    /**
+     * Preferences fragment with an editText that shows in the summary, for easier use
+     */
     public static class SimplePreferences extends PreferenceFragment
     {
         @Override
@@ -68,6 +84,9 @@ public class PreferencesActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Register change listener
+     */
     protected void onResume()
     {
         super.onResume();
@@ -75,6 +94,9 @@ public class PreferencesActivity extends AppCompatActivity
                 .registerOnSharedPreferenceChangeListener(this);
     }
 
+    /**
+     * Unregister change listener
+     */
     protected void onPause()
     {
         super.onPause();
@@ -82,6 +104,11 @@ public class PreferencesActivity extends AppCompatActivity
                 .unregisterOnSharedPreferenceChangeListener(this);
     }
 
+    /**
+     * Set the summary on change, for ease of use with edittext
+     * @param sharedPreferences
+     * @param key
+     */
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                           String key)
     {

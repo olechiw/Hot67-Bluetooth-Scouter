@@ -39,29 +39,44 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
+/**
+ * Server activity, handles the connections to all of the devices and input
+ */
 public class ServerActivity extends BluetoothServerActivity {
 
     private static final int REQUEST_PREFERENCES = 2;
     private static final int REQUEST_ENABLE_PERMISSION = 3;
 
-    // Simple log function
+    /**
+     * Simple log
+     * @param s text to output
+     */
     void l(String s)
     {
         Log.d(TAG, s);
     }
 
-    // The log tag
+    /**
+     * Log tag
+     */
     private static final String TAG = "BLUETOOTH_SCOUTER_DEBUG";
 
     private String lastMatchNumber = "0";
+    /**
+     * List of team numbers for the last match, used to check if a match was received already
+     */
     private List<String> lastMatchTeamNumbers = new ArrayList<>();
     private int matchesReceived = 0;
 
-    // Current database in json format
+    /**
+     * All of the received matches, stored in json, written/read from local database
+     */
     private JSONObject jsonDatabase;
 
-    // Display a popup box (not a MessageBox, LOL)
+    /**
+     * Show a messagebox on the Server
+     * @param text the text to display in the message box
+     */
     private void MessageBox(String text)
     {
         try {
@@ -82,7 +97,11 @@ public class ServerActivity extends BluetoothServerActivity {
     private Button connectButton;
     private EditText serverLogText;
 
-    // When the app is initialized, setup the UI and the bluetooth adapter
+    /**
+     * Setup UI and the handler for communicating with bluetooth threads
+     * @param savedInstanceState saved instance state is ignored
+     */
+    @SuppressLint("HandlerLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,6 +119,11 @@ public class ServerActivity extends BluetoothServerActivity {
         loadJsonDatabase();
     }
 
+    /**
+     * Load options menu from xml
+     * @param menu
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -107,7 +131,13 @@ public class ServerActivity extends BluetoothServerActivity {
         return true;
     }
 
-    private void GetString(final String prompt, final String defaultValue, final SchemaActivity.StringInputEvent onInput) {
+    /**
+     * Get a string input, and run an oncomplete event
+     * @param prompt the text prompt the user will see when asked to input a string
+     * @param defaultValue the default value of the string, if any
+     * @param onInput the event to run when input is received, assuming it isn't canceled
+     */
+    private void GetString(final String prompt, final String defaultValue, final Constants.StringInputEvent onInput) {
         final EditText input = new EditText(this);
         input.setText(defaultValue);
 
@@ -128,6 +158,11 @@ public class ServerActivity extends BluetoothServerActivity {
         }
     }
 
+    /**
+     * handle all of the menu items, such as setup schema or send schema
+     * @param item
+     * @return
+     */
     @Override
     public synchronized boolean onOptionsItemSelected(MenuItem item)
     {
@@ -185,6 +220,9 @@ public class ServerActivity extends BluetoothServerActivity {
         return true;
     }
 
+    /**
+     * Setup the user interface and event handlers once bluetooth has been confirmed as active
+     */
     private void setupUI()
     {
         connectButton = findViewById(R.id.connectButton);
@@ -201,7 +239,7 @@ public class ServerActivity extends BluetoothServerActivity {
             ab.setDisplayShowTitleEnabled(false);
 
         ImageButton configureButton = toolbar.findViewById(R.id.configureButton);
-        configureButton.setOnClickListener(view -> configure());
+        configureButton.setOnClickListener(view -> configurePreferences());
 
         ImageButton downloadMatchesButton = findViewById(R.id.matchesDownloadButton);
         downloadMatchesButton.setOnClickListener(view -> downloadEventMatches());
@@ -244,6 +282,9 @@ public class ServerActivity extends BluetoothServerActivity {
     }
 
 
+    /**
+     * Download the event matches given an event key from user input
+     */
     private void downloadEventMatches()
     {
         GetString("Enter Event Key:", "", eventKey ->
@@ -292,7 +333,10 @@ public class ServerActivity extends BluetoothServerActivity {
     }
 
 
-    // Loads all of the loaded matches, split into 6 devices, and then sends them as one giant string
+    /**
+     * Splits all of the event schedule into six, and sends all of the teams to each device, in the
+     * order they are found in the CSV match schedule file
+     */
     private void sendEventMatches()
     {
         Constants.OnConfirm("Send Matches?", this, () ->
@@ -361,6 +405,9 @@ public class ServerActivity extends BluetoothServerActivity {
         });
     }
 
+    /**
+     * Setup the permissions if bluetooth is not setup, otherwise setup the user interface
+     */
     private void setupPermissions()
     {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
@@ -377,6 +424,12 @@ public class ServerActivity extends BluetoothServerActivity {
     }
 
 
+    /**
+     * When permissions are returned, check if bluetooth was enabled
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
@@ -394,8 +447,10 @@ public class ServerActivity extends BluetoothServerActivity {
         }
     }
 
-    // Configure the current scouting schema and database connection
-    private void configure()
+    /**
+     * Configure the preferences by starting the preferences activity
+     */
+    private void configurePreferences()
     {
         Intent intent = new Intent(this, PreferencesActivity.class);
         startActivityForResult(intent, REQUEST_PREFERENCES);
@@ -410,10 +465,14 @@ public class ServerActivity extends BluetoothServerActivity {
     }
 
     // Handle an input message from one of the bluetooth threads
+    /**
+     * Handle, the function that is attached to the handler of subclass BluetoothServerActivity and
+     * receives messages about connections and bluetooth input
+     */
     @SuppressLint("SetTextI18n")
     private synchronized void handle(Message msg) {
         switch (msg.what) {
-            case MESSAGE_INPUT:
+            case Messages.MESSAGE_INPUT:
 
                 String message = (String) msg.obj;
                 if (message == null || message.trim().isEmpty())
@@ -446,22 +505,22 @@ public class ServerActivity extends BluetoothServerActivity {
                 }
 
                 break;
-            case MESSAGE_CONNECTING:
+            case Messages.MESSAGE_CONNECTING:
                 String name = (String)msg.obj;
                 VisualLog("Attempting Connection with " + name);
 
                 break;
-            case MESSAGE_CONNECTION_FAILED:
+            case Messages.MESSAGE_CONNECTION_FAILED:
                 VisualLog("Connection Timed Out");
                 break;
-            case MESSAGE_CONNECTED:
+            case Messages.MESSAGE_CONNECTED:
                 l("Received Connect");
                 l("Size of connected threads: " + GetDevices());
                 VisualLog("Device Connected!");
                 connectButton.setText("Connected Devices: " + String.valueOf(GetDevices()));
 
                 break;
-            case MESSAGE_DISCONNECTED:
+            case Messages.MESSAGE_DISCONNECTED:
                 //MessageBox("DISCONNECTED FROM DEVICE");
                 l("Received Disconnect");
                 VisualLog("Device Disconnected!");
@@ -473,6 +532,9 @@ public class ServerActivity extends BluetoothServerActivity {
         }
     }
 
+    /**
+     * Load the local database into the json object in memory, or handle exceptions
+     */
     private void loadJsonDatabase()
     {
         String fileContents = FileHandler.LoadContents(FileHandler.Files.SERVER_FILE);
@@ -492,15 +554,31 @@ public class ServerActivity extends BluetoothServerActivity {
         }
     }
 
+    /**
+     * Save the JSON object from memory to disk
+     */
     private void saveJsonDatabase()
     {
         FileHandler.Write(FileHandler.Files.SERVER_FILE, jsonDatabase.toString());
     }
 
+    /**
+     * Save the json object from memory to the firebase database, as a sub-object of the event name
+     * tag, as opposed to writing to the root url and overwriting all data
+     * @param json the object to send
+     */
     private void saveJsonObject(JSONObject json)
     {
         saveJsonObject(json, false);
     }
+
+    /**
+     * Write a json object to firebase. Either write to rootUrl and overwrite everything with the object,
+     * or determine its tag from teamNumber_matchNumber and write it as a subtag of the configured
+     * event name
+     * @param json the object to write
+     * @param useRootUrl whether to overwrite everything or write as a sub object
+     */
     private void saveJsonObject(final JSONObject json, boolean useRootUrl)
     {
         try {
@@ -585,6 +663,10 @@ public class ServerActivity extends BluetoothServerActivity {
     }
 
     private final Context context = this;
+
+    /**
+     * Upload task to run that uploads the given JSONObject and handles issues
+     */
     private class AsyncUploadTask extends AsyncTask<JSONObject, Void, JSONObject> {
 
         private final String uploadUrl;
@@ -646,7 +728,9 @@ public class ServerActivity extends BluetoothServerActivity {
     }
 
 
-    // When the activity is finished, clean up all of the bluetooth elements
+    /**
+     * Save the database when the activity ends, just in case.
+     */
     @Override
     public void onDestroy()
     {

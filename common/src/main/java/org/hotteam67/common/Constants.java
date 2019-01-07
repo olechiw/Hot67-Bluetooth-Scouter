@@ -10,10 +10,17 @@ import java.util.UUID;
 /**
  * A class which holds most constants across all applications
  */
-
 public class Constants
 {
     public static final int TEAM_NUMBER_COLUMN = 0;
+
+    /**
+     * A stringinputevent for after the user has input a string. No consumer because compatibility
+     */
+    public interface StringInputEvent
+    {
+        void Run(String input);
+    }
 
     public static final class ViewerTeamsGroupTypes {
         public static final String MATCH = "Qualification Match";
@@ -113,13 +120,31 @@ public class Constants
         static final int TYPE_STRING =   4;
     }
 
+    /**
+     * Preference tag for the api key
+     */
     public static final String PREF_APIKEY = "pref_apiKey";
+    /**
+     * Preference tag for the event name
+     */
     public static final String PREF_EVENTNAME = "pref_eventName";
+    /**
+     * Preference tag for the firebase database url
+     */
     public static final String PREF_DATABASEURL = "pref_databaseUrl";
 
 
+    /**
+     * The json tag for the match number
+     */
     public static final String MATCH_NUMBER_JSON_TAG = "Match Number";
+    /**
+     * The json tag for the team number
+     */
     public static final String TEAM_NUMBER_JSON_TAG = "Team Number";
+    /**
+     * The json tag for the notes
+     */
     public static final String NOTES_JSON_TAG = "Notes";
 
     /**

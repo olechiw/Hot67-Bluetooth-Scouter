@@ -29,9 +29,20 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Activity for designing the schema, loads the current one, allows edits, and then saves it again
+ */
 public class SchemaActivity extends AppCompatActivity {
+    /**
+     * The schema that is currently being used, both in memory and displayed in the UI
+     */
     private JSONArray schema = SchemaHandler.LoadSchemaFromFile();
 
+    /**
+     * When a menu item is selected
+     * @param item the item selected, from the xml menu
+     * @return whether it was consumed
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
@@ -56,6 +67,12 @@ public class SchemaActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Confirmation box on back button key down
+     * @param keyCode
+     * @param event
+     * @return
+     */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
@@ -65,17 +82,30 @@ public class SchemaActivity extends AppCompatActivity {
         return super.onKeyDown(keyCode, event);
     }
 
+    /**
+     * doConfirmEnd() now just triggers finish(), which has a confirmation
+     */
     private void doConfirmEnd()
     {
         finish();
     }
 
+    /**
+     * Load the menu from R.menu.menu_schema
+     * @param menu
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
         getMenuInflater().inflate(R.menu.menu_schema, menu);
         return true;
     }
+
+    /**
+     * Constructor, sets up the UI and displays the current schema
+     * @param savedInstanceState saved instance state - ignored
+     */
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,11 +183,20 @@ public class SchemaActivity extends AppCompatActivity {
         saveButton.setOnClickListener(view -> FileHandler.Write(FileHandler.Files.SCHEMA_FILE, schema.toString()));
     }
 
+    /**
+     * On Complete with a list of strings, no consumer because backwards compatibility
+     */
     interface onMultiComplete
     {
         void Complete(List<String> options);
     }
 
+    /**
+     * Runs over and over prompting the user for more input to populate a list of choices available
+     * for a multiple choice element of the schema
+     * @param input the current input, as this will be run recursively
+     * @param onComplete to run once the user finishes inputting, passed through all of the calls
+     */
     private void GetMultiChoiceInput(List<String> input, onMultiComplete onComplete)
     {
         GetString("Input another choice or choose ok to complete", x -> {
@@ -170,6 +209,13 @@ public class SchemaActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Create a JSON object given the attributes
+     * @param type the integer schema type
+     * @param tag the label/tag for the schema item
+     * @param extras the extras, such as max/min or the choices for a multichoice
+     * @return a JSONObject constructed with all of the given attributes
+     */
     private JSONObject createJSON(Integer type, String tag, String... extras)
     {
         JSONObject object = new JSONObject();
@@ -202,12 +248,12 @@ public class SchemaActivity extends AppCompatActivity {
     }
 
 
-    interface StringInputEvent
-    {
-        void Run(String input);
-    }
-
-    private void GetString(final String prompt, final StringInputEvent onInput)
+    /**
+     * Prompt the user for a string with a given prompt, and run an oncomplete event
+     * @param prompt the prompt for the user input
+     * @param onInput event for when/if the user selects ok and has provided a string
+     */
+    private void GetString(final String prompt, final Constants.StringInputEvent onInput)
     {
         InputFilter filter = new InputFilter() {
             @Override
@@ -249,6 +295,9 @@ public class SchemaActivity extends AppCompatActivity {
         }).create().show();
     }
 
+    /**
+     * Save the file when the activity ends
+     */
     @Override
     public void onDestroy()
     {

@@ -20,46 +20,88 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * The subclass for the server activity, handles bluetooth input/output and communcation with main
+ * thread
+ */
 public abstract class BluetoothServerActivity extends AppCompatActivity
 {
-    // Messages, for when any event happens, to be sent to the main thread
-    static final int MESSAGE_INPUT = 0;
-    static final int MESSAGE_CONNECTING = 1;
-    static final int MESSAGE_CONNECTION_FAILED = 4;
-    static final int MESSAGE_DISCONNECTED = 2;
-    static final int MESSAGE_CONNECTED = 3;
+    /**
+     * Messages for communicating with the main thread
+     */
+    static class Messages
+    {
+        static final int MESSAGE_INPUT = 0;
+        static final int MESSAGE_CONNECTION_FAILED = 4;
+        static final int MESSAGE_CONNECTING = 1;
+        static final int MESSAGE_DISCONNECTED = 2;
+        static final int MESSAGE_CONNECTED = 3;
+    }
 
-    // Number of active and allowed devices
+    /**
+     * Number of allowed devices to be connected to the server, bluetooth will max at 7
+     */
     private static final int allowedDevices = 7;
 
-    // Bluetooth hardware adapter
+    /**
+     * Software interface for the bluetooth hardware adapter
+     */
     private BluetoothAdapter m_bluetoothAdapter;
+    /**
+     * Whether bluetooth permissions and setup failed
+     */
     private boolean bluetoothFailed = false;
+
+    /**
+     * Activity Request code for bluetooth permissions if they are not enabled
+     */
     private static final int REQUEST_BLUETOOTH = 1;
 
+    /**
+     * Handler that communicates with the main thread
+     */
     private Handler m_handler;
 
+    /**
+     * Public function to configure the handler
+     * @param h the handler to use for sending messages to the main thread
+     */
     void SetHandler(Handler h)
     {
         m_handler = h;
     }
 
-    // Send a specific message, from the above list
+    /**
+     * Send a specific message from Messages
+     * @param msg the message to send
+     */
     private synchronized void MSG(int msg) { m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget(); }
 
-    // Simple log function
+    /**
+     * Simple log function
+     * @param s text to output
+     */
     void l(String s)
     {
         Log.d("BLUETOOTH_SCOUTER_DEBUG", s);
     }
 
-    /*
-   Connect Thread
-    */
+    /**
+     * Instance of the thread actively connecting to the devices
+     */
     private ConnectThread connectThread;
+
+    /**
+     * Connect thread, which will cycle through available devices connecting to each one
+     */
     private class ConnectThread extends Thread {
         private final List<BluetoothDevice> devices;
         private final List<BluetoothSocket> sockets;
+
+        /**
+         * Constructor, turns devices into sockets with uuid
+         * @param devices the devices to try to connect to
+         */
         ConnectThread(List<BluetoothDevice> devices)
         {
             this.devices = devices;
@@ -83,6 +125,10 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             }
         }
 
+        /**
+         * Connect to each of the sockets, only ocnnect once. If it failed send a CONNECTION_FAILED
+         * message
+         */
         public void run()
         {
             for (BluetoothSocket connectionSocket : sockets)
@@ -90,7 +136,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                 try
                 {
                     // Send the message to UI thread we are connecting to device i
-                    m_handler.obtainMessage(MESSAGE_CONNECTING, 0, 0,
+                    m_handler.obtainMessage(Messages.MESSAGE_CONNECTING, 0, 0,
                             devices.get(sockets.indexOf(connectionSocket)).getName()).sendToTarget();
                     l("Connecting to socket");
                     connectionSocket.connect();
@@ -99,7 +145,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                 {
                     try
                     {
-                        MSG(MESSAGE_CONNECTION_FAILED);
+                        MSG(Messages.MESSAGE_CONNECTION_FAILED);
                         connectionSocket.close();
                     } catch (java.io.IOException e2)
                     {
@@ -111,7 +157,10 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
         }
     }
 
-
+    /**
+     * Disconnect all existing threads and get user input for which paired devices should be
+     * connected to, then give them to a ConnectThread
+     */
     synchronized void Connect()
     {
         // Reset all connections
@@ -157,6 +206,13 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
         });
     }
 
+    /**
+     * Prompt the user for selections, up to 3, from given options
+     * @param context the parent context
+     * @param title the title for the multiple choice prompt
+     * @param options the options for the user
+     * @param onComplete OnCompleteEvent takes an array of strings containing the selected options
+     */
     private static void PromptChoice(Context context, String title, List<String> options, Constants.OnCompleteEvent<List<String>> onComplete)
     {
         List<String> result = new ArrayList<>();
@@ -190,6 +246,10 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                 onComplete.OnComplete(result))).create().show();
     }
 
+    /**
+     * Create a connected thread for a given socket, to read/write to from/to it
+     * @param connection the socket for the connected device
+     */
     private void connectSocket(BluetoothSocket connection)
     {
 
@@ -200,12 +260,14 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             thread.setId(connectedThreads.size() + 1);
             thread.start();
             connectedThreads.add(thread);
-            MSG(MESSAGE_CONNECTED);
+            MSG(Messages.MESSAGE_CONNECTED);
         }
 
     }
 
-    // Disconnect a specific connected device, usually called from the thread itself
+    /**
+     * Disconnect a specific connected device, usually called from the thread itself
+     */
     private synchronized void disconnect(ConnectedThread thread)
     {
         thread.close();
@@ -213,11 +275,15 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
         connectedThreads.remove(thread);
     }
 
-    //
-    // An arraylist of threads for each connected device,
-    // with a unique id for when they finish so they may be removed
-    //
+    /**
+     * An ArrayList of threads for each connected device,
+     * including a unique id for when they need to be removed
+     */
     private final ArrayList<ConnectedThread> connectedThreads = new ArrayList<>();
+
+    /**
+     * The thread for one connected device, handles disconnections, reading, and writing to the device
+     */
     private class ConnectedThread extends Thread
     {
         private final BluetoothSocket connectedSocket;
@@ -226,11 +292,18 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
 
         private void setId(int i ) { id = i; }
 
-        ConnectedThread(BluetoothSocket sockets)
+        /**
+         * Constructor with the sockets
+         * @param socket the socket to connect
+         */
+        ConnectedThread(BluetoothSocket socket)
         {
-            connectedSocket = sockets;
+            connectedSocket = socket;
         }
 
+        /**
+         * Close the connection
+         */
         void close()
         {
             try
@@ -243,6 +316,10 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                 e.printStackTrace();
             }
         }
+
+        /**
+         * Read from the socket over and over or tell the main thread it is disconnected
+         */
         public void run()
         {
             while (!Thread.currentThread().isInterrupted())
@@ -270,9 +347,14 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             }
             l("Connected Thread Ended!!!");
             disconnect(this);
-            MSG(MESSAGE_DISCONNECTED);
+            MSG(Messages.MESSAGE_DISCONNECTED);
         }
 
+        /**
+         * Read from given input stream
+         * @param stream stream to read
+         * @return whether the input was successfully obtained
+         */
         private boolean read(InputStream stream)
         {
             buffer = new byte[1024];
@@ -283,7 +365,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
 
                 l("Reading Bytes of Length:" + numBytes);
 
-                m_handler.obtainMessage(MESSAGE_INPUT, numBytes, id, new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "")).sendToTarget();
+                m_handler.obtainMessage(Messages.MESSAGE_INPUT, numBytes, id, new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "")).sendToTarget();
                 return true;
             }
             catch (java.io.IOException e)
@@ -293,7 +375,10 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             }
         }
 
-
+        /**
+         * Write to the connected socket
+         * @param bytes the byte array to write to the thread
+         */
         void write(byte[] bytes)
         {
             l("Writing: " + new String(bytes));
@@ -321,7 +406,11 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
         }
     }
 
-    // Write to all threads, returns number of connected devices
+    /**
+     * Write to all connected devices
+     * @param bytes byte array to send
+     * @return returns the number of devices written to
+     */
     synchronized int WriteAllDevices(byte[] bytes)
     {
         // Send to each device
@@ -331,7 +420,12 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
         return connectedThreads.size();
     }
 
-    // Write a specific thread (by index). Returns number of connected devices
+    /**
+     * Write to a specific thread
+     * @param bytes the byte array to send
+     * @param index the index in connectedThreads to write to
+     * @return the number of threads
+     */
     synchronized int WriteDevice(byte[] bytes, int index)
     {
         if (connectedThreads.size() > index)
@@ -339,12 +433,19 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
         return connectedThreads.size();
     }
 
+    /**
+     * Get the number of connectedThreads right now
+     * @return number of threads
+     */
     synchronized int GetDevices()
     {
         return connectedThreads.size();
     }
 
-    // Initialize the bluetooth hardware adapter
+    /**
+     * Setup the bluetooth adapter or handle the issue + flag bluetoothFailed if it does not succeed
+     * @param oncomplete the onComplete runnable to run once bluetooth is setup/permissions are gained
+     */
     synchronized void setupBluetooth(Runnable oncomplete)
     {
         l("Getting adapter");
@@ -367,11 +468,12 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
 
     }
 
-    //
-    // This is to handle the enable bluetooth activity,
-    // and disable all attempts at bluetooth functionality
-    // if for some reason the user denies permission
-    //
+    /**
+     * Activity result for when bluetooth is enabled by the user
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
@@ -382,6 +484,9 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Close all of the threads when the activity ends
+     */
     @Override
     public void onDestroy()
     {
