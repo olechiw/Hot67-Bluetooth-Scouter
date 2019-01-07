@@ -37,7 +37,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 
 
@@ -173,7 +172,7 @@ public class ServerActivity extends BluetoothServerActivity {
                     jsonDatabase = new JSONObject();
                     try
                     {
-                        FileHandler.Write(FileHandler.SERVER_FILE, "");
+                        FileHandler.Write(FileHandler.Files.SERVER_FILE, "");
                     }
                     catch (Exception e)
                     {
@@ -277,7 +276,7 @@ public class ServerActivity extends BluetoothServerActivity {
                             }
                             MessageBox("Downloaded Matches: " +
                                     matchesBuilder.toString().split("\n").length);
-                            FileHandler.Write(FileHandler.MATCHES_FILE, matchesBuilder.toString());
+                            FileHandler.Write(FileHandler.Files.MATCHES_FILE, matchesBuilder.toString());
                         }
                         catch (Exception e)
                         {
@@ -312,7 +311,7 @@ public class ServerActivity extends BluetoothServerActivity {
                 List<String> matches =
                         new ArrayList<>(
                                 Arrays.asList(
-                                        FileHandler.LoadContents(FileHandler.MATCHES_FILE)
+                                        FileHandler.LoadContents(FileHandler.Files.MATCHES_FILE)
                                                 .split("\n")
                                 )
                         );
@@ -476,7 +475,7 @@ public class ServerActivity extends BluetoothServerActivity {
 
     private void loadJsonDatabase()
     {
-        String fileContents = FileHandler.LoadContents(FileHandler.SERVER_FILE);
+        String fileContents = FileHandler.LoadContents(FileHandler.Files.SERVER_FILE);
         if (fileContents.trim().isEmpty()) {
             jsonDatabase = new JSONObject();
         }
@@ -495,7 +494,7 @@ public class ServerActivity extends BluetoothServerActivity {
 
     private void saveJsonDatabase()
     {
-        FileHandler.Write(FileHandler.SERVER_FILE, jsonDatabase.toString());
+        FileHandler.Write(FileHandler.Files.SERVER_FILE, jsonDatabase.toString());
     }
 
     private void saveJsonObject(JSONObject json)

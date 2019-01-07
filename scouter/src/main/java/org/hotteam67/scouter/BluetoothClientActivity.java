@@ -17,35 +17,56 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+
+/**
+ * A bluetooth client that listens for a connection from the master device and sends its inputs to
+ * the main thread
+ */
 public abstract class BluetoothClientActivity extends AppCompatActivity {
 
 
-    // Messages, for when any event happens, to be sent to the main thread
-    final int MESSAGE_INPUT = 0;
-    final int MESSAGE_DISCONNECTED = 2;
-    final int MESSAGE_CONNECTED = 3;
+    /**
+     * Messages, for when any event happens, to be sent to the main thread
+     */
+    public static class MessageTypes
+    {
+        static final int MESSAGE_INPUT = 0;
+        static final int MESSAGE_CONNECTED = 3;
+        static final int MESSAGE_DISCONNECTED = 2;
+    }
 
-    // Send a specific message, from the above list
+    /**
+     * Send a specific message, from the MessageTypes list, to the main thread
+     */
     private synchronized void MSG(int msg) { m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget(); }
 
-    // The multi-thread handler for passing messages about bluetooth connection
+    /**
+     * The multi-thread handler for passing messages about bluetooth connection
+     */
     private Handler m_handler;
 
-    // Simple log function
     void l(String s)
     {
         Log.d(TAG, s);
     }
 
-    // The log tag
+    /**
+     * The logging tag
+     */
     private static final String TAG = "BLUETOOTH_SCOUTER_DEBUG";
 
-    // Whether the bluetooth hardware setup has completely failed (typically means something like it failed to be enabled)
+    /**
+     * Whether the bluetooth hardware setup has completely failed (typically means something like it failed to be enabled)
+     */
     private boolean bluetoothFailed = false;
 
     // Adapter to the hardware bluetooth device
     private BluetoothAdapter m_bluetoothAdapter;
 
+    /**
+     * The constructor
+     * @param savedInstanceState potential previous instance, ignored
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +82,10 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
         setupBluetooth();
     }
 
-    // MessageBox
+    /**
+     * Show a messagebox with the given text
+     * @param text text to display in the messagebox
+     */
     void MessageBox(String text)
     {
         try {
@@ -79,10 +103,22 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
         }
     }
 
-    // Accept incoming bluetooth connections thread, actual member and the definition
+    /**
+     * The acceptThread instance that will handle incoming connections
+     */
     private AcceptThread acceptThread;
-    private class AcceptThread extends Thread {
+
+    /**
+     * Handles the accepting of connections from the master device, ending once a connection is
+     * received
+     */
+    private class AcceptThread extends Thread
+    {
         final BluetoothServerSocket connectionSocket;
+
+        /**
+         * Constructor, initialize the socket listening for the Constants.uuid
+         */
         AcceptThread()
         {
             BluetoothServerSocket tmp = null;
@@ -99,6 +135,10 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
             connectionSocket = tmp;
         }
 
+        /**
+         * Run, listening for a connection and handle either a termination of the socket or a
+         * successful connection
+         */
         public void run()
         {
             while (!Thread.currentThread().isInterrupted())
@@ -116,7 +156,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
                 if (conn != null)
                 {
                     connectSocket(conn);
-                    MSG(MESSAGE_CONNECTED);
+                    MSG(MessageTypes.MESSAGE_CONNECTED);
                     break;
                 }
             }
@@ -134,20 +174,32 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
         }
     }
 
-    /*
-    Connected Thread
+    /**
+     * Connected thread once a master device has been accepted
      */
     private ConnectedThread connectedThread;
+
+    /**
+     * Thread for once the device is connected, handling input by sending it to the main thread, or
+     * accounting for disconnections
+     */
     private class ConnectedThread extends Thread
     {
         private final BluetoothSocket connectedSocket;
         private byte[] buffer;
 
+        /**
+         * Constructor
+         * @param socket takes the socket of an already connected device
+         */
         ConnectedThread(BluetoothSocket socket)
         {
             connectedSocket = socket;
         }
 
+        /**
+         * A cleanup function to close the socket and handle exceptions
+         */
         void close()
         {
             try
@@ -160,6 +212,11 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+
+        /**
+         * The run thread, checks for input and sends it to the thread, or handles the exception and
+         * informs the main thread that the socket is closed
+         */
         public void run()
         {
             while (!Thread.currentThread().isInterrupted())
@@ -189,6 +246,11 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
             disconnect();
         }
 
+        /**
+         * read a thread
+         * @param stream the input stream from the connected socket
+         * @return boolean whether the connection is broken
+         */
         private boolean read(InputStream stream)
         {
             buffer = new byte[1024];
@@ -199,18 +261,21 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
 
                 l("Reading Bytes of Length:" + numBytes);
 
-                m_handler.obtainMessage(MESSAGE_INPUT, numBytes, -1, new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "")).sendToTarget();
+                m_handler.obtainMessage(MessageTypes.MESSAGE_INPUT, numBytes, -1, new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "")).sendToTarget();
                 return true;
             }
             catch (java.io.IOException e)
             {
                 Log.d("[Bluetooth]", "Input stream disconnected", e);
-                MSG(MESSAGE_DISCONNECTED);
+                MSG(MessageTypes.MESSAGE_DISCONNECTED);
                 return false;
             }
         }
 
-
+        /**
+         * Write output to the connected socket
+         * @param bytes the bytes to send into the stream
+         */
         void write(byte[] bytes)
         {
             l("Writing: " + new String(bytes));
@@ -238,7 +303,9 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * Setup the bluetooth adapter of the activity
+     */
     private synchronized void setupBluetooth()
     {
         l("Getting adapter");
@@ -272,6 +339,10 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
             }
     }
 
+    /**
+     * Get a connected socket from the acceptThread and start a connected thread.
+     * @param socket the newly connected device
+     */
     private synchronized void connectSocket(BluetoothSocket socket)
     {
         if (!Destroyed())
@@ -279,10 +350,14 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
             l("Storing socket in connected devices");
             connectedThread = new ConnectedThread(socket);
             connectedThread.start();
-            MSG(MESSAGE_CONNECTED);
+            MSG(MessageTypes.MESSAGE_CONNECTED);
         }
     }
 
+    /**
+     * Write a string to the connected bluetooth device
+     * @param text text to send
+     */
     synchronized void BluetoothWrite(String text)
     {
         l("EVENT: send() " + text);
@@ -296,16 +371,27 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Function meant to be overrided, will handle all of the bluetooth input, runs on the main
+     * thread
+     * @param msg the message sent to the thread
+     */
     void handle(Message msg)
     {
         // Do nothing, OVERRIDE ME
     }
 
+    /**
+     * Whether the activity is cleaned up
+     */
     private boolean ISDESTROYED = false;
     private synchronized boolean Destroyed() { return ISDESTROYED; }
     private synchronized void SetDestroyed() { ISDESTROYED = true; }
 
 
+    /**
+     * Clean up all of the threads and sockets when the activity is destroyed
+     */
     @Override
     public void onDestroy()
     {
@@ -321,6 +407,9 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Close all sockets
+     */
     private void disconnect()
     {
         connectedThread.close();

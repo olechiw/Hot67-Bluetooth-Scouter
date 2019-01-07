@@ -6,7 +6,6 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
 import com.evrencoskun.tableview.ITableView;
-import com.evrencoskun.tableview.filter.IFilterableModel;
 import com.evrencoskun.tableview.listener.ITableViewListener;
 import com.evrencoskun.tableview.sort.SortState;
 import com.hotteam67.firebaseviewer.ViewerActivity;
@@ -221,7 +220,7 @@ public class MainTableViewListener implements ITableViewListener {
             Prep full team schedule
              */
             List<String> matchNumbers = new ArrayList<>();
-            String matches = FileHandler.LoadContents(FileHandler.VIEWER_MATCHES_FILE);
+            String matches = FileHandler.LoadContents(FileHandler.Files.VIEWER_MATCHES_FILE);
             if (matches != null && !matches.trim().isEmpty()) {
                 List<String> matchesArray = Arrays.asList(matches.split("\n"));
                 if (matchesArray.size() > 0)

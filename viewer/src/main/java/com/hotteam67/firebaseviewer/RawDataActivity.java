@@ -17,6 +17,8 @@ import com.hotteam67.firebaseviewer.tableview.MainTableAdapter;
 import com.hotteam67.firebaseviewer.tableview.MainTableViewListener;
 import com.hotteam67.firebaseviewer.data.Sort;
 
+import org.hotteam67.common.Constants;
+
 public class RawDataActivity extends AppCompatActivity {
 
     public static final String RAW_DATA_ATTRIBUTE = "raw_data_attribute";

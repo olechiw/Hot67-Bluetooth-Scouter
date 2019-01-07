@@ -20,20 +20,33 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Created by Jakob on 4/1/2018.
+ * Handler for The Blue Alliance Web API
  */
 
 public class TBAHandler {
 
+    /**
+     * A class that will retrieve the contents of the url and pass them back as a string with an
+     * onCompleteEvent
+     */
     static class RetrieveUrl extends AsyncTask<String, Void, String> {
 
         final OnDownloadResultListener<String> onCompleteEvent;
 
+        /**
+         * Constructor
+         * @param event the event to be called once the URL has been retreieved
+         */
         RetrieveUrl(OnDownloadResultListener<String> event)
         {
             onCompleteEvent = event;
         }
 
+        /**
+         * The thread to download from the url
+         * @param input the url
+         * @return the results of the download
+         */
         @Override
         protected String doInBackground(String... input)
         {
@@ -77,13 +90,20 @@ public class TBAHandler {
         }
     }
 
+    /**
+     * A model for a match containing both red and blue alliances
+     */
     public static class Match
     {
         public List<String> redTeams = new ArrayList<>();
         public List<String> blueTeams = new ArrayList<>();
     }
 
-    // Gets rankings as returns as jsonobjct
+    /**
+     * Get the rankings of an event to return as a JSONObject
+     * @param eventCode the blue alliance event code, including year
+     * @param returnEvent event that consumes a JSONObject - [teamNumber, teamRank]
+     */
     public static void Rankings(String eventCode, OnDownloadResultListener<JSONObject> returnEvent)
     {
         String url = Constants.TBA.BASE_URL;
@@ -138,7 +158,11 @@ public class TBAHandler {
         }); retrieveUrl.execute(url);
     }
 
-    // Returns lists of 3 red teams, and 3 blue teams, red first: [[r1, r2, r3], [b1, b2, b3]]
+    /**
+     * Get the qualification match schedule for an event
+     * @param eventCode the blue alliance event code, including year
+     * @param returnEvent consumes a list of matches with red and blue teams
+     */
     public static void Matches(String eventCode, final OnDownloadResultListener<List<Match>> returnEvent)
     {
         String url = Constants.TBA.BASE_URL;
@@ -189,7 +213,11 @@ public class TBAHandler {
         }); retrieveUrl.execute(url);
     }
 
-    // Gets team names and returns as jsonobject, team number as key team name as value
+    /**
+     * Get the team names of each team for an event
+     * @param eventCode the blue alliance event code, including year
+     * @param returnEvent consumes team number as key team name as value
+     */
     public static void TeamNames(String eventCode, OnDownloadResultListener<JSONObject> returnEvent)
     {
         String url = Constants.TBA.BASE_URL;
@@ -222,7 +250,11 @@ public class TBAHandler {
         }); retrieveUrl.execute(url);
     }
 
-    // Get alliances and return as list of list of string team numbers
+    /**
+     * Get the alliances of teams for eliminations at an event
+     * @param eventCode the blue alliance event code, including year
+     * @param returnEvent list of list of string team numbers, from highest to lowest rank
+     */
     public static void Alliances(String eventCode, OnDownloadResultListener<List<List<String>>> returnEvent)
     {
         String url = Constants.TBA.BASE_URL;

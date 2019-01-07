@@ -11,7 +11,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 /**
- * Created by Jakob on 4/27/2017.
+ *  A manually themed number picker that can be easily made horizontal or vertical
  */
 
 public class DarkNumberPicker extends LinearLayout
@@ -39,6 +39,9 @@ public class DarkNumberPicker extends LinearLayout
         valueChangedListener = r;
     }
 
+    /**
+     * Build the number picker, adding the edittext and two buttons
+     */
     private void Construct()
     {
         mainText = new EditText(getContext());
@@ -129,17 +132,29 @@ public class DarkNumberPicker extends LinearLayout
         addView(downButton);
     }
 
+    /**
+     * Configure the minimum of the numberpicker
+     * @param value min
+     */
     public void setMinimum(int value)
     {
         minimum = value;
     }
 
+    /**
+     * Configure the maximum of the numberpicker
+     * @param value max
+     */
     public void setMaximum(int value)
     {
         maximum = value;
     }
 
 
+    /**
+     * Get the current value of the number picker
+     * @return value
+     */
     public int getValue()
     {
         if (mainText.getText().toString().trim().isEmpty())
@@ -148,6 +163,10 @@ public class DarkNumberPicker extends LinearLayout
         return Integer.valueOf(mainText.getText().toString());
     }
 
+    /**
+     * Set the current value of the number picker
+     * @param value value
+     */
     public void setValue(Integer value)
     {
         if (value > 0)

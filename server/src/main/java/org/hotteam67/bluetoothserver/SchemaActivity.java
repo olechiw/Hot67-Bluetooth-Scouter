@@ -112,20 +112,20 @@ public class SchemaActivity extends AppCompatActivity {
                 GetString("Value Label: ", tag ->
                                 GetString("Maximum:", maximum ->
                                 {
-                                    schema.put(createJSON(Constants.TYPE_INTEGER, tag, maximum));
+                                    schema.put(createJSON(Constants.InputTypes.TYPE_INTEGER, tag, maximum));
                                     SchemaHandler.Setup(tableLayout, schema, c);
                                 })));
 
         booleanButton = findViewById(R.id.booleanButton);
         booleanButton.setOnClickListener(view -> GetString("Value Label:", input ->
         {
-            schema.put(createJSON(Constants.TYPE_BOOLEAN, input));
+            schema.put(createJSON(Constants.InputTypes.TYPE_BOOLEAN, input));
             SchemaHandler.Setup(tableLayout, schema, c);
         }));
         headerButton = findViewById(R.id.headerButton);
         headerButton.setOnClickListener(view -> GetString("Value Label:", input ->
         {
-            schema.put(createJSON(Constants.TYPE_HEADER, input));
+            schema.put(createJSON(Constants.InputTypes.TYPE_HEADER, input));
             SchemaHandler.Setup(tableLayout, schema, c);
         }));
         deleteButton = findViewById(R.id.deleteButton);
@@ -140,7 +140,7 @@ public class SchemaActivity extends AppCompatActivity {
         multiChoiceButton.setOnClickListener(view ->
                 GetString("Multi Choice Name", label ->
                         GetMultiChoiceInput(new ArrayList<>(), choices -> {
-                                schema.put(createJSON(Constants.TYPE_MULTI, label,
+                                schema.put(createJSON(Constants.InputTypes.TYPE_MULTI, label,
                                         choices.toArray(new String[0])));
                                 SchemaHandler.Setup(tableLayout, schema, c);
                         })));
@@ -150,7 +150,7 @@ public class SchemaActivity extends AppCompatActivity {
         SchemaHandler.Setup(tableLayout, schema, this);
 
         ImageButton saveButton = findViewById(R.id.saveButton);
-        saveButton.setOnClickListener(view -> FileHandler.Write(FileHandler.SCHEMA_FILE, schema.toString()));
+        saveButton.setOnClickListener(view -> FileHandler.Write(FileHandler.Files.SCHEMA_FILE, schema.toString()));
     }
 
     interface onMultiComplete
@@ -177,12 +177,12 @@ public class SchemaActivity extends AppCompatActivity {
         {
             object.put(SchemaHandler.TYPE, type);
             object.put(SchemaHandler.TAG, tag);
-            if (type == Constants.TYPE_INTEGER)
+            if (type == Constants.InputTypes.TYPE_INTEGER)
             {
                 int max = Integer.valueOf(extras[0]);
                 object.put(SchemaHandler.MAX, max);
             }
-            else if (type == Constants.TYPE_MULTI)
+            else if (type == Constants.InputTypes.TYPE_MULTI)
             {
                 JSONArray choices = new JSONArray();
                 for (String s : extras)
@@ -252,7 +252,7 @@ public class SchemaActivity extends AppCompatActivity {
     @Override
     public void onDestroy()
     {
-        FileHandler.Write(FileHandler.SCHEMA_FILE, schema.toString());
+        FileHandler.Write(FileHandler.Files.SCHEMA_FILE, schema.toString());
 
         super.onDestroy();
     }

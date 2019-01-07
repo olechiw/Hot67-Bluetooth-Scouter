@@ -31,6 +31,8 @@ import android.widget.TextView;
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
+
+
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -40,10 +42,19 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
+/**
+ * The main activity for the scouter, handles UI, user input, and the bluetooth input/output
+ */
 public class ScoutActivity extends BluetoothClientActivity
 {
+    /**
+     * Activity request to enable the bluetooth
+     */
     private static final int REQUEST_ENABLE_PERMISSION = 3;
 
+    /**
+     * The state of sending matches for sync all
+     */
     enum SendingState { SENDING, WAITING }
     SendingState sendingState = SendingState.WAITING;
 
@@ -57,6 +68,9 @@ public class ScoutActivity extends BluetoothClientActivity
 
     private int unlockCount = 0;
 
+    /**
+     * The matches that are queued to be sent to the server for sync all, send one more every time
+     */
     private List<JSONObject> queuedMatchesToSend = new ArrayList<>();
 
     private TableLayout inputTable;
@@ -65,7 +79,7 @@ public class ScoutActivity extends BluetoothClientActivity
 
     private String lastValuesBeforeChange = "";
 
-    /*
+    /**
     When the activity is born
      */
     @Override
@@ -78,8 +92,8 @@ public class ScoutActivity extends BluetoothClientActivity
 
     }
 
-    /*
-    Setup operations before bluetooth is turned on/given permission etc
+    /**
+     * Check whether bluetooth permissions are setup, and request them if they arent
      */
     private void CheckBluetooth()
     {
@@ -96,8 +110,8 @@ public class ScoutActivity extends BluetoothClientActivity
         }
     }
 
-    /*
-    Setup operations after bluetooth is turned on/given permission etc
+    /**
+     * Setup the user interface and threads after bluetooth has been initialized
      */
     private void SetupAfterBluetooth()
     {
@@ -184,8 +198,8 @@ public class ScoutActivity extends BluetoothClientActivity
         teamNumber.setInputType(InputType.TYPE_NULL);
     }
 
-    /*
-    When the right button is clicked
+    /**
+     * When the next match is to be shown, save locally, send the current match, display the next one
      */
     private void OnNextMatch()
     {
@@ -196,8 +210,8 @@ public class ScoutActivity extends BluetoothClientActivity
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
     }
 
-    /*
-    When the left button is clicked
+    /**
+     * When the left button is clicked, save/send/show matches
      */
     private void OnPreviousMatch()
     {
@@ -211,8 +225,9 @@ public class ScoutActivity extends BluetoothClientActivity
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
     }
 
-    /*
-    Get the current matchNumber
+    /**
+     * Get the currently <b>displayed</b> match number
+     * @return match number
      */
     private int GetCurrentMatchNumber()
     {
@@ -226,17 +241,20 @@ public class ScoutActivity extends BluetoothClientActivity
         }
     }
 
-    /*
-    Display a match in the UI
+    /**
+     * Show a match in the UI, changing the match number text
+     * @param match the match number to show
      */
     private void DisplayMatch(int match)
     {
         DisplayMatch(match, true);
     }
 
-    /*
-    Display a match in the UI
-    changeMatchText: whether to update match number also
+    /**
+     * Show a match in the UI
+     * @param match the match number to show
+     * @param changeMatchText whether to change matchNumber textview's value, set to false if this
+     *                        was triggered by the user editing the text
      */
     private void DisplayMatch(int match, boolean changeMatchText)
     {
@@ -280,8 +298,10 @@ public class ScoutActivity extends BluetoothClientActivity
             lastValuesBeforeChange = currentValues.toString();
     }
 
-    /*
-    Get the value of notes from memory for the current match
+    /**
+     * Load the value of the notes from memory for given match number
+     * @param matchNumber the match number to get notes for
+     * @return the string value of the notes key, or "" if none are found/failure occurs
      */
     private String GetNotes(int matchNumber)
     {
@@ -298,8 +318,10 @@ public class ScoutActivity extends BluetoothClientActivity
         return "";
     }
 
-    /*
-    Get the team number for a specific match number
+    /**
+     * Get the team number from memory for a specific match
+     * @param m the match number ot get
+     * @return the team number in String format, but also an int
      */
     private String GetMatchTeamNumber(int m)
     {
@@ -315,6 +337,9 @@ public class ScoutActivity extends BluetoothClientActivity
         }
     }
 
+    /**
+     * Begin syncing all matches to the server, queuing them all and sending one
+     */
     private void SendAllMatches()
     {
         if (matches.size() < 1 || sendingState == SendingState.SENDING)
@@ -340,9 +365,8 @@ public class ScoutActivity extends BluetoothClientActivity
         }, 15000);
     }
 
-    /*
-    Save all matches and send the current one over bluetooth
-    Local only: No sending. SaveDuplicates: Save/send even if nothing changed
+    /**
+     * Save all matches locally
      */
     private void SaveAllMatches()
     {
@@ -356,17 +380,18 @@ public class ScoutActivity extends BluetoothClientActivity
                 output.append("\n");
             i++;
         }
-        // l("Writing output to matches file: " + output);
-        FileHandler.Write(FileHandler.SCOUTER_FILE, output.toString());
+        FileHandler.Write(FileHandler.Files.SCOUTER_FILE, output.toString());
     }
 
-    /*
-    Save match locally
+    /**
+     * Save the current match locally and also send it, not saving duplicates
      */
     private void SaveCurrentMatch() { SaveCurrentMatch(false, false); }
 
-    /*
-    Save match locally
+    /**
+     * Save the current match locally
+     * @param localOnly whether to send the match or just save it locally
+     * @param saveDuplicates whether to save even if the value has not been detected as changed
      */
     private void SaveCurrentMatch(boolean localOnly, boolean saveDuplicates)
     {
@@ -403,8 +428,9 @@ public class ScoutActivity extends BluetoothClientActivity
         }
     }
 
-    /*
-    Send a match over bluetooth
+    /**
+     *
+     * @param match
      */
     private void SendMatch(JSONObject match)
     {
@@ -462,7 +488,7 @@ public class ScoutActivity extends BluetoothClientActivity
     {
         try
         {
-            BufferedReader r = FileHandler.GetReader(FileHandler.SCOUTER_FILE);
+            BufferedReader r = FileHandler.GetReader(FileHandler.Files.SCOUTER_FILE);
             String line = null;
             if (r != null)
             {
@@ -516,12 +542,12 @@ public class ScoutActivity extends BluetoothClientActivity
                     // Show a confirmation dialog
                     Constants.OnConfirm("Received new schema, clear local schema?", this, () ->
                     {
-                        FileHandler.Write(FileHandler.SCHEMA_FILE, message);
+                        FileHandler.Write(FileHandler.Files.SCHEMA_FILE, message);
                         SchemaHandler.Setup(
                                 inputTable, // Table to setup the new schema on
                                 SchemaHandler.LoadSchemaFromFile(), // Schema text
                                 c); // Context
-                        FileHandler.Write(FileHandler.SCOUTER_FILE, "");
+                        FileHandler.Write(FileHandler.Files.SCOUTER_FILE, "");
                         matches = new ArrayList<>();
                         DisplayMatch(1);
                     });
@@ -602,13 +628,13 @@ public class ScoutActivity extends BluetoothClientActivity
     {
         switch (msg.what)
         {
-            case MESSAGE_INPUT: // Input received through bluetooth
+            case MessageTypes.MESSAGE_INPUT: // Input received through bluetooth
                 ProcessBluetoothInput(msg);
                 break;
-            case MESSAGE_CONNECTED: // The device has connected
+            case MessageTypes.MESSAGE_CONNECTED: // The device has connected
                 connectionStatus.setImageResource(R.drawable.ic_network_wifi);
                 break;
-            case MESSAGE_DISCONNECTED: // The device has disconnected
+            case MessageTypes.MESSAGE_DISCONNECTED: // The device has disconnected
                 connectionStatus.setImageResource(R.drawable.ic_network_off);
                 break;
         }

@@ -26,17 +26,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Jakob on 4/28/2017.
+ * The handler for the schema system, which populates and updates the contents of a tableview with
+ * the schema's requested items
  */
 
 public final class SchemaHandler
 {
-    // Tags used in JSON format for schema
+    /**
+     * The label for a schema item
+     */
     public static final String TAG = "Tag";
+    /**
+     * The type of a schema item
+     */
     public static final String TYPE = "Type";
+    /**
+     * The max value of a schema item
+     */
     public static final String MAX = "Max";
+    /**
+     * The JSONArray list of choices for a schema item
+     */
     public static final String CHOICES = "Choices";
 
+    /**
+     * Create the UI Rows from a schema
+     * @param schema the input schema
+     * @param context the parent context to create views with
+     * @return a list of TableRows populated from the schema
+     */
     private static List<TableRow> GetRows(JSONArray schema, Context context)
     {
 
@@ -75,7 +93,7 @@ public final class SchemaHandler
             TableRow row = new TableRow(context);
             View view = views.get(currentView);
             int type = Integer.valueOf(view.getTag(R.string.variable_type).toString());
-            if (type == Constants.TYPE_HEADER)
+            if (type == Constants.InputTypes.TYPE_HEADER)
             {
                 SetParams(view, columnWidth);
                 row.addView(view);
@@ -85,7 +103,7 @@ public final class SchemaHandler
 
             while (currentColumn < maxColumns &&
                     currentView < views.size() &&
-                    type != Constants.TYPE_HEADER)
+                    type != Constants.InputTypes.TYPE_HEADER)
             {
                 SetParams(view, columnWidth);
                 row.addView(view);
@@ -108,6 +126,11 @@ public final class SchemaHandler
         return rows;
     }
 
+    /**
+     * Get the current values from an already populated TableLayout
+     * @param table the table layout that already fits a schema
+     * @return a JSONObject with tags for each schema tag and values from the table
+     */
     public static JSONObject GetCurrentValues(TableLayout table)
     {
         JSONObject output = new JSONObject();
@@ -119,20 +142,20 @@ public final class SchemaHandler
                 String tag = v.getTag(R.string.variable_name).toString();
                 switch ((int) v.getTag(R.string.variable_type))
                 {
-                    case Constants.TYPE_INTEGER:
+                    case Constants.InputTypes.TYPE_INTEGER:
                         output.put(tag,
                                 String.valueOf(
                                         ((DarkNumberPicker) v.findViewById(R.id.numberPicker)).getValue()
                                 )
                         );
                         break;
-                    case Constants.TYPE_BOOLEAN:
+                    case Constants.InputTypes.TYPE_BOOLEAN:
                         output.put(tag, String.valueOf(((CheckBox) v.findViewById(R.id.checkBox1)).isChecked()));
                         break;
-                    case Constants.TYPE_STRING:
+                    case Constants.InputTypes.TYPE_STRING:
                         output.put(tag, ((EditText) v.findViewById(R.id.editText)).getText().toString());
                         break;
-                    case Constants.TYPE_MULTI:
+                    case Constants.InputTypes.TYPE_MULTI:
                         Spinner s = v.findViewById(R.id.multiChoiceSpinner);
                         if (s.getSelectedItem() == null)
                             output.put(tag, s.getItemAtPosition(0).toString());
@@ -151,6 +174,12 @@ public final class SchemaHandler
         return output;
     }
 
+    /**
+     * Generate a UI from a schem and populate a view
+     * @param table The TableLayout to setup
+     * @param schema The schema to generate the views from
+     * @param context The parent context to give the views
+     */
     public static void Setup(TableLayout table, JSONArray schema, Context context)
     {
         table.removeAllViews();
@@ -161,11 +190,15 @@ public final class SchemaHandler
         }
     }
 
+    /**
+     * Load a schema from file into a jsonarray
+     * @return the schema as a JSONArray, containing JSONObjects for each schema item
+     */
     public static JSONArray LoadSchemaFromFile()
     {
         try
         {
-            BufferedReader reader = FileHandler.GetReader(FileHandler.SCHEMA_FILE);
+            BufferedReader reader = FileHandler.GetReader(FileHandler.Files.SCHEMA_FILE);
             String line = reader.readLine();
             reader.close();
             if (line != null)
@@ -182,6 +215,11 @@ public final class SchemaHandler
         }
     }
 
+    /**
+     * Get all of the views from a table, iterating over its rows and its rows' children
+     * @param table the table to get all of the views form
+     * @return a list of all of the children of the tablerows of the table
+     */
     private static List<View> getViews(TableLayout table)
     {
         List<View> views = new ArrayList<>();
@@ -196,6 +234,10 @@ public final class SchemaHandler
         return views;
     }
 
+    /**
+     * Reset all of the values of a table to default
+     * @param table the table to reset the values of
+     */
     public static void ClearCurrentValues(TableLayout table)
     {
         for (View v : getViews(table))
@@ -204,16 +246,16 @@ public final class SchemaHandler
             {
                 switch ((int) v.getTag(R.string.variable_type))
                 {
-                    case Constants.TYPE_INTEGER:
+                    case Constants.InputTypes.TYPE_INTEGER:
                         ((DarkNumberPicker) v.findViewById(R.id.numberPicker)).setValue(Integer.valueOf("0"));
                         break;
-                    case Constants.TYPE_BOOLEAN:
+                    case Constants.InputTypes.TYPE_BOOLEAN:
                         ((CheckBox) v.findViewById(R.id.checkBox1)).setChecked(Boolean.valueOf("0"));
                         break;
-                    case Constants.TYPE_STRING:
+                    case Constants.InputTypes.TYPE_STRING:
                         ((EditText) v.findViewById(R.id.editText)).setText("");
                         break;
-                    case Constants.TYPE_MULTI:
+                    case Constants.InputTypes.TYPE_MULTI:
                         ((Spinner)v.findViewById(R.id.multiChoiceSpinner)).setSelection(0);
                         break;
                 }
@@ -225,6 +267,11 @@ public final class SchemaHandler
         }
     }
 
+    /**
+     * Set all of the values of a table to a specified value
+     * @param table the table to map values to
+     * @param values the values to set, with tags corresponding to the schema tags and values to set
+     */
     public static void SetCurrentValues(TableLayout table, JSONObject values)
     {
         for (View v : getViews(table))
@@ -235,20 +282,20 @@ public final class SchemaHandler
                 if (!values.has(name)) continue;
                 switch ((int) v.getTag(R.string.variable_type))
                 {
-                    case Constants.TYPE_INTEGER:
+                    case Constants.InputTypes.TYPE_INTEGER:
                         ((DarkNumberPicker) v.findViewById(R.id.numberPicker)).setValue(Integer.valueOf(values.getString(name)));
                         // l("Loading in value: " + values.get(val));
 
                         break;
-                    case Constants.TYPE_BOOLEAN:
+                    case Constants.InputTypes.TYPE_BOOLEAN:
                         ((CheckBox) v.findViewById(R.id.checkBox1)).setChecked(Boolean.valueOf(values.getString(name)));
                         // l("Loading in value: " + values.get(val));
                         break;
-                    case Constants.TYPE_STRING:
+                    case Constants.InputTypes.TYPE_STRING:
                         ((EditText) v.findViewById(R.id.editText)).setText(values.getString(name));
                         // l("Loading in value: " + values.get(val));
                         break;
-                    case Constants.TYPE_MULTI:
+                    case Constants.InputTypes.TYPE_MULTI:
                         Spinner s = v.findViewById(R.id.multiChoiceSpinner);
                         s.setSelection(((ArrayAdapter<String>)s.getAdapter()).getPosition(values.getString(name)));
                         break;
@@ -261,6 +308,11 @@ public final class SchemaHandler
         }
     }
 
+    /**
+     * Set the layout parameters of a view for the schema
+     * @param v the view
+     * @param width the views specified witdth
+     */
     private static void SetParams(View v, int width)
     {
         TableRow.LayoutParams params = new TableRow.LayoutParams(width, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -271,7 +323,12 @@ public final class SchemaHandler
             ((CheckBox)v).setGravity(Gravity.CENTER);
     }
 
-
+    /**
+     * Create a view from a variable that has been loaded from the schema
+     * @param variable the variable or schema item to be turned into a view
+     * @param c the parent context
+     * @return a view that has been inflated in accordance with the provided variable
+     */
     private static View GetView(JSONObject variable, Context c)
     {
         View v = null;
@@ -291,7 +348,7 @@ public final class SchemaHandler
         }
         switch (type)
         {
-            case Constants.TYPE_BOOLEAN:
+            case Constants.InputTypes.TYPE_BOOLEAN:
                 v = getInflater(c).inflate(R.layout.layout_boolean, null);
                 LinearLayout l = (LinearLayout)v;
                 CheckBox check = l.findViewById(R.id.checkBox1);
@@ -299,7 +356,7 @@ public final class SchemaHandler
                 check.setText(tag);
                 check.setVisibility(View.VISIBLE);
                 break;
-            case Constants.TYPE_STRING:
+            case Constants.InputTypes.TYPE_STRING:
                 v = getInflater(c).inflate(R.layout.layout_edittext, null);
                 TextView text = v.findViewById(R.id.textLabel);
                 text.setText(tag);
@@ -307,7 +364,7 @@ public final class SchemaHandler
                         text,
                         android.R.style.TextAppearance_DeviceDefault);
                 break;
-            case Constants.TYPE_INTEGER:
+            case Constants.InputTypes.TYPE_INTEGER:
                 v = getInflater(c).inflate(R.layout.layout_numberpicker, null);
                 ((TextView) v.findViewById(R.id.numberLabel)).setText(tag);
                 TextViewCompat.setTextAppearance(
@@ -326,13 +383,13 @@ public final class SchemaHandler
 
                 }
                 break;
-            case Constants.TYPE_HEADER:
+            case Constants.InputTypes.TYPE_HEADER:
                 v = getInflater(c).inflate(R.layout.layout_header, null);
                 ((TextView)v).setText(tag);
                 break;
             case -1:
                 l("Failed to determine type of obj " + variable.toString());
-            case Constants.TYPE_MULTI:
+            case Constants.InputTypes.TYPE_MULTI:
                 v = getInflater(c).inflate(R.layout.layout_multichoice, null);
                 ((TextView)v.findViewById(R.id.multiChoiceLabel)).setText(tag);
                 Spinner spinner = v.findViewById(R.id.multiChoiceSpinner);
@@ -373,6 +430,12 @@ public final class SchemaHandler
         return ((Activity)c).getLayoutInflater();
     }
 
+    /**
+     * Measure the effective column width of views by detecting the maximum columns that can exist
+     * without issue
+     * @param views a list of all of the views to detect how many columns can fit
+     * @return the maximum number of columns possible
+     */
     private static int MeasureColumnWidth(List<View> views)
     {
         // Measure max column width

@@ -16,31 +16,46 @@ import java.io.Serializable;
 
 
 /**
- * Created by Jakob on 3/26/2017.
+ * Static class providing all of the functions and files
  */
 
 public final class FileHandler
 {
-    public static final String SERVER_FILE = "Server/serverDatabase.json"; // Server scouted matches database
-    public static final String SCHEMA_FILE = "schema.json"; // Server/scouter schema
-    public static final String SCOUTER_FILE = "Scouter/scouterDatabase.json"; // Scouter scouted/unscouted matches database
-    public static final String MATCHES_FILE = "Server/serverMatches.csv"; // Server unscouted matches (match schedule)
-    public static final String TEAM_NAMES_FILE = "Viewer/teamNames.json";  // Viewer team name sjson
-    public static final String RANKS_FILE = "Viewer/teamRanks.json"; // Viewer team ranks json
-    public static final String ALLIANCES_FILE = "Viewer/alliances.csv"; // Viewer alliances list
-    public static final String VIEWER_MATCHES_FILE = "Viewer/viewerMatches.csv"; // Viewer match schedule
-    public static final String AVERAGES_CACHE = "Viewer/averagesCache"; // Cache of viewer average calculations
-    public static final String MAXIMUMS_CACHE = "Viewer/maximumsCache"; // Cache of viewer maximum calculations
-    public static final String RAW_CACHE = "Viewer/matchesCache"; // Cache of raw data for viewer
+    public static class Files
+    {
+
+        public static final String SERVER_FILE = "Server/serverDatabase.json"; // Server scouted matches database
+        public static final String SCHEMA_FILE = "schema.json"; // Server/scouter schema
+        public static final String SCOUTER_FILE = "Scouter/scouterDatabase.json"; // Scouter scouted/unscouted matches database
+        public static final String MATCHES_FILE = "Server/serverMatches.csv"; // Server unscouted matches (match schedule)
+        public static final String TEAM_NAMES_FILE = "Viewer/teamNames.json";  // Viewer team name sjson
+        public static final String RANKS_FILE = "Viewer/teamRanks.json"; // Viewer team ranks json
+        public static final String ALLIANCES_FILE = "Viewer/alliances.csv"; // Viewer alliances list
+        public static final String VIEWER_MATCHES_FILE = "Viewer/viewerMatches.csv"; // Viewer match schedule
+        public static final String AVERAGES_CACHE = "Viewer/averagesCache"; // Cache of viewer average calculations
+        public static final String MAXIMUMS_CACHE = "Viewer/maximumsCache"; // Cache of viewer maximum calculations
+        public static final String RAW_CACHE = "Viewer/matchesCache"; // Cache of raw data for viewer
+    }
+
     private static final String DIRECTORY =
             Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
 
 
+    /**
+     * Get the string value of a file with its directory
+     * @param file filename
+     * @return file path
+     */
     private static String file(String file)
     {
         return DIRECTORY + file;
     }
 
+    /**
+     * Get the read for a specific filed
+     * @param FILE the file without directory
+     * @return the reader for the file
+     */
     public static BufferedReader GetReader(String FILE)
     {
         try
@@ -70,6 +85,11 @@ public final class FileHandler
         return null;
     }
 
+    /**
+     * Get the writer for a file
+     * @param FILE the file without its directory
+     * @return the writer for the file
+     */
     private static FileWriter GetWriter(String FILE)
     {
         String f = file(FILE);
@@ -101,6 +121,11 @@ public final class FileHandler
         return null;
     }
 
+    /**
+     * Open and close a file and return its contents
+     * @param file the file to open, without directory
+     * @return the contents of the file
+     */
     public static String LoadContents(String file)
     {
         StringBuilder content = new StringBuilder();
@@ -123,6 +148,11 @@ public final class FileHandler
         return content.toString();
     }
 
+    /**
+     * Write to a specific file overwriting its contents
+     * @param FILE the file to write to, without directory
+     * @param s the value to write to the file
+     */
     public static void Write(String FILE, String s)
     {
         try
@@ -141,6 +171,11 @@ public final class FileHandler
         }
     }
 
+    /**
+     * Write a serializable object to a file
+     * @param o the object to write
+     * @param file the file to write to, without directory
+     */
     public static void Serialize(Serializable o, String file)
     {
         try {
@@ -155,6 +190,11 @@ public final class FileHandler
         }
     }
 
+    /**
+     * Load an object from a file by de-serializing its contents
+     * @param file the file to load from, without directory
+     * @return the serialized object
+     */
     public static Serializable DeSerialize(String file)
     {
         try

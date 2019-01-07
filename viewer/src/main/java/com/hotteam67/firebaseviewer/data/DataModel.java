@@ -5,13 +5,10 @@ import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.annimon.stream.Stream;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
-import com.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import com.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
 import com.hotteam67.firebaseviewer.web.FirebaseHandler;
 
-import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.OnDownloadResultListener;
 import org.hotteam67.common.TBAHandler;
@@ -115,9 +112,9 @@ public class DataModel
             @Override
             protected Object doInBackground(Object[] objects)
             {
-                FileHandler.Serialize(maximums, FileHandler.MAXIMUMS_CACHE);
-                FileHandler.Serialize(averages, FileHandler.AVERAGES_CACHE);
-                FileHandler.Serialize(rawData, FileHandler.RAW_CACHE);
+                FileHandler.Serialize(maximums, FileHandler.Files.MAXIMUMS_CACHE);
+                FileHandler.Serialize(averages, FileHandler.Files.AVERAGES_CACHE);
+                FileHandler.Serialize(rawData, FileHandler.Files.RAW_CACHE);
                 dataLoadEvent.OnCompleteProgress();
                 return null;
             }
@@ -141,14 +138,14 @@ public class DataModel
                 {
                     try
                     {
-                        averages = (DataTable)FileHandler.DeSerialize(FileHandler.AVERAGES_CACHE);
+                        averages = (DataTable)FileHandler.DeSerialize(FileHandler.Files.AVERAGES_CACHE);
                     } catch (Exception e)
                     {
                         e.printStackTrace();
                     }
                     try
                     {
-                        maximums = (DataTable)FileHandler.DeSerialize(FileHandler.MAXIMUMS_CACHE);
+                        maximums = (DataTable)FileHandler.DeSerialize(FileHandler.Files.MAXIMUMS_CACHE);
                     } catch (Exception e)
                     {
                         e.printStackTrace();
@@ -156,7 +153,7 @@ public class DataModel
 
                     try
                     {
-                        rawData = (DataTable)FileHandler.DeSerialize(FileHandler.RAW_CACHE);
+                        rawData = (DataTable)FileHandler.DeSerialize(FileHandler.Files.RAW_CACHE);
                     } catch (Exception e)
                     {
                         e.printStackTrace();
@@ -329,7 +326,7 @@ public class DataModel
                             }
                             s.append("\n");
                         }
-                        FileHandler.Write(FileHandler.VIEWER_MATCHES_FILE, s.toString());
+                        FileHandler.Write(FileHandler.Files.VIEWER_MATCHES_FILE, s.toString());
                     }
                     catch (Exception e)
                     {
@@ -348,7 +345,7 @@ public class DataModel
                 TBAHandler.TeamNames(eventKey, new OnDownloadResultListener<JSONObject>() {
                             @Override
                             public void onComplete(JSONObject teamNames) {
-                                FileHandler.Write(FileHandler.TEAM_NAMES_FILE, teamNames.toString());
+                                FileHandler.Write(FileHandler.Files.TEAM_NAMES_FILE, teamNames.toString());
                                 teamNumbersNames = teamNames;
                             }
 
@@ -365,7 +362,7 @@ public class DataModel
                 TBAHandler.Rankings(eventKey, new OnDownloadResultListener<JSONObject>() {
                             @Override
                             public void onComplete(JSONObject rankings) {
-                                FileHandler.Write(FileHandler.RANKS_FILE, rankings.toString());
+                                FileHandler.Write(FileHandler.Files.RANKS_FILE, rankings.toString());
                                 teamNumbersRanks = rankings;
                             }
 
@@ -390,7 +387,7 @@ public class DataModel
                             alliancesString.append(TextUtils.join(",", alliance));
                             alliancesString.append("\n");
                         }
-                        FileHandler.Write(FileHandler.ALLIANCES_FILE, alliancesString.toString());
+                        FileHandler.Write(FileHandler.Files.ALLIANCES_FILE, alliancesString.toString());
                     }
 
                     @Override
@@ -420,7 +417,7 @@ public class DataModel
         redTeamsQuals = new ArrayList<>();
         blueTeamsQuals = new ArrayList<>();
 
-        String content = FileHandler.LoadContents(FileHandler.VIEWER_MATCHES_FILE);
+        String content = FileHandler.LoadContents(FileHandler.Files.VIEWER_MATCHES_FILE);
         if (content == null || content.trim().isEmpty())
             return;
         String[] contents = content.split("\n");
@@ -463,7 +460,7 @@ public class DataModel
         }
 
         try {
-            teamNumbersNames = new JSONObject(FileHandler.LoadContents(FileHandler.TEAM_NAMES_FILE));
+            teamNumbersNames = new JSONObject(FileHandler.LoadContents(FileHandler.Files.TEAM_NAMES_FILE));
         }
         catch (Exception e)
         {
@@ -471,7 +468,7 @@ public class DataModel
         }
         try
         {
-            teamNumbersRanks = new JSONObject(FileHandler.LoadContents(FileHandler.RANKS_FILE));
+            teamNumbersRanks = new JSONObject(FileHandler.LoadContents(FileHandler.Files.RANKS_FILE));
         }
         catch (Exception e)
         {
@@ -481,7 +478,7 @@ public class DataModel
         try
         {
             alliances = new ArrayList<>();
-            String[] alliancesFile = FileHandler.LoadContents(FileHandler.ALLIANCES_FILE)
+            String[] alliancesFile = FileHandler.LoadContents(FileHandler.Files.ALLIANCES_FILE)
                     .split("\n");
             for (String value : alliancesFile)
             {
