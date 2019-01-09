@@ -20,10 +20,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Jakob on 4/6/2018.
+ * Class with one static function to draw a scatter plot, and show it in an alert dialog with the
+ * given context
  */
 
 public class ScatterPlot {
+    /**
+     * Display a dialog with the scatter plot. Dialog will fill the whole screen and disappear
+     * on click
+     * @param inputValues list of values to plot, with the index as the X axis
+     * @param c the context to create the dialog under
+     * @param title the title of the dialog
+     */
     public static void Show(List<Integer> inputValues, Context c, String title)
     {
         // Populate y-axis

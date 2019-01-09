@@ -378,6 +378,10 @@ public class ViewerActivity extends AppCompatActivity {
     private void UpdateTeamsGroup()
     {
         int id = teamsGroupInput.getValue();
+        MainTableAdapter adapter1 = (MainTableAdapter)averagesTable.getAdapter();
+        MainTableAdapter adapter2 = (MainTableAdapter)maximumsTable.getAdapter();
+        adapter1.clearAllianceColumns();
+        adapter2.clearAllianceColumns();
         switch (teamsGroupType.getSelectedItem().toString())
         {
             case Constants.ViewerTeamsGroupTypes.MATCH:
@@ -397,18 +401,21 @@ public class ViewerActivity extends AppCompatActivity {
 
                 averagesFilter.removeFilter(Constants.TEAM_NUMBER_COLUMN);
                 maximumsFilter.removeFilter(Constants.TEAM_NUMBER_COLUMN);
+
                 for (String red : m.redTeams)
                 {
-                    ((MainTableAdapter)averagesTable.getAdapter()).SetRowHeaderHighlight(red, Color.RED);
-                    ((MainTableAdapter)maximumsTable.getAdapter()).SetRowHeaderHighlight(red, Color.RED);
+//                    adapter1.SetRowHeaderHighlight(red, Color.RED);
+//                    adapter2.SetRowHeaderHighlight(red, Color.RED);
                     Filter(Constants.TEAM_NUMBER_COLUMN, red);
                 }
                 for (String blue : m.blueTeams)
                 {
-                    ((MainTableAdapter)averagesTable.getAdapter()).SetRowHeaderHighlight(blue, Color.BLUE);
-                    ((MainTableAdapter)maximumsTable.getAdapter()).SetRowHeaderHighlight(blue, Color.BLUE);
+//                    adapter1.SetRowHeaderHighlight(blue, Color.BLUE);
+//                    adapter2.SetRowHeaderHighlight(blue, Color.BLUE);
                     Filter(Constants.TEAM_NUMBER_COLUMN, blue);
                 }
+                adapter1.setAlliance(m);
+                adapter2.setAlliance(m);
 
 
                 break;
@@ -436,9 +443,6 @@ public class ViewerActivity extends AppCompatActivity {
     {
         averagesFilter.removeFilter(Constants.TEAM_NUMBER_COLUMN);
         maximumsFilter.removeFilter(Constants.TEAM_NUMBER_COLUMN);
-
-        ((MainTableAdapter)averagesTable.getAdapter()).RemoveAllRowHeaderHighlights();
-        ((MainTableAdapter)maximumsTable.getAdapter()).RemoveAllRowHeaderHighlights();
     }
 
     /**

@@ -81,25 +81,6 @@ public class ColumnSchema {
     }
 
     /**
-     * A special outlier adjust column list, currently not used
-     * @return a list of outlieradjusted columns, fancy but pretty much useless
-     */
-    public static List<OutlierAdjustedColumn> OutlierAdjustedColumns()
-    {
-        List<OutlierAdjustedColumn> columns = new ArrayList<>();
-
-        OutlierAdjustedColumn column = new OutlierAdjustedColumn();
-        column.columnName = "VAS";
-        column.sourceColumnName = "T. Scale";
-        column.adjustmentColumnName = "Cubes";
-        column.sourceQuartileDisallowed = 2;
-        column.adjustmentQuartileDisallowed = 1;
-
-        //columns.add(column);
-        return columns;
-    }
-
-    /**
      * Sum column, can be serialized for easier loading and saving of the table to/from memory
      */
     public static class SumColumn implements Serializable

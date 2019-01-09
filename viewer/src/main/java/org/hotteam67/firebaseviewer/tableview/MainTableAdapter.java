@@ -1,13 +1,18 @@
 package org.hotteam67.firebaseviewer.tableview;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.evrencoskun.tableview.adapter.AbstractTableAdapter;
+import com.evrencoskun.tableview.adapter.recyclerview.CellRecyclerViewAdapter;
+import com.evrencoskun.tableview.adapter.recyclerview.ColumnHeaderRecyclerViewAdapter;
+import com.evrencoskun.tableview.adapter.recyclerview.RowHeaderRecyclerViewAdapter;
 import com.evrencoskun.tableview.adapter.recyclerview.holder.AbstractViewHolder;
+
+import org.hotteam67.common.TBAHandler;
 import org.hotteam67.firebaseviewer.R;
 import org.hotteam67.firebaseviewer.data.DataTable;
 import org.hotteam67.firebaseviewer.tableview.holder.CellViewHolder;
@@ -16,8 +21,6 @@ import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -26,34 +29,39 @@ import java.util.List;
 
 public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, RowHeaderModel,
         CellModel> {
+    private static final int ALLIANCE_CELL = 1;
+
     public MainTableAdapter(Context p_jContext) {
         super(p_jContext);
     }
 
+    /*
     private HashMap<String, Integer> rowHeaderHighlights = new HashMap<>();
 
-    public void SetRowHeaderHighlight(String rowHeader, Integer color)
-    {
+    public void SetRowHeaderHighlight(String rowHeader, Integer color) {
         rowHeaderHighlights.put(rowHeader, color);
     }
+    */
 
-    public void RemoveRowHeaderHighlight(String rowHeader)
-    {
-        if (rowHeaderHighlights.containsKey(rowHeader))
-            rowHeaderHighlights.remove(rowHeader);
-    }
-
-    public void RemoveAllRowHeaderHighlights()
-    {
+    /*
+    public void RemoveAllRowHeaderHighlights() {
         rowHeaderHighlights = new HashMap<>();
     }
+    */
 
     @Override
     public AbstractViewHolder onCreateCellViewHolder(ViewGroup parent, int viewType) {
         View layout;
 
-        layout = LayoutInflater.from(mContext).inflate(R.layout.tableview_cell_layout,
-                parent, false);
+        switch (viewType) {
+            case ALLIANCE_CELL:
+                layout = LayoutInflater.from(mContext).inflate(R.layout.tableview_alliance,
+                        parent, false);
+                break;
+            default:
+                layout = LayoutInflater.from(mContext).inflate(R.layout.tableview_cell_layout,
+                        parent, false);
+        }
 
         // Create a Cell ViewHolder
         return new CellViewHolder(layout);
@@ -63,9 +71,18 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     public void onBindCellViewHolder(AbstractViewHolder holder, Object value, int
             xPosition, int yPosition) {
         CellModel cell = (CellModel) value;
-        String rowHeader = getRowHeaderItem(xPosition).getData();
+        if (cell.isAlliance())
+        {
+            if (cell.getContent() == "BLUE")
+                holder.itemView.setBackgroundColor(Color.BLUE);
+            else
+                holder.itemView.setBackgroundColor(Color.RED);
+        }
+
+        /*
         if (rowHeaderHighlights.containsKey(rowHeader))
             holder.setBackgroundColor(rowHeaderHighlights.get(rowHeader));
+            */
 
         if (holder instanceof CellViewHolder) {
             // Get the holder to update cell item text
@@ -74,13 +91,11 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     }
 
 
-    public void setAllItems(DataTable mainTable)
-    {
+    public void setAllItems(DataTable mainTable) {
         setAllItems(mainTable.GetColumns(), mainTable.GetRowHeaders(), mainTable.GetCells());
     }
 
-    public Context GetContext()
-    {
+    Context GetContext() {
         return this.mContext;
     }
 
@@ -123,9 +138,7 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         RowHeaderViewHolder rowHeaderViewHolder = (RowHeaderViewHolder) holder;
         try {
             rowHeaderViewHolder.row_header_textview.setText(String.valueOf(rowHeaderModel.getData()));
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             rowHeaderViewHolder.row_header_textview.setText("ERROR");
         }
 
@@ -147,10 +160,49 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         return 0;
     }
 
+    //TODO: ADD AN ALLIANCE COLUMN HERE WITH RED OR BLUE
     @Override
     public int getCellItemViewType(int position) {
 
+        if (position == 0 && hasAllianceColumns())
+            return ALLIANCE_CELL;
         // Not needed, using the data model instead
         return 0;
+    }
+
+    public void setAlliance(TBAHandler.Match match) {
+        CellRecyclerViewAdapter cells = ((CellRecyclerViewAdapter)getTableView().getCellRecyclerView().getAdapter());
+        ColumnHeaderRecyclerViewAdapter headers = ((ColumnHeaderRecyclerViewAdapter)getTableView().getColumnHeaderRecyclerView().getAdapter());
+        RowHeaderRecyclerViewAdapter rows = ((RowHeaderRecyclerViewAdapter)getTableView().getRowHeaderRecyclerView().getAdapter());
+
+        if (hasAllianceColumns()) {
+            cells.removeColumnItems(0);
+            headers.getItems().remove(0);
+        }
+        if (match == null) return;
+
+        for (int i = 0; i < cells.getItemCount(); ++i)
+        {
+            boolean blueNotRed;
+            String rowval = ((RowHeaderModel)rows.getItems().get(i)).getData();
+            blueNotRed = match.blueTeams.contains(rowval);
+
+            CellModel model = new CellModel("0_0", (blueNotRed) ? "BLUE" : "RED", true);
+            ((List<CellModel>)cells.getItems().get(i)).add(0, model);
+        }
+    }
+
+    public void clearAllianceColumns()
+    {
+        if (hasAllianceColumns())
+        {
+            setAlliance(null);
+        }
+    }
+
+    private boolean hasAllianceColumns()
+    {
+        // Check for existing alliance column
+        return (getCellItem(0,0).isAlliance());
     }
 }

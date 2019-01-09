@@ -15,13 +15,16 @@ public class Constants
     public static final int TEAM_NUMBER_COLUMN = 0;
 
     /**
-     * A stringinputevent for after the user has input a string. No consumer because compatibility
+     * An event for after the user has input a string. No consumer because compatibility
      */
     public interface StringInputEvent
     {
         void Run(String input);
     }
 
+    /**
+     * Types of "teams group" filtering found in the dropdown
+     */
     public static final class ViewerTeamsGroupTypes {
         public static final String MATCH = "Qualification Match";
         public static final String ALLIANCE = "Alliance";
@@ -54,7 +57,7 @@ public class Constants
     /**
      * A prompt from the server to the scouter to sync all of its matches
      */
-    public static final String SERVER_SENDALL_TAG =         ":SYNCALL,,";
+    public static final String SERVER_SEND_ALL_TAG =         ":SYNCALL,,";
     /**
      * Activity request code for the rawDataActivity, which is used to get the results such as
      * displaying a specific match in the calculated table view
@@ -67,7 +70,7 @@ public class Constants
     /**
      * Authentication token for the blue alliance API
      */
-    public static final String AUTH_TOKEN =
+    static final String AUTH_TOKEN =
             "?X-TBA-Auth-Key=HisYRPfFZbTdm3uKUA6cZ2etWXymiIlM8X3XKq2T15TVZQDIc1vaWSr5rX17gHoh";
     /**
      * Activity request code for the preferences activity, to trigger updating of viewer constants
@@ -79,12 +82,12 @@ public class Constants
      */
     public static class TBA
     {
-        public static final String BASE_URL = "https://www.thebluealliance.com/api/v3";
-        public static final String EVENT = "/event/";
-        public static final String TEAMS = "/teams";
-        public static final String MATCHES = "/matches/simple";
-        public static final String STATUSES = "/statuses";
-        public static final String ALLIANCES = "/alliances";
+        static final String BASE_URL = "https://www.thebluealliance.com/api/v3";
+        static final String EVENT = "/event/";
+        static final String TEAMS = "/teams";
+        static final String MATCHES = "/matches/simple";
+        static final String STATUSES = "/statuses";
+        static final String ALLIANCES = "/alliances";
     }
 
     /**

@@ -11,10 +11,15 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by Jakob on 2/8/2018.
+ * Sort class containing one sort function that copies a data table into a sorted state
  */
 
 public final class Sort {
+    /**
+     * Sort by the DataTable row header, bubble sort so very slow
+     * @param input the input table to be sorted
+     * @return a copy of the table sorted by its row headers
+     */
     public static DataTable BubbleSortAscendingByRowHeader(DataTable input)
     {
         List<ColumnHeaderModel> columns = input.GetColumns();
@@ -57,68 +62,4 @@ public final class Sort {
 
         return new DataTable(columns, cells, rows);
     }
-
-    public static DataTable SortByColumn(DataTable input, int column,
-                                         boolean ascending)
-    {
-        if (input == null) return null;
-        Constants.Time("Sort()");
-        List<ColumnHeaderModel> columns = input.GetColumns();
-        List<List<CellModel>> newCells = input.GetCells();
-        List<RowHeaderModel> rows = input.GetRowHeaders();
-
-        List<List<CellModel>> oldCells = new ArrayList<>(newCells);
-
-        newCells = com.annimon.stream.Stream.of(newCells).sorted((cells1, cells2) -> Compare(cells1.get(column).getData(),
-                cells2.get(column).getData())).collect(com.annimon.stream.Collectors.toList());
-
-        if (!ascending)
-            Collections.reverse(newCells);
-
-        List<RowHeaderModel> newRows = new ArrayList<>();
-        for (int i = 0; i < rows.size(); ++i)
-        {
-            newRows.add(null);
-        }
-        for (int i = 0; i < rows.size(); ++i)
-        {
-            int newIndex = newCells.indexOf(oldCells.get(i));
-            newRows.set(newIndex, rows.get(i));
-        }
-
-        Constants.Time("Sort()");
-        return new DataTable(columns, newCells, newRows);
-    }
-
-    private static int Compare(String item1, String item2)
-    {
-        if (item1.equals(item2))
-            return 0;
-
-        if (item1.equals("N/A"))
-            return -1;
-        if (item2.equals("N/A"))
-            return 1;
-
-        try
-        {
-            double value = Double.valueOf(item1);
-            double nextValue = Double.valueOf(item2);
-
-            if (value < nextValue)
-                return -1;
-            else
-                return 1;
-        }
-        catch (NumberFormatException e)
-        {
-            return item1.compareTo(item2);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            return 0;
-        }
-    }
-
 }

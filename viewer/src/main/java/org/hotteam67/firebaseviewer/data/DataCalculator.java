@@ -17,40 +17,66 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Created by Jakob on 1/19/2018.
+ * Class to run calculations of a given type with given raw data.
  */
 
-class DataTableBuilder implements Serializable {
+class DataCalculator implements Serializable {
+    /**
+     * The input raw data table
+     */
     private final DataTable rawDataTable;
+
+    /**
+     * The column names in string format of the input raw data
+     */
     private final List<String> columnsNames;
 
+    /**
+     * The output calculated data table
+     */
     private DataTable calculatedDataTable;
     private final String teamRanksJson;
     private final String teamNamesJson;
     private final List<Integer> calculatedColumnIndices;
 
-    private final List<ColumnSchema.OutlierAdjustedColumn> outlierAdjustedColumns;
-
+    /**
+     * The calculation types that are available
+     */
     public final static class Calculation implements Serializable
     {
-        public static final int AVERAGE = 0;
-        public static final int MAXIMUM = 1;
+        static final int AVERAGE = 0;
+        static final int MAXIMUM = 1;
         static final int MINIMUM = 2;
     }
 
+    /**
+     * The actual calculation type that is active, from Calculation class
+     */
     private final int calculationType;
 
-    public DataTableBuilder(DataTable rawData, List<String> calculatedColumns,
-                            List<String> columnIndices,
-                            List<ColumnSchema.OutlierAdjustedColumn> outlierAdjustedColumns,
-                            JSONObject teamRanks, JSONObject teamNames,
-                            int calculationType)
+    /**
+     * Constructor, will actually run the calculations
+     * @param rawData the rawData to run calculations on. Will use the row headers for each calculated row,
+     *                calculating an average/max/min based on all raw rows with that header
+     * @param calculatedColumns A list of string names of columns that will be in the final table
+     * @param columnIndices A list of string names of columns corresponding to calculatedColumns to
+     *                      run calculations on. Must be a column name found in raw data. For example
+     *                      "T. Scale" in calculatedColumns is the same index as "Teleop Scale"
+     *                      in columnIndices
+     * @param teamRanks JSON object of the team ranks to add as a column
+     * @param teamNames JSON object of the team names, stored for later retrieval when working with
+     *                  the calculated data
+     * @param calculationType the type of calculation to do, Max/Min/Avg
+     */
+    DataCalculator(DataTable rawData, List<String> calculatedColumns,
+                   List<String> columnIndices,
+                   JSONObject teamRanks, JSONObject teamNames,
+                   int calculationType)
     {
         rawDataTable = rawData;
         teamNamesJson = teamNames.toString();
         columnsNames = rawData.GetColumnNames();
         this.teamRanksJson = teamRanks.toString();
-        this.outlierAdjustedColumns = outlierAdjustedColumns;
         calculatedColumnIndices = new ArrayList<>();
         for (int i = 0; i < calculatedColumns.size(); ++i)
         {
@@ -71,6 +97,10 @@ class DataTableBuilder implements Serializable {
         SetupCalculatedColumns(calculatedColumns);
     }
 
+    /**
+     * Setup the calculated columns and actually run the calculations here
+     * @param calculatedColumns list of the calculated column names to use
+     */
     private void SetupCalculatedColumns(List<String> calculatedColumns)
     {
         List<ColumnHeaderModel> calcColumnHeaders = new ArrayList<>();
@@ -212,11 +242,22 @@ class DataTableBuilder implements Serializable {
         calculatedDataTable = new DataTable(calcColumnHeaders, calcCells, calcRowHeaders);
     }
 
-    public DataTable GetTable()
+    /**
+     * Get the resultant calculated table
+     * @return a DataTable object with the headers and data populated
+     */
+    DataTable GetTable()
     {
         return calculatedDataTable;
     }
 
+    /**
+     * Run a calculation on the given data set, and return the value
+     * @param columnName the name of the column
+     * @param columnValues the values for the column
+     * @param calculation the type of calculation to run
+     * @return a double representing your final value
+     */
     private static double doCalculatedColumn(String columnName, List<String> columnValues,
                                              int calculation)
     {
@@ -265,7 +306,7 @@ class DataTableBuilder implements Serializable {
                 {
                     return Stream.of(columnValues)
                             // Convert to number
-                            .mapToDouble(DataTableBuilder::ConvertToDouble)
+                            .mapToDouble(DataCalculator::ConvertToDouble)
                             .min().getAsDouble();
                 }
                 catch (Exception e)
@@ -280,19 +321,26 @@ class DataTableBuilder implements Serializable {
         }
     }
 
-    /*
-    Safely converts either a boolean or number string to a double, for averaging, minimizing and
-    maximizing
+    /**
+     * Safely converts a string to a double
+     * @param s the input string to convert
+     * @return a double that may be 0 if something failed
      */
     private static double ConvertToDouble(String s)
     {
-        switch (s) {
-            case "true":
-                return 1;
-            case "false":
-                return 0;
-            default:
-                return Double.valueOf(s);
+        try {
+            switch (s) {
+                case "true":
+                    return 1;
+                case "false":
+                    return 0;
+                default:
+                    return Double.valueOf(s);
+            }
+        }
+        catch (Exception e)
+        {
+            return 0;
         }
     }
 

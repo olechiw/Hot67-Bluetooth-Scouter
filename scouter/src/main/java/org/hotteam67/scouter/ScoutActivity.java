@@ -609,7 +609,7 @@ public class ScoutActivity extends BluetoothClientActivity
                         }
                     }
                     break;
-                case Constants.SERVER_SENDALL_TAG:
+                case Constants.SERVER_SEND_ALL_TAG:
                     SendAllMatches();
                     break;
                 default:

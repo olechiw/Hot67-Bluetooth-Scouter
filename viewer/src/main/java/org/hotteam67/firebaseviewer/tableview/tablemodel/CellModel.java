@@ -18,6 +18,13 @@ public class CellModel implements ISortableModel, IFilterableModel, Serializable
         this.mData = mData;
     }
 
+    public CellModel(String pId, String mData, boolean isAlliance)
+    {
+        this.mId = pId;
+        this.mData = mData;
+        this.isAlliance = isAlliance;
+    }
+
     public String getData() {
         return mData;
     }
@@ -49,5 +56,11 @@ public class CellModel implements ISortableModel, IFilterableModel, Serializable
     @Override
     public String getFilterableKeyword() {
         return String.valueOf(mData);
+    }
+
+    private boolean isAlliance = false;
+    public boolean isAlliance()
+    {
+        return isAlliance;
     }
 }

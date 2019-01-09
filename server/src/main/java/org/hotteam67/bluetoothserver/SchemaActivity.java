@@ -213,7 +213,7 @@ public class SchemaActivity extends AppCompatActivity {
      * Create a JSON object given the attributes
      * @param type the integer schema type
      * @param tag the label/tag for the schema item
-     * @param extras the extras, such as max/min or the choices for a multichoice
+     * @param extras the extras, such as max/min or the choices for a multi choice
      * @return a JSONObject constructed with all of the given attributes
      */
     private JSONObject createJSON(Integer type, String tag, String... extras)

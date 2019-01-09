@@ -13,9 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Created by Jakob on 1/18/2018.
+ * The memory model for a table, with rows and columns of strings, includes some filtering capabilities
+ * that are barely used anymore, and the ability to provide a data HashMap to turn into a table. Data
+ * is input in the format of HashMap<String, HashMap<String, String>>
  */
-
 public class DataTable implements Serializable {
     private final List<ColumnHeaderModel> columnHeaderList;
     private final List<List<CellModel>> cellList;
@@ -27,8 +28,16 @@ public class DataTable implements Serializable {
 
     private List<ColumnSchema.SumColumn> sumColumns;
 
-    public DataTable(HashMap<String, Object> rawData, List<String> preferredOrder,
-                     List<ColumnSchema.SumColumn> sumColumns)
+    /**
+     * Constructor
+     * @param data the raw data to populate the table with, if it will be holding raw data
+     * @param preferredOrder the preferred column order when parsing the raw data, contains
+     *                       string names of the columns that should appear first
+     * @param sumColumns columns where the values are sums of a set of other columns in the row,
+     *                   do not actulaly exist in the data
+     */
+    DataTable(HashMap<String, Object> data, List<String> preferredOrder,
+              List<ColumnSchema.SumColumn> sumColumns)
     {
         /*
         Load the Raw Data into model
@@ -41,12 +50,12 @@ public class DataTable implements Serializable {
 
         this.sumColumns = sumColumns;
 
-        if (rawData == null)
+        if (data == null)
             return;
 
         int row_id = 0;
         // Load rows and headers into cellmodels
-        for (HashMap.Entry<String, Object> row : rawData.entrySet())
+        for (HashMap.Entry<String, Object> row : data.entrySet())
         {
             // Load the row
             try {
@@ -63,7 +72,7 @@ public class DataTable implements Serializable {
                 // Load column headers on first row
                 try
                 {
-                    if (rawData.entrySet().size() > 0)
+                    if (data.entrySet().size() > 0)
                     {
                         HashMap<String, String> rowMap = (HashMap<String, String>) row.getValue();
 
@@ -103,6 +112,11 @@ public class DataTable implements Serializable {
         }
     }
 
+    /**
+     * Loda one row into the table given the rowMap and the index of the row
+     * @param rowMap the map for the row to turn into a table row
+     * @param yIndex the y index of the row in the array
+     */
     private void LoadRow(HashMap<String, String> rowMap, int yIndex)
     {
         cellList.add(new ArrayList<>());
@@ -186,6 +200,12 @@ public class DataTable implements Serializable {
         }
     }
 
+    /**
+     * Set all of the values
+     * @param columnNames the values of the column headers
+     * @param cellValues the values of each row, as a list of lists
+     * @param rowNames the row header values, a name attached to each row
+     */
     public DataTable(List<ColumnHeaderModel> columnNames, List<List<CellModel>> cellValues, List<RowHeaderModel> rowNames)
     {
         columnHeaderList = columnNames;
@@ -193,7 +213,10 @@ public class DataTable implements Serializable {
         rowHeaderList = rowNames;
     }
 
-
+    /**
+     * Old filtering system, barely used, just adds to a list of filters
+     * @param term term to filter by.
+     */
     public void SetTeamNumberFilter(String... term)
     {
         if (term.length == 0 || term[0] == null || term[0].trim().isEmpty())
@@ -204,12 +227,20 @@ public class DataTable implements Serializable {
 
     private List<String> teamNumberFilters = new ArrayList<>();
 
+    /**
+     * Get the columns header list
+     * @return list of ColumnHeaderModel
+     */
     public List<ColumnHeaderModel> GetColumns()
     {
         return columnHeaderList;
     }
 
-    public List<String> GetColumnNames()
+    /**
+     * Get the columns names, not as part of the data model but as a list of strings
+     * @return list of string column names
+     */
+    List<String> GetColumnNames()
     {
         List<String> nameList = new ArrayList<>();
         for (ColumnHeaderModel model : columnHeaderList)
@@ -218,6 +249,10 @@ public class DataTable implements Serializable {
         return nameList;
     }
 
+    /**
+     * Get list of list of cell models for the rows
+     * @return list of list of CellModel
+     */
     public List<List<CellModel>> GetCells()
     {
         if (teamNumberFilters == null || teamNumberFilters.size() == 0)
@@ -245,6 +280,10 @@ public class DataTable implements Serializable {
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public List<RowHeaderModel> GetRowHeaders()
     {
         if (teamNumberFilters == null || teamNumberFilters.size() == 0)

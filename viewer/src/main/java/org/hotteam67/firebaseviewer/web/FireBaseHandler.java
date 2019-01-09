@@ -11,46 +11,61 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.concurrent.Callable;
 
 import org.hotteam67.common.OnDownloadResultListener;
 import org.json.JSONObject;
 
 
 /**
- * Created by Jakob on 1/13/2018.
+ * Class for getting data from FireBase on a separate network thread, and informing the main thread
+ * when its done
  */
 
-public class FirebaseHandler {
+public class FireBaseHandler {
 
-    private final String firebaseEvent;
-    private final String firebaseUrl;
-    private final String firebaseApiKey;
+    private final String fireBaseEvent;
+    private final String fireBaseUrl;
+    private final String fireBaseApiKey;
 
-    private OnDownloadResultListener<HashMap<String, Object>> firebaseCompleteEvent = null;
+    private OnDownloadResultListener<HashMap<String, Object>> fireBaseCompleteEvent = null;
 
     private HashMap<String, Object> results = null;
 
-    public FirebaseHandler(String url, String event, String apiKey)
+    /**
+     * Constructor takes the parameters for the FireBase database
+     * @param url the url of the FireBase server to use as a starting point
+     * @param event the event name, represents a json endpoint where everything is put/retrieved
+     * @param apiKey the api key to use with the database
+     */
+    public FireBaseHandler(String url, String event, String apiKey)
     {
-        firebaseUrl = url;
-        firebaseEvent = event;
-        firebaseApiKey = apiKey;
+        fireBaseUrl = url;
+        fireBaseEvent = event;
+        fireBaseApiKey = apiKey;
     }
 
+    /**
+     * Download the entire event for the given connection
+     * @param completeEvent a HashMap<HashMap<string, string>> is the final format. This is easier
+     *                      to turn into a standard table
+     */
     public void Download(OnDownloadResultListener<HashMap<String, Object>> completeEvent)
     {
-        firebaseCompleteEvent = completeEvent;
-        new RetrieveFirebaseTask().execute();
+        fireBaseCompleteEvent = completeEvent;
+        new RetrieveFireBaseTask().execute();
     }
 
+    /**
+     * Asynchronous task to download the data from FireBase, notifies firebaseCompleteEvent when it
+     * is done
+     */
     @SuppressLint("StaticFieldLeak")
-    class RetrieveFirebaseTask extends AsyncTask<Void, Void, String> {
+    class RetrieveFireBaseTask extends AsyncTask<Void, Void, String> {
         protected String doInBackground(Void... nothing)
         {
             try
             {
-                String finalUrl = firebaseUrl + "/" + firebaseEvent + ".json" + "?auth=" + firebaseApiKey;
+                String finalUrl = fireBaseUrl + "/" + fireBaseEvent + ".json" + "?auth=" + fireBaseApiKey;
                 Log.d("HotTeam67", "URL: " + finalUrl);
 
                 HttpURLConnection conn = (HttpURLConnection) new URL(finalUrl).openConnection();
@@ -92,13 +107,16 @@ public class FirebaseHandler {
     }
 
 
-    // Format the input data into a table
+    /**
+     * Turn the downloaded JSON object into a HashMap in memory
+     * @param json the input json from FireBase
+     */
     private void DoLoad(String json)
     {
         try
         {
             if (json == null || json.trim().isEmpty()) {
-                firebaseCompleteEvent.onFail();
+                fireBaseCompleteEvent.onFail();
                 return;
             }
 
@@ -125,7 +143,7 @@ public class FirebaseHandler {
         }
         catch (Exception e)
         {
-            firebaseCompleteEvent.onFail();
+            fireBaseCompleteEvent.onFail();
             results = new HashMap<>();
             e.printStackTrace();
             return;
@@ -134,10 +152,13 @@ public class FirebaseHandler {
     }
 
 
+    /**
+     * Try to do the OnComplete event, handle exception
+     */
     private void DoFinish()
     {
         try {
-            firebaseCompleteEvent.onComplete(getResult());
+            fireBaseCompleteEvent.onComplete(getResult());
         }
         catch (Exception e)
         {
@@ -146,6 +167,11 @@ public class FirebaseHandler {
         }
     }
 
+    /**
+     * Get the result of the FireBase download
+     * @return hashhmap of hashmaps of strings, basically the json but in memory as an easier to
+     * iterate over object
+     */
     public HashMap<String, Object> getResult()
     {
         return results;

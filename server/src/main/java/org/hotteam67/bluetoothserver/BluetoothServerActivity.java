@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * The subclass for the server activity, handles bluetooth input/output and communcation with main
+ * The subclass for the server activity, handles bluetooth input/output and communication with main
  * thread
  */
 public abstract class BluetoothServerActivity extends AppCompatActivity

@@ -5,9 +5,7 @@ import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
-import org.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
-import org.hotteam67.firebaseviewer.web.FirebaseHandler;
+import org.hotteam67.firebaseviewer.web.FireBaseHandler;
 
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.OnDownloadResultListener;
@@ -24,8 +22,8 @@ import java.util.List;
  */
 public class DataModel
 {
-    /*
-    Connection properties
+    /**
+     * List of connection properties in order of xml
      */
     private static String[] connectionProperties;
 
@@ -39,19 +37,41 @@ public class DataModel
     private static DataTable outputMaximums;
     private static DataTable outputAverages;
 
-    private static Integer calculationState = DataTableBuilder.Calculation.AVERAGE;
+    private static Integer calculationState = DataCalculator.Calculation.AVERAGE;
 
-    /*
-    TBA-Loaded data
+    /**
+     * TBA loaded data - alliances from 1 to 8 as list of list of team numbers(string)
      */
     private static List<List<String>> alliances = new ArrayList<>();
+    /**
+     * Red teams match schedule
+     */
     private static List<String> redTeamsQuals = new ArrayList<>();
+    /**
+     * Blue teams match schedule
+     */
     private static List<String> blueTeamsQuals = new ArrayList<>();
+    /**
+     * JSONObject for team number names and ranks, number is key, name is value
+     */
     private static JSONObject teamNumbersNames = new JSONObject();
+    /**
+     * JSONObject for team ranks, number is key, name is value
+     */
     private static JSONObject teamNumbersRanks = new JSONObject();
 
+    /**
+     * Event handler for data loading, once a specific download finishes. Can either fail or
+     * complete
+     */
     private static DataLoadEvent dataLoadEvent;
 
+    /**
+     * Setup all of the downloaded data given connection properties, and trigger the progEvent based
+     * on completion or failure
+     * @param conn the connection properties, order of occurrence in XML
+     * @param progEvent the event to trigger on completion/failure
+     */
     public static void Setup(String[] conn,
                              DataLoadEvent progEvent)
     {
@@ -62,51 +82,54 @@ public class DataModel
         dataLoadEvent = progEvent;
     }
 
-    /*
-    Switch the calculation type
-     */
-    public static void SwitchCalculation()
-    {
-        calculationState = calculationState == DataTableBuilder.Calculation.AVERAGE ?
-                DataTableBuilder.Calculation.MAXIMUM : DataTableBuilder.Calculation.AVERAGE;
-    }
-
-    /*
-    Get the active output table
+    /**
+     * Get the current table based on the calculation state (averages/maximums)
+     * @return DataTable with the data for maximums/averages
      */
     public static synchronized DataTable GetTable()
     {
-        return calculationState == DataTableBuilder.Calculation.AVERAGE ?
+        return calculationState == DataCalculator.Calculation.AVERAGE ?
                 outputAverages : outputMaximums;
     }
 
+    /**
+     * Get the table for calculated averages
+     * @return the DataTable in memory for already calculated averages
+     */
     public static synchronized DataTable GetAverages()
     {
         return outputAverages;
     }
+
+    /**
+     * Get the table for calcultaed maximums
+     * @return the DataTable in memory for already calculated maximums
+     */
     public static synchronized DataTable GetMaximums()
     {
         return outputMaximums;
     }
 
-    /*
-    Get the teamnumbersnames json
+    /**
+     * Get the teamNumberNames JSON object
+     * @return JSON object with the keys as team numbers and values as team names
      */
     public static JSONObject GetTeamsNumbersNames()
     {
         return teamNumbersNames;
     }
 
-    /*
-    Get the raw data table
+    /**
+     * Get the raw data table, with rows of matches and values containing individual match performance
+     * @return DataTable with one row for each match for each team, so ((# matches) * 6)
      */
     public static DataTable GetRawData()
     {
         return rawData;
     }
 
-    /*
-    Serialize the three datatables and write them to disk
+    /**
+     * Serialize the three data tables for easy storage, writing them to disk
      */
     private static synchronized void SerializeTables()
     {
@@ -126,8 +149,8 @@ public class DataModel
 
     }
 
-    /*
-    Load tables from disk into memory (raw, both calculated tables)
+    /**
+     * Load tables from disk, and deserialize them into DataTable objects
      */
     public static void LoadSerializedTables()
     {
@@ -181,8 +204,9 @@ public class DataModel
         }
     }
 
-    /*
-    Re-download all scouting data + TBA data, then refresh
+    /**
+     * Download all of the firebase/tba data based on connection properties, and save it to database
+     * @param onCompleteEvent event to run when the tables are populated
      */
     public static void RefreshTable(Runnable onCompleteEvent)
     {
@@ -202,7 +226,7 @@ public class DataModel
         String eventName = connectionProperties[1];
         String apiKey = connectionProperties[2];
 
-        final FirebaseHandler model = new FirebaseHandler(
+        final FireBaseHandler model = new FireBaseHandler(
                 databaseUrl, eventName, apiKey);
 
         // Null child to get all raw data
@@ -221,19 +245,10 @@ public class DataModel
         });
     }
 
-    /*
-    Clear all filters, return to original UI
-     */
-    public static void ClearFilters()
-    {
-        SetTeamNumberFilter();
-        outputMaximums = maximums;
-        outputAverages = averages;
-        Sort(0, true);
-    }
-
-    /*
-    Re-run all calculations with the current raw data
+    /**
+     * Re-run calculations with the currently loaded raw data
+     * @param onComplete event to run when the calculations are complete, as they are done in a
+     *                   seperate thread
      */
     private static void RunCalculations(Runnable onComplete)
     {
@@ -241,14 +256,13 @@ public class DataModel
         @SuppressLint("StaticFieldLeak") AsyncTask averagesTask = new AsyncTask() {
             @Override
             protected Object doInBackground(Object[] objects) {
-                DataTableBuilder avg = new DataTableBuilder(
+                DataCalculator avg = new DataCalculator(
                         rawData,
                         ColumnSchema.CalculatedColumns(),
                         ColumnSchema.CalculatedColumnsRawNames(),
-                        ColumnSchema.OutlierAdjustedColumns(),
                         teamNumbersRanks,
                         teamNumbersNames,
-                        DataTableBuilder.Calculation.AVERAGE);
+                        DataCalculator.Calculation.AVERAGE);
                 SetCalculatedDataAverages(avg.GetTable());
                 UpdateIfLoaded(onComplete);
 
@@ -258,14 +272,13 @@ public class DataModel
         @SuppressLint("StaticFieldLeak") AsyncTask maximumsTask = new AsyncTask() {
             @Override
             protected Object doInBackground(Object[] objects) {
-                DataTableBuilder max = new DataTableBuilder(
+                DataCalculator max = new DataCalculator(
                         rawData,
                         ColumnSchema.CalculatedColumns(),
                         ColumnSchema.CalculatedColumnsRawNames(),
-                        ColumnSchema.OutlierAdjustedColumns(),
                         teamNumbersRanks,
                         teamNumbersNames,
-                        DataTableBuilder.Calculation.MAXIMUM);
+                        DataCalculator.Calculation.MAXIMUM);
                 SetCalculatedDataMaximums(max.GetTable());
                 UpdateIfLoaded(onComplete);
 
@@ -276,17 +289,28 @@ public class DataModel
         maximumsTask.execute();
     }
 
-    /*
-    Synchronized updating functions
+    /**
+     * Set the maximums table manually
+     * @param max the maximums table to replace the current one
      */
     private static synchronized void SetCalculatedDataMaximums(DataTable max)
     {
         maximums = max;
     }
+
+    /**
+     * Set the averages table manually
+     * @param avg the averages table to replace the current one
+     */
     private static synchronized void SetCalculatedDataAverages(DataTable avg)
     {
         averages = avg;
     }
+
+    /**
+     * Update the table if the thread is done and it actually exists
+     * @param event event to run if the data is actually loaded, and not null
+     */
     private static synchronized void UpdateIfLoaded(Runnable event)
     {
         if (maximums != null && averages != null)
@@ -298,8 +322,8 @@ public class DataModel
         }
     }
 
-    /*
-    Load TBA data from the API v3
+    /**
+     * Use the TBAHandler to download and format all of the data, loading it into memory
      */
     private static synchronized void LoadTBAData()
     {
@@ -412,8 +436,8 @@ public class DataModel
         }
     }
 
-    /*
-    Load TBA data from files
+    /**
+     * Load all of the TBA data from disk into memory, if it is saved locally already
      */
     public static void LoadTBADataLocal()
     {
@@ -421,7 +445,7 @@ public class DataModel
         blueTeamsQuals = new ArrayList<>();
 
         String content = FileHandler.LoadContents(FileHandler.Files.VIEWER_MATCHES_FILE);
-        if (content == null || content.trim().isEmpty())
+        if (content.trim().isEmpty())
             return;
         String[] contents = content.split("\n");
 
@@ -499,8 +523,10 @@ public class DataModel
         }
     }
 
-    /*
-    Show a designated alliance's teams
+    /**
+     * Get the teams for a given alliance number
+     * @param seatNumber the alliance seat to get teams for
+     * @return list of team names
      */
     public static List<String> GetAlliance(Integer seatNumber)
     {
@@ -515,70 +541,11 @@ public class DataModel
         }
     }
 
-
-    /*
-    Sort by a target column
+    /**
+     * Get the match, with both alliances, for a given match number
+     * @param matchNumber the match number to get teams for
+     * @return the TBAHandler.Match object, populated or potentially null if something failed
      */
-    public static void Sort(int column, boolean ascending)
-    {
-        if (calculationState == DataTableBuilder.Calculation.AVERAGE)
-        {
-            outputAverages = Sort.SortByColumn(outputAverages, column, ascending);
-            SynchronizeOrder(outputAverages, outputMaximums);
-        }
-        else
-        {
-            outputMaximums = Sort.SortByColumn(outputMaximums, column, ascending);
-            SynchronizeOrder(outputMaximums, outputAverages);
-        }
-    }
-
-
-    /*
-    Synchronize the order of teams in maximums and averages
-     */
-    private static synchronized void SynchronizeOrder(DataTable source, DataTable target)
-    {
-        if (source == null || target == null)
-            return;
-
-        List<RowHeaderModel> sourceRows = source.GetRowHeaders();
-        List<RowHeaderModel> targetRows = target.GetRowHeaders();
-
-        if (targetRows.size() != sourceRows.size())
-            return;
-
-        List<List<CellModel>> targetCells = target.GetCells();
-        for (RowHeaderModel row : sourceRows)
-        {
-            try
-            {
-                int index = -1;
-                for (RowHeaderModel r : targetRows)
-                {
-                    if (r.getData().equals(row.getData()))
-                        index = targetRows.indexOf(r);
-                }
-                if (index == -1)
-                    continue;
-
-                int newIndex = sourceRows.indexOf(row);
-                List<CellModel> tmpCells = targetCells.get(newIndex);
-                RowHeaderModel tmpRow = targetRows.get(newIndex);
-                targetCells.set(newIndex, targetCells.get(index));
-                targetRows.set(newIndex, targetRows.get(index));
-
-                targetCells.set(index, tmpCells);
-                targetRows.set(index, tmpRow);
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
     public static synchronized TBAHandler.Match GetMatch(Integer matchNumber)
     {
         if (matchNumber <= redTeamsQuals.size() && matchNumber <= blueTeamsQuals.size())
@@ -597,19 +564,11 @@ public class DataModel
         }
     }
 
-    /*
-    Set the team number filter on the active table
+
+    /**
+     * Event for data load that has a begin/complete progress for triggering UI elements from the
+     * DataModel
      */
-    public static synchronized void SetTeamNumberFilter(String... s)
-    {
-        if (averages == null || maximums == null)
-            return;
-
-        maximums.SetTeamNumberFilter(s);
-        averages.SetTeamNumberFilter(s);
-        averages.SetTeamNumberFilter(s);
-    }
-
     public interface DataLoadEvent
     {
         void OnBeginProgress();
