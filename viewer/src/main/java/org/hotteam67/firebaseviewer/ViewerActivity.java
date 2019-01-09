@@ -131,6 +131,7 @@ public class ViewerActivity extends AppCompatActivity {
         clearButton = findViewById(R.id.clearButton);
         clearButton.setOnClickListener(v ->
         {
+            RemoveAlliances();
             if (!teamSearchView.getText().toString().trim().isEmpty())
                 teamSearchView.setText("");
             teamsGroupButton.setText("Show Teams");
@@ -226,6 +227,18 @@ public class ViewerActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     Constants.REQUEST_ENABLE_PERMISSION);
         }
+    }
+
+    /**
+     * Remove the alliance column from the tableviews, must be done before other things to keep
+     * it from sticking around, because of my own hackiness
+     */
+    private void RemoveAlliances()
+    {
+        MainTableAdapter adapter1 = (MainTableAdapter)averagesTable.getAdapter();
+        MainTableAdapter adapter2 = (MainTableAdapter)maximumsTable.getAdapter();
+        adapter1.clearAllianceColumns();
+        adapter2.clearAllianceColumns();
     }
 
     /**

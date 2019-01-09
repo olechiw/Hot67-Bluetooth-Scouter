@@ -15,6 +15,7 @@ import com.evrencoskun.tableview.adapter.recyclerview.holder.AbstractViewHolder;
 import org.hotteam67.common.TBAHandler;
 import org.hotteam67.firebaseviewer.R;
 import org.hotteam67.firebaseviewer.data.DataTable;
+import org.hotteam67.firebaseviewer.tableview.holder.AllianceViewHolder;
 import org.hotteam67.firebaseviewer.tableview.holder.CellViewHolder;
 import org.hotteam67.firebaseviewer.tableview.holder.ColumnHeaderViewHolder;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
@@ -57,7 +58,7 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
             case ALLIANCE_CELL:
                 layout = LayoutInflater.from(mContext).inflate(R.layout.tableview_alliance,
                         parent, false);
-                break;
+                return new AllianceViewHolder(layout);
             default:
                 layout = LayoutInflater.from(mContext).inflate(R.layout.tableview_cell_layout,
                         parent, false);
@@ -87,6 +88,10 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         if (holder instanceof CellViewHolder) {
             // Get the holder to update cell item text
             ((CellViewHolder) holder).setCellModel(cell);
+        }
+        else if (holder instanceof AllianceViewHolder)
+        {
+            ((AllianceViewHolder) holder).setCellModel(cell);
         }
     }
 
@@ -171,25 +176,37 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     }
 
     public void setAlliance(TBAHandler.Match match) {
+
         CellRecyclerViewAdapter cells = ((CellRecyclerViewAdapter)getTableView().getCellRecyclerView().getAdapter());
         ColumnHeaderRecyclerViewAdapter headers = ((ColumnHeaderRecyclerViewAdapter)getTableView().getColumnHeaderRecyclerView().getAdapter());
         RowHeaderRecyclerViewAdapter rows = ((RowHeaderRecyclerViewAdapter)getTableView().getRowHeaderRecyclerView().getAdapter());
 
+        List<List<CellModel>> cellsList = ((List<List<CellModel>>)cells.getItems());
         if (hasAllianceColumns()) {
-            cells.removeColumnItems(0);
-            headers.getItems().remove(0);
+            for (int i = 0; i < cellsList.size(); ++i)
+            {
+                cellsList.get(i).remove(0);
+            }
+            if (headers.getItems().size() > 0)
+                headers.getItems().remove(0);
         }
-        if (match == null) return;
-
-        for (int i = 0; i < cells.getItemCount(); ++i)
+        if (match != null)
         {
-            boolean blueNotRed;
-            String rowval = ((RowHeaderModel)rows.getItems().get(i)).getData();
-            blueNotRed = match.blueTeams.contains(rowval);
 
-            CellModel model = new CellModel("0_0", (blueNotRed) ? "BLUE" : "RED", true);
-            ((List<CellModel>)cells.getItems().get(i)).add(0, model);
+            headers.getItems().add(0, new ColumnHeaderModel("A"));
+            for (int i = 0; i < cells.getItemCount(); ++i)
+            {
+                boolean blueNotRed;
+                String rowval = ((RowHeaderModel) rows.getItems().get(i)).getData();
+                blueNotRed = match.blueTeams.contains(rowval);
+
+                CellModel model = new CellModel("0_0", (blueNotRed) ? "BLUE" : "RED", true);
+                ((List<CellModel>) cells.getItems().get(i)).add(0, model);
+            }
         }
+
+        cells.setItems(cells.getItems());
+        headers.setItems(headers.getItems());
     }
 
     public void clearAllianceColumns()
@@ -203,6 +220,12 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     private boolean hasAllianceColumns()
     {
         // Check for existing alliance column
-        return (getCellItem(0,0).isAlliance());
+        CellRecyclerViewAdapter cells = ((CellRecyclerViewAdapter)getTableView().getCellRecyclerView().getAdapter());
+        if (cells.getItems().size() > 0)
+        {
+            CellModel c1 = ((List<List<CellModel>>) cells.getItems()).get(0).get(0);
+            return c1.isAlliance();
+        }
+        return false;
     }
 }
