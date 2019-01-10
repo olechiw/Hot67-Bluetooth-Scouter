@@ -137,6 +137,7 @@ public class ViewerActivity extends AppCompatActivity {
             teamsGroupInput.setValue(0);
             UpdateUI();
             averagesTable.sortColumn(1, SortState.ASCENDING);
+            maximumsTable.sortColumn(1, SortState.ASCENDING);
             clearButton.setVisibility(View.INVISIBLE);
         });
         clearButton.setVisibility(View.INVISIBLE);
@@ -335,6 +336,7 @@ public class ViewerActivity extends AppCompatActivity {
                         ((MainTableAdapter) maximumsTable.getAdapter()).setAllItems(DataModel.GetMaximums());
                         UpdateUI();
                         averagesTable.sortColumn(1, SortState.ASCENDING);
+                        maximumsTable.sortColumn(1, SortState.ASCENDING);
                     }
                 });
             }
