@@ -3,7 +3,7 @@ package org.hotteam67.firebaseviewer.tableview.tablemodel;
 import com.evrencoskun.tableview.filter.IFilterableModel;
 import com.evrencoskun.tableview.sort.ISortableModel;
 
-import org.hotteam67.firebaseviewer.tableview.MainTableAdapter;
+import org.hotteam67.common.Constants;
 
 import java.io.Serializable;
 
@@ -57,7 +57,7 @@ public class CellModel implements ISortableModel, IFilterableModel, Serializable
         return getTeamNumber();
     }
 
-    private int alliance = MainTableAdapter.ALLIANCE_NONE;
+    private int alliance = Constants.ALLIANCE_NONE;
     public int GetAlliance() { return alliance; }
     public void SetAlliance(int alliance) { this.alliance = alliance; }
 }

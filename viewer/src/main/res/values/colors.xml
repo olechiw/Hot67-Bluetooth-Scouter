@@ -13,9 +13,9 @@
     <color name="selected_text_color">#ffffff</color>
     <color name="separator_color">#273e5b</color>
 
-    <color name="alliance_blue_highlight">#0000FF</color>
-    <color name="alliance_blue_text">#FFFF00</color>
-    <color name="alliance_red_highlight">#FF0000</color>
-    <color name="alliance_red_text">#FF00FF00</color>
+    <color name="alliance_blue_highlight">#4169E1</color>
+    <color name="alliance_blue_text">#ffffff</color>
+    <color name="alliance_red_highlight">#CD5C5C</color>
+    <color name="alliance_red_text">#ffffff</color>
 
 </resources>

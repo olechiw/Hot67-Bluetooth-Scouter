@@ -10,6 +10,7 @@ import com.evrencoskun.tableview.adapter.recyclerview.CellRecyclerViewAdapter;
 import com.evrencoskun.tableview.adapter.recyclerview.RowHeaderRecyclerViewAdapter;
 import com.evrencoskun.tableview.adapter.recyclerview.holder.AbstractViewHolder;
 
+import org.hotteam67.common.Constants;
 import org.hotteam67.common.TBAHandler;
 import org.hotteam67.firebaseviewer.R;
 import org.hotteam67.firebaseviewer.data.DataTable;
@@ -28,9 +29,6 @@ import java.util.List;
 
 public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, RowHeaderModel,
         CellModel> {
-    public static final int ALLIANCE_BLUE = 1;
-    public static final int ALLIANCE_RED = 2;
-    public static final int ALLIANCE_NONE = -1;
 
     public MainTableAdapter(Context p_jContext) {
         super(p_jContext);
@@ -146,9 +144,9 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         List<List<CellModel>> cellsList = ((List<List<CellModel>>)cells.getItems());
         for (List<CellModel> row : cellsList)
             for (CellModel cell : row)
-                cell.SetAlliance(ALLIANCE_NONE);
+                cell.SetAlliance(Constants.ALLIANCE_NONE);
         for (RowHeaderModel row : ((List<RowHeaderModel>)rows.getItems()))
-            row.SetAlliance(ALLIANCE_NONE);
+            row.SetAlliance(Constants.ALLIANCE_NONE);
 
         if (match != null)
         {
@@ -158,7 +156,7 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
                 RowHeaderModel row = ((RowHeaderModel) rows.getItems().get(i));
                 blueNotRed = match.blueTeams.contains(row.getData());
 
-                int alliance = (blueNotRed) ? ALLIANCE_BLUE : ALLIANCE_RED;
+                int alliance = (blueNotRed) ? Constants.ALLIANCE_BLUE : Constants.ALLIANCE_RED;
 
                 for(CellModel cell : ((List<CellModel>)cells.getItems().get(i)))
                     cell.SetAlliance(alliance);

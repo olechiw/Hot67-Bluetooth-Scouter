@@ -13,6 +13,9 @@ import java.util.UUID;
 public class Constants
 {
     public static final int TEAM_NUMBER_COLUMN = 0;
+    public static final int ALLIANCE_BLUE = 1;
+    public static final int ALLIANCE_RED = 2;
+    public static final int ALLIANCE_NONE = -1;
 
     /**
      * An event for after the user has input a string. No consumer because compatibility

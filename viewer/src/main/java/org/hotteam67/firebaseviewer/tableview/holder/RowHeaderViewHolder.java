@@ -9,8 +9,9 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.evrencoskun.tableview.adapter.recyclerview.holder.AbstractViewHolder;
+
+import org.hotteam67.common.Constants;
 import org.hotteam67.firebaseviewer.R;
-import org.hotteam67.firebaseviewer.tableview.MainTableAdapter;
 
 import java.lang.reflect.Field;
 
@@ -80,11 +81,11 @@ public class RowHeaderViewHolder extends AbstractViewHolder {
         row_header_textview.setBackgroundColor(ContextCompat.getColor(itemView.getContext(),
                 nBackgroundColorId));
 
-        if (alliance == MainTableAdapter.ALLIANCE_NONE) return;
+        if (alliance == Constants.ALLIANCE_NONE) return;
         setAlliance(alliance);
     }
 
-    private int alliance = MainTableAdapter.ALLIANCE_NONE;
+    private int alliance = Constants.ALLIANCE_NONE;
     public void setAlliance(int alliance)
     {
         this.alliance = alliance;
@@ -92,11 +93,11 @@ public class RowHeaderViewHolder extends AbstractViewHolder {
         int colorText;
         switch (alliance)
         {
-            case MainTableAdapter.ALLIANCE_BLUE:
+            case Constants.ALLIANCE_BLUE:
                 colorBack = R.color.alliance_blue_highlight;
                 colorText = R.color.alliance_blue_text;
                 break;
-            case MainTableAdapter.ALLIANCE_RED:
+            case Constants.ALLIANCE_RED:
                 colorBack = R.color.alliance_red_highlight;
                 colorText = R.color.alliance_red_text;
                 break;

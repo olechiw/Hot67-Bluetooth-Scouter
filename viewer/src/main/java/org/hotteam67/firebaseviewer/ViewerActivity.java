@@ -132,7 +132,7 @@ public class ViewerActivity extends AppCompatActivity {
             RemoveAlliances();
             if (!teamSearchView.getText().toString().trim().isEmpty())
                 teamSearchView.setText("");
-            teamsGroupButton.setText("Show Teams");
+            teamsGroupButton.setText("Match/Alliance");
             RemoveAllFilters();
             teamsGroupInput.setValue(0);
             UpdateUI();
@@ -367,7 +367,7 @@ public class ViewerActivity extends AppCompatActivity {
                 && teamSearchView.getText().toString().trim().isEmpty())
         {
             clearButton.setVisibility(View.INVISIBLE);
-            teamsGroupButton.setText("Show Teams");
+            teamsGroupButton.setText("Match/Alliance");
         }
         else
             clearButton.setVisibility(View.VISIBLE);

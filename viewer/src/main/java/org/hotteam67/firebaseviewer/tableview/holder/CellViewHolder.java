@@ -1,6 +1,5 @@
 package org.hotteam67.firebaseviewer.tableview.holder;
 
-import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 import android.view.Gravity;
 import android.view.View;
@@ -9,8 +8,8 @@ import android.widget.TextView;
 
 import com.evrencoskun.tableview.adapter.recyclerview.holder.AbstractViewHolder;
 
+import org.hotteam67.common.Constants;
 import org.hotteam67.firebaseviewer.R;
-import org.hotteam67.firebaseviewer.tableview.MainTableAdapter;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 
 /**
@@ -60,11 +59,11 @@ public class CellViewHolder extends AbstractViewHolder {
             cell_textview.setBackgroundColor(ContextCompat.getColor(cell_textview.getContext(), R.color
                     .unselected_background_color));
         }
-        if (alliance == MainTableAdapter.ALLIANCE_NONE) return;
+        if (alliance == Constants.ALLIANCE_NONE) return;
         setAlliance(alliance);
     }
 
-    private int alliance = MainTableAdapter.ALLIANCE_NONE;
+    private int alliance = Constants.ALLIANCE_NONE;
     public void setAlliance(int alliance)
     {
         this.alliance = alliance;
@@ -72,23 +71,25 @@ public class CellViewHolder extends AbstractViewHolder {
         int colorText;
         switch (alliance)
         {
-            case MainTableAdapter.ALLIANCE_BLUE:
-                colorBack = Color.BLUE;
-                colorText = Color.YELLOW;
+            case Constants.ALLIANCE_BLUE:
+                colorBack = R.color.alliance_blue_highlight;
+                colorText = R.color.alliance_blue_text;
                 break;
-            case MainTableAdapter.ALLIANCE_RED:
-                colorBack = Color.RED;
-                colorText = Color.GREEN;
+            case Constants.ALLIANCE_RED:
+                colorBack = R.color.alliance_red_highlight;
+                colorText = R.color.alliance_red_text;
                 break;
             default:
-                colorBack = Color.WHITE;
-                colorText = Color.BLACK;
+                colorBack = R.color.unselected_header_background_color;
+                colorText = R.color.unselected_text_color;
                 break;
         }
-        cell_textview.setBackgroundColor(colorBack);
-        cell_textview.setTextColor(colorText);
-
-        itemView.setBackgroundColor(colorBack);
+        cell_textview.setBackgroundColor(ContextCompat.getColor(itemView.getContext(),
+                colorBack));
+        cell_textview.setTextColor(ContextCompat.getColor(itemView.getContext(),
+                colorText));
+        itemView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(),
+                colorBack));
     }
 
     public CellModel getCellModel() {
