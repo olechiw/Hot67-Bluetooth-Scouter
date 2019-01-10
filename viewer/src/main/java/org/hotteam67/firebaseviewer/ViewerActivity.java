@@ -42,7 +42,7 @@ import org.hotteam67.common.TBAHandler;
 
 /**
  * The Viewer's main activity, loads all of the user input, handles populating the data model and
- * calling all of the APIs like Firebase and TBA, and calls the functions to load/unload the data
+ * calling all of the APIs like FireBase and TBA, and calls the functions to load/unload the data
  * from disk. Links to the other two activities and uses their results. Basically everything is put
  * together here.
  */
