@@ -20,6 +20,7 @@ import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 public class CellViewHolder extends AbstractViewHolder {
     private final TextView cell_textview;
     private final LinearLayout cell_container;
+    CellModel cell;
 
     public CellViewHolder(View itemView) {
         super(itemView);
@@ -28,6 +29,7 @@ public class CellViewHolder extends AbstractViewHolder {
     }
 
     public void setCellModel(CellModel cellModel) {
+        cell = cellModel;
 
         // Change textView align by column
         cell_textview.setGravity(Gravity.CENTER |
@@ -87,5 +89,9 @@ public class CellViewHolder extends AbstractViewHolder {
         cell_textview.setTextColor(colorText);
 
         itemView.setBackgroundColor(colorBack);
+    }
+
+    public CellModel getCellModel() {
+        return cell;
     }
 }

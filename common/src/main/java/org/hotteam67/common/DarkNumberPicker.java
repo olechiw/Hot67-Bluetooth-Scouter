@@ -74,6 +74,7 @@ public class DarkNumberPicker extends LinearLayout
             }
         };
         mainText.setFilters(new InputFilter[] { filter });
+        mainText.setMinEms(2);
 
         mainText.addTextChangedListener(new TextWatcher() {
             @Override

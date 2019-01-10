@@ -156,7 +156,7 @@ public class DataTable implements Serializable {
                 }
             }
 
-            row.add(new CellModel("0_0", String.valueOf(value)));
+            row.add(new CellModel("0_0", String.valueOf(value), number));
         }
 
         for (ColumnHeaderModel model : columnHeaderList)
@@ -178,7 +178,7 @@ public class DataTable implements Serializable {
         {
             if (rowMap.keySet().contains(column))
             {
-                CellModel model = new CellModel("0_0", rowMap.get(column));
+                CellModel model = new CellModel("0_0", rowMap.get(column), number);
                 row.add(model);
             }
         }
@@ -186,7 +186,7 @@ public class DataTable implements Serializable {
         // Last is other columns
         for (HashMap.Entry<String, String> cell : rowMap.entrySet()) {
 
-            CellModel model = new CellModel("0_0", cell.getValue());
+            CellModel model = new CellModel("0_0", cell.getValue(), number);
             if (!preferredOrder.contains(cell.getKey()))
                 row.add(model);
         }
@@ -195,7 +195,7 @@ public class DataTable implements Serializable {
         {
             for (int i = 0; i < columnHeaderList.size() - row.size(); ++i)
             {
-                row.add(new CellModel("0_0", "N/A"));
+                row.add(new CellModel("0_0", "N/A", number));
             }
         }
     }

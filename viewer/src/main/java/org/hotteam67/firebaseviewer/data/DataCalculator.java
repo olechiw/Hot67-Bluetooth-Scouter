@@ -161,7 +161,7 @@ class DataCalculator implements Serializable {
             for (int column : calculatedColumnIndices)
             {
                 if (column == -1) {
-                    row.add(new CellModel("0_0", "N/A"));
+                    row.add(new CellModel("0_0", "N/A", teamNumber));
                     continue;
                 }
 
@@ -176,10 +176,12 @@ class DataCalculator implements Serializable {
                 String value = String.valueOf(doCalculatedColumn(columnsNames.get(column), values, calculationType));
 
                 // Add cell to row
-                row.add(new CellModel(current_row + "_" + column, value));
+                row.add(new CellModel(current_row + "_" + column, value, teamNumber));
             }
+            /*
             // Team number at end
-            row.add(0, new CellModel("0_0", teamNumber));
+            row.add(0, new CellModel("0_0", teamNumber, teamNumber));
+            */
 
             // Add row to calculated list
             calcCells.add(row);
@@ -193,22 +195,20 @@ class DataCalculator implements Serializable {
             String team = calcCells.get(r).get(0).getData();
             try {
                 String teamRank = (String)  new JSONObject(teamRanksJson).get(team);
-                calcCells.get(r).add(1,
-                        new CellModel("0_0", teamRank));
+                calcCells.get(r).add(0,
+                        new CellModel("0_0", teamRank, team));
             }
             catch (Exception e)
             {
                 //e.printStackTrace();
-                calcCells.get(r).add(1,
-                        new CellModel("0_0", ""));
+                calcCells.get(r).add(0,
+                        new CellModel("0_0", "", team));
             }
         }
 
         // Rank and team number are the two non-calculated columns, so add them manually
-        calcColumnHeaders.add(0, new ColumnHeaderModel("Team"));
-        calculatedColumns.add(0, "Team Number");
-        calcColumnHeaders.add(1, new ColumnHeaderModel("R"));
-        calculatedColumns.add(1, "R");
+        calcColumnHeaders.add(0, new ColumnHeaderModel("R"));
+        calculatedColumns.add(0, "R");
 
         List<String> extraTeams = new ArrayList<>();
         // Do N/A Teams
@@ -234,7 +234,7 @@ class DataCalculator implements Serializable {
             List<CellModel> row = new ArrayList<>();
             for (int c = 0; c < cellCount; ++c)
             {
-                row.add(new CellModel("0_0", "N/A"));
+                row.add(new CellModel("0_0", "N/A", s));
             }
             calcCells.add(row);
         }

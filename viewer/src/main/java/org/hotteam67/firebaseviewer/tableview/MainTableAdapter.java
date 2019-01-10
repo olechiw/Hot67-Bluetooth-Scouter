@@ -36,19 +36,6 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         super(p_jContext);
     }
 
-    /*
-    private HashMap<String, Integer> rowHeaderHighlights = new HashMap<>();
-
-    public void SetRowHeaderHighlight(String rowHeader, Integer color) {
-        rowHeaderHighlights.put(rowHeader, color);
-    }
-    */
-
-    /*
-    public void RemoveAllRowHeaderHighlights() {
-        rowHeaderHighlights = new HashMap<>();
-    }
-    */
 
     @Override
     public AbstractViewHolder onCreateCellViewHolder(ViewGroup parent, int viewType) {
@@ -65,10 +52,6 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     public void onBindCellViewHolder(AbstractViewHolder holder, Object value, int
             xPosition, int yPosition) {
         CellModel cell = (CellModel) value;
-        /*
-        if (rowHeaderHighlights.containsKey(rowHeader))
-            holder.setBackgroundColor(rowHeaderHighlights.get(rowHeader));
-            */
 
         if (holder instanceof CellViewHolder) {
             // Get the holder to update cell item text
@@ -100,7 +83,6 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
 
         // Get the holder to update cell item text
         ColumnHeaderViewHolder columnHeaderViewHolder = (ColumnHeaderViewHolder) holder;
-
         columnHeaderViewHolder.setColumnHeaderModel(columnHeader);
     }
 

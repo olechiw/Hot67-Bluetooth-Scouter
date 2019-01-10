@@ -15,6 +15,7 @@ import org.hotteam67.firebaseviewer.data.DataModel;
 import org.hotteam67.firebaseviewer.data.ScatterPlot;
 import org.hotteam67.firebaseviewer.data.DataTable;
 import org.hotteam67.firebaseviewer.data.Sort;
+import org.hotteam67.firebaseviewer.tableview.holder.CellViewHolder;
 import org.hotteam67.firebaseviewer.tableview.holder.ColumnHeaderViewHolder;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
@@ -52,7 +53,10 @@ public class MainTableViewListener implements ITableViewListener {
             return;
 
         try {
-            String teamNumber = GetRowHeaderValue(row);
+            CellModel cell = ((CellViewHolder)p_jCellView).getCellModel();
+            if (cell == null) return;
+            String teamNumber = cell.getTeamNumber();
+
             DataTable table = GetFormattedRawData(teamNumber);
             if (table == null) return;
             table = Sort.BubbleSortAscendingByRowHeader(table);
@@ -111,7 +115,8 @@ public class MainTableViewListener implements ITableViewListener {
         List rowHeaders = adapter.getRowHeaderRecyclerViewAdapter().getItems();
         try
         {
-            return ((RowHeaderModel)rowHeaders.get(row)).getData();
+            return adapter.getRowHeaderItem(row).getData();
+//            return ((RowHeaderModel)rowHeaders.get(row)).getData();
         } catch (Exception e)
         {
             e.printStackTrace();
@@ -271,7 +276,7 @@ public class MainTableViewListener implements ITableViewListener {
                         rows.add(new RowHeaderModel(matchNumber));
                         List<CellModel> naRow = new ArrayList<>();
                         for (int i = 0; i < rowSize; ++i) {
-                            naRow.add(new CellModel("0_0", "N/A"));
+                            naRow.add(new CellModel("0_0", "N/A", ""));
                         }
                         cells.add(naRow);
                     } catch (Exception e) {

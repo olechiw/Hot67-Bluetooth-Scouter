@@ -136,8 +136,8 @@ public class ViewerActivity extends AppCompatActivity {
             RemoveAllFilters();
             teamsGroupInput.setValue(0);
             UpdateUI();
-            averagesTable.sortColumn(1, SortState.ASCENDING);
-            maximumsTable.sortColumn(1, SortState.ASCENDING);
+            averagesTable.sortColumn(0, SortState.ASCENDING);
+            maximumsTable.sortColumn(0, SortState.ASCENDING);
             clearButton.setVisibility(View.INVISIBLE);
         });
         clearButton.setVisibility(View.INVISIBLE);
@@ -335,8 +335,8 @@ public class ViewerActivity extends AppCompatActivity {
                         ((MainTableAdapter) averagesTable.getAdapter()).setAllItems(DataModel.GetAverages());
                         ((MainTableAdapter) maximumsTable.getAdapter()).setAllItems(DataModel.GetMaximums());
                         UpdateUI();
-                        averagesTable.sortColumn(1, SortState.ASCENDING);
-                        maximumsTable.sortColumn(1, SortState.ASCENDING);
+                        averagesTable.sortColumn(0, SortState.ASCENDING);
+                        maximumsTable.sortColumn(0, SortState.ASCENDING);
                     }
                 });
             }

@@ -14,11 +14,15 @@ import java.io.Serializable;
 public class CellModel implements ISortableModel, IFilterableModel, Serializable {
     private final String mId;
     private final String mData;
+    private final String teamNumber;
 
-    public CellModel(String pId, String mData) {
+    public CellModel(String pId, String mData, String teamNumber) {
         this.mId = pId;
         this.mData = mData;
+        this.teamNumber = teamNumber;
     }
+
+    public String getTeamNumber() { return teamNumber; }
 
     public String getData() {
         return mData;
@@ -50,7 +54,7 @@ public class CellModel implements ISortableModel, IFilterableModel, Serializable
 
     @Override
     public String getFilterableKeyword() {
-        return String.valueOf(mData);
+        return getTeamNumber();
     }
 
     private int alliance = MainTableAdapter.ALLIANCE_NONE;
