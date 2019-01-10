@@ -3,6 +3,8 @@ package org.hotteam67.firebaseviewer.tableview.tablemodel;
 import com.evrencoskun.tableview.filter.IFilterableModel;
 import com.evrencoskun.tableview.sort.ISortableModel;
 
+import org.hotteam67.firebaseviewer.tableview.MainTableAdapter;
+
 import java.io.Serializable;
 
 /**
@@ -16,13 +18,6 @@ public class CellModel implements ISortableModel, IFilterableModel, Serializable
     public CellModel(String pId, String mData) {
         this.mId = pId;
         this.mData = mData;
-    }
-
-    public CellModel(String pId, String mData, boolean isAlliance)
-    {
-        this.mId = pId;
-        this.mData = mData;
-        this.isAlliance = isAlliance;
     }
 
     public String getData() {
@@ -58,9 +53,7 @@ public class CellModel implements ISortableModel, IFilterableModel, Serializable
         return String.valueOf(mData);
     }
 
-    private boolean isAlliance = false;
-    public boolean isAlliance()
-    {
-        return isAlliance;
-    }
+    private int alliance = MainTableAdapter.ALLIANCE_NONE;
+    public int GetAlliance() { return alliance; }
+    public void SetAlliance(int alliance) { this.alliance = alliance; }
 }

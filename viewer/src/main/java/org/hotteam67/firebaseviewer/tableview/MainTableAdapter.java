@@ -1,23 +1,21 @@
 package org.hotteam67.firebaseviewer.tableview;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.evrencoskun.tableview.adapter.AbstractTableAdapter;
 import com.evrencoskun.tableview.adapter.recyclerview.CellRecyclerViewAdapter;
-import com.evrencoskun.tableview.adapter.recyclerview.ColumnHeaderRecyclerViewAdapter;
 import com.evrencoskun.tableview.adapter.recyclerview.RowHeaderRecyclerViewAdapter;
 import com.evrencoskun.tableview.adapter.recyclerview.holder.AbstractViewHolder;
 
 import org.hotteam67.common.TBAHandler;
 import org.hotteam67.firebaseviewer.R;
 import org.hotteam67.firebaseviewer.data.DataTable;
-import org.hotteam67.firebaseviewer.tableview.holder.AllianceViewHolder;
 import org.hotteam67.firebaseviewer.tableview.holder.CellViewHolder;
 import org.hotteam67.firebaseviewer.tableview.holder.ColumnHeaderViewHolder;
+import org.hotteam67.firebaseviewer.tableview.holder.RowHeaderViewHolder;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
@@ -30,7 +28,9 @@ import java.util.List;
 
 public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, RowHeaderModel,
         CellModel> {
-    private static final int ALLIANCE_CELL = 1;
+    public static final int ALLIANCE_BLUE = 1;
+    public static final int ALLIANCE_RED = 2;
+    public static final int ALLIANCE_NONE = -1;
 
     public MainTableAdapter(Context p_jContext) {
         super(p_jContext);
@@ -54,15 +54,8 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     public AbstractViewHolder onCreateCellViewHolder(ViewGroup parent, int viewType) {
         View layout;
 
-        switch (viewType) {
-            case ALLIANCE_CELL:
-                layout = LayoutInflater.from(mContext).inflate(R.layout.tableview_alliance,
-                        parent, false);
-                return new AllianceViewHolder(layout);
-            default:
-                layout = LayoutInflater.from(mContext).inflate(R.layout.tableview_cell_layout,
-                        parent, false);
-        }
+        layout = LayoutInflater.from(mContext).inflate(R.layout.tableview_cell_layout,
+                parent, false);
 
         // Create a Cell ViewHolder
         return new CellViewHolder(layout);
@@ -72,14 +65,6 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     public void onBindCellViewHolder(AbstractViewHolder holder, Object value, int
             xPosition, int yPosition) {
         CellModel cell = (CellModel) value;
-        if (cell.isAlliance())
-        {
-            if (cell.getContent() == "BLUE")
-                holder.itemView.setBackgroundColor(Color.BLUE);
-            else
-                holder.itemView.setBackgroundColor(Color.RED);
-        }
-
         /*
         if (rowHeaderHighlights.containsKey(rowHeader))
             holder.setBackgroundColor(rowHeaderHighlights.get(rowHeader));
@@ -88,10 +73,6 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         if (holder instanceof CellViewHolder) {
             // Get the holder to update cell item text
             ((CellViewHolder) holder).setCellModel(cell);
-        }
-        else if (holder instanceof AllianceViewHolder)
-        {
-            ((AllianceViewHolder) holder).setCellModel(cell);
         }
     }
 
@@ -147,6 +128,7 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
             rowHeaderViewHolder.row_header_textview.setText("ERROR");
         }
 
+        rowHeaderViewHolder.setAlliance(rowHeaderModel.GetAlliance());
     }
 
     @Override
@@ -169,8 +151,6 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     @Override
     public int getCellItemViewType(int position) {
 
-        if (position == 0 && hasAllianceColumns())
-            return ALLIANCE_CELL;
         // Not needed, using the data model instead
         return 0;
     }
@@ -178,54 +158,38 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     public void setAlliance(TBAHandler.Match match) {
 
         CellRecyclerViewAdapter cells = ((CellRecyclerViewAdapter)getTableView().getCellRecyclerView().getAdapter());
-        ColumnHeaderRecyclerViewAdapter headers = ((ColumnHeaderRecyclerViewAdapter)getTableView().getColumnHeaderRecyclerView().getAdapter());
+//        ColumnHeaderRecyclerViewAdapter headers = ((ColumnHeaderRecyclerViewAdapter)getTableView().getColumnHeaderRecyclerView().getAdapter());
         RowHeaderRecyclerViewAdapter rows = ((RowHeaderRecyclerViewAdapter)getTableView().getRowHeaderRecyclerView().getAdapter());
 
         List<List<CellModel>> cellsList = ((List<List<CellModel>>)cells.getItems());
-        if (hasAllianceColumns()) {
-            for (int i = 0; i < cellsList.size(); ++i)
-            {
-                cellsList.get(i).remove(0);
-            }
-            if (headers.getItems().size() > 0)
-                headers.getItems().remove(0);
-        }
+        for (List<CellModel> row : cellsList)
+            for (CellModel cell : row)
+                cell.SetAlliance(ALLIANCE_NONE);
+        for (RowHeaderModel row : ((List<RowHeaderModel>)rows.getItems()))
+            row.SetAlliance(ALLIANCE_NONE);
+
         if (match != null)
         {
-
-            headers.getItems().add(0, new ColumnHeaderModel("A"));
             for (int i = 0; i < cells.getItemCount(); ++i)
             {
                 boolean blueNotRed;
-                String rowval = ((RowHeaderModel) rows.getItems().get(i)).getData();
-                blueNotRed = match.blueTeams.contains(rowval);
+                RowHeaderModel row = ((RowHeaderModel) rows.getItems().get(i));
+                blueNotRed = match.blueTeams.contains(row.getData());
 
-                CellModel model = new CellModel("0_0", (blueNotRed) ? "BLUE" : "RED", true);
-                ((List<CellModel>) cells.getItems().get(i)).add(0, model);
+                int alliance = (blueNotRed) ? ALLIANCE_BLUE : ALLIANCE_RED;
+
+                for(CellModel cell : ((List<CellModel>)cells.getItems().get(i)))
+                    cell.SetAlliance(alliance);
+                row.SetAlliance(alliance);
             }
         }
 
         cells.setItems(cells.getItems());
-        headers.setItems(headers.getItems());
+        rows.setItems(rows.getItems());
     }
 
-    public void clearAllianceColumns()
+    public void clearAllianceHighlights()
     {
-        if (hasAllianceColumns())
-        {
-            setAlliance(null);
-        }
-    }
-
-    private boolean hasAllianceColumns()
-    {
-        // Check for existing alliance column
-        CellRecyclerViewAdapter cells = ((CellRecyclerViewAdapter)getTableView().getCellRecyclerView().getAdapter());
-        if (cells.getItems().size() > 0)
-        {
-            CellModel c1 = ((List<List<CellModel>>) cells.getItems()).get(0).get(0);
-            return c1.isAlliance();
-        }
-        return false;
+        setAlliance(null);
     }
 }

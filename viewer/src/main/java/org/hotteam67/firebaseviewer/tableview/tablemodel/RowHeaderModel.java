@@ -2,6 +2,8 @@ package org.hotteam67.firebaseviewer.tableview.tablemodel;
 
 import com.evrencoskun.tableview.sort.ISortableModel;
 
+import org.hotteam67.firebaseviewer.tableview.MainTableAdapter;
+
 import java.io.Serializable;
 
 /**
@@ -36,4 +38,8 @@ public class RowHeaderModel implements Serializable, ISortableModel {
             return 0;
         }
     }
+
+    private int alliance = MainTableAdapter.ALLIANCE_NONE;
+    public int GetAlliance() { return alliance; }
+    public void SetAlliance(int alliance) { this.alliance = alliance; }
 }

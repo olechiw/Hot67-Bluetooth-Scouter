@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -28,7 +27,6 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 
 import com.evrencoskun.tableview.TableView;
-import com.evrencoskun.tableview.filter.Filter;
 import com.evrencoskun.tableview.sort.SortState;
 import org.hotteam67.firebaseviewer.data.DataModel;
 import org.hotteam67.firebaseviewer.data.MultiFilter;
@@ -230,15 +228,14 @@ public class ViewerActivity extends AppCompatActivity {
     }
 
     /**
-     * Remove the alliance column from the tableviews, must be done before other things to keep
-     * it from sticking around, because of my own hackiness
+     * Remove the alliance highlights from the tableviews
      */
     private void RemoveAlliances()
     {
         MainTableAdapter adapter1 = (MainTableAdapter)averagesTable.getAdapter();
         MainTableAdapter adapter2 = (MainTableAdapter)maximumsTable.getAdapter();
-        adapter1.clearAllianceColumns();
-        adapter2.clearAllianceColumns();
+        adapter1.clearAllianceHighlights();
+        adapter2.clearAllianceHighlights();
     }
 
     /**
@@ -393,8 +390,8 @@ public class ViewerActivity extends AppCompatActivity {
         int id = teamsGroupInput.getValue();
         MainTableAdapter adapter1 = (MainTableAdapter)averagesTable.getAdapter();
         MainTableAdapter adapter2 = (MainTableAdapter)maximumsTable.getAdapter();
-        adapter1.clearAllianceColumns();
-        adapter2.clearAllianceColumns();
+        adapter1.clearAllianceHighlights();
+        adapter2.clearAllianceHighlights();
         switch (teamsGroupType.getSelectedItem().toString())
         {
             case Constants.ViewerTeamsGroupTypes.MATCH:
