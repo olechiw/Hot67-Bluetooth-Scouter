@@ -115,8 +115,7 @@ public class MainTableViewListener implements ITableViewListener {
         List rowHeaders = adapter.getRowHeaderRecyclerViewAdapter().getItems();
         try
         {
-            return adapter.getRowHeaderItem(row).getData();
-//            return ((RowHeaderModel)rowHeaders.get(row)).getData();
+            return ((RowHeaderModel)rowHeaders.get(row)).getData();
         } catch (Exception e)
         {
             e.printStackTrace();
@@ -163,7 +162,7 @@ public class MainTableViewListener implements ITableViewListener {
             p_nYPosition) {
 
 
-        if (adapter.GetContext() instanceof  RawDataActivity) {
+        if (adapter.GetContext() instanceof RawDataActivity) {
             try {
                 ((RawDataActivity) adapter.GetContext()).doEndWithMatchNumber(Integer.valueOf(GetRowHeaderValue(p_nYPosition)));
             } catch (Exception e)
