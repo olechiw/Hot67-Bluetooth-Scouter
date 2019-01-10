@@ -32,7 +32,6 @@ import java.util.List;
 /**
  * Created by evrencoskun on 2.12.2017.
  */
-
 public class MainTableViewListener implements ITableViewListener {
 
     private final ITableView tableView;
@@ -110,7 +109,12 @@ public class MainTableViewListener implements ITableViewListener {
         }
     }
 
-    public String GetRowHeaderValue(int row)
+    /**
+     * Get the row header data for a given row, DOES NOT WORK PROPERLY WITH SORTING
+     * @param row the row number
+     * @return the value
+     */
+    private String GetRowHeaderValue(int row)
     {
         List rowHeaders = adapter.getRowHeaderRecyclerViewAdapter().getItems();
         try
