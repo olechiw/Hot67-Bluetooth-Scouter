@@ -192,7 +192,7 @@ class DataCalculator implements Serializable {
 
         for (int r = 0; r < calcCells.size(); ++r )
         {
-            String team = calcCells.get(r).get(0).getData();
+            String team = calcCells.get(r).get(0).getTeamNumber();
             try {
                 String teamRank = (String)  new JSONObject(teamRanksJson).get(team);
                 calcCells.get(r).add(0,
@@ -200,7 +200,7 @@ class DataCalculator implements Serializable {
             }
             catch (Exception e)
             {
-                //e.printStackTrace();
+                e.printStackTrace();
                 calcCells.get(r).add(0,
                         new CellModel("0_0", "", team));
             }
