@@ -36,22 +36,33 @@
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="#000000"
         android:layout_gravity="center_horizontal|top"
-        android:id="@+id/teamsGroupView">
+        android:id="@+id/teamsGroupView"
+        android:background="@color/actionBarColor">
         <org.hotteam67.common.DarkNumberPicker
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/teamsGroupInput"
-            android:orientation="horizontal"/>
-        <Spinner
+            android:orientation="horizontal"
+            />
+        <FrameLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:entries="@array/teamGroupTypesArray"
-            android:id="@+id/teamsGroupType"
-            android:drawSelectorOnTop="true"
+            android:background="@drawable/shape_button_outline"
+            android:backgroundTint="#000000"
             android:layout_centerInParent="true"
-            android:layout_toRightOf="@+id/teamsGroupInput"/>
+            android:layout_toRightOf="@+id/teamsGroupInput"
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="5dp">
+            <Spinner
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:entries="@array/teamGroupTypesArray"
+                android:id="@+id/teamsGroupType"
+                android:drawSelectorOnTop="true"
+/>
+        </FrameLayout>
+
     </RelativeLayout>
 
 </FrameLayout>

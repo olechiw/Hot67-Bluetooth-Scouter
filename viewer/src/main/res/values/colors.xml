@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#000000</color>
-    <color name="colorAccent">#ffffff</color>
+    <color name="colorPrimary">#C82828</color>
+    <color name="colorAccent">#000000</color>
+    <color name="actionBarColor">#C82828</color>
 
-
-    <color name="selected_background_color">#666666</color>
+    <color name="selected_background_color">#000000</color>
     <color name="unselected_background_color">#ffffff</color>
     <color name="shadow_background_color">#ffffff</color>
     <color name="unselected_header_background_color">#ffffff</color>
 
     <color name="unselected_text_color">#000000</color>
     <color name="selected_text_color">#ffffff</color>
-    <color name="separator_color">#273e5b</color>
+    <color name="separator_color">#000000</color>
 
     <color name="alliance_blue_highlight">#4169E1</color>
     <color name="alliance_blue_text">#ffffff</color>

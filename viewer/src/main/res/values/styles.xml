@@ -8,6 +8,7 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowBackground">@color/unselected_background_color</item>
         <item name="android:popupMenuStyle">@style/PopupMenu</item>
+        <item name="colorButtonNormal">#000000</item>
     </style>
 
     <style name="AppThemePreferences" parent="Theme.AppCompat"/>
@@ -25,5 +26,13 @@
         <item name="android:windowBackground">@null</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsFloating">false</item>
+    </style>
+    <style name="Switch" parent="Theme.AppCompat.Light">
+        <!-- active thumb & track color (30% transparency) -->
+        <item name="colorControlActivated">#000000</item>
+
+        <!-- inactive thumb color -->
+        <item name="colorSwitchThumbNormal">#000000
+        </item>
     </style>
 </resources>

@@ -25,6 +25,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.ToggleButton;
 
 import com.evrencoskun.tableview.TableView;
 import com.evrencoskun.tableview.sort.SortState;
@@ -480,8 +481,10 @@ public class ViewerActivity extends AppCompatActivity {
     private synchronized void OnCalculationButton(View v)
     {
 
+
         ((Button)v).setText((((Button) v).getText().toString().equals("MAX")) ?
                 "AVG" : "MAX");
+
         View active = GetActiveTable();
         View inActive = GetInactiveTable();
         active.setVisibility(View.GONE);
