@@ -30,7 +30,8 @@ public class Constants
      */
     public static final class ViewerTeamsGroupTypes {
         public static final String MATCH = "Qualification Match";
-        public static final String ALLIANCE = "Alliance";
+        public static final String ALLIANCE = "Alliance Number";
+        public static final String TEAM = "Team Number";
     }
 
     /**

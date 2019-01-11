@@ -39,6 +39,8 @@ import org.hotteam67.common.DarkNumberPicker;
 import org.hotteam67.common.InterceptAllLayout;
 import org.hotteam67.common.TBAHandler;
 
+import java.util.List;
+
 
 /**
  * The Viewer's main activity, loads all of the user input, handles populating the data model and
@@ -58,8 +60,6 @@ public class ViewerActivity extends AppCompatActivity {
     private Button teamsGroupButton;
 
     private View teamsGroupView;
-
-    private EditText teamSearchView;
 
     private ProgressBar progressBar;
 
@@ -130,9 +130,7 @@ public class ViewerActivity extends AppCompatActivity {
         clearButton.setOnClickListener(v ->
         {
             RemoveAlliances();
-            if (!teamSearchView.getText().toString().trim().isEmpty())
-                teamSearchView.setText("");
-            teamsGroupButton.setText("Match/Alliance");
+            teamsGroupButton.setText(getResources().getString(R.string.show_teams_button_label));
             RemoveAllFilters();
             teamsGroupInput.setValue(0);
             UpdateUI();
@@ -141,32 +139,6 @@ public class ViewerActivity extends AppCompatActivity {
             clearButton.setVisibility(View.INVISIBLE);
         });
         clearButton.setVisibility(View.INVISIBLE);
-
-        teamSearchView = finalView.findViewById(R.id.teamNumberSearch);
-        teamSearchView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-                try {
-                    RemoveAllFilters();
-                    Filter(Constants.TEAM_NUMBER_COLUMN, editable.toString(), true);
-                    UpdateUI();
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        });
 
         teamsGroupView = findViewById(R.id.teamsGroupView);
         teamsGroupView.setVisibility(View.GONE);
@@ -363,11 +335,10 @@ public class ViewerActivity extends AppCompatActivity {
      */
     public void UpdateUI()
     {
-        if (teamsGroupInput.getValue() == 0
-                && teamSearchView.getText().toString().trim().isEmpty())
+        if (teamsGroupInput.getValue() == 0)
         {
             clearButton.setVisibility(View.INVISIBLE);
-            teamsGroupButton.setText("Match/Alliance");
+            teamsGroupButton.setText(getResources().getString(R.string.show_teams_button_label));
         }
         else
             clearButton.setVisibility(View.VISIBLE);
@@ -396,18 +367,36 @@ public class ViewerActivity extends AppCompatActivity {
         adapter2.clearAllianceHighlights();
         switch (teamsGroupType.getSelectedItem().toString())
         {
+            case Constants.ViewerTeamsGroupTypes.TEAM:
+            {
+                if (id != 0) {
+                    RemoveAllFilters();
+                    Filter(Constants.TEAM_NUMBER_COLUMN, String.valueOf(id), true);
+                    teamsGroupButton.setText("Team: " + id);
+                }
+                else
+                {
+                    RemoveAllFilters();
+                    averagesTable.sortColumn(0, SortState.ASCENDING);
+                    maximumsTable.sortColumn(0, SortState.ASCENDING);
+                }
+                UpdateUI();
+                break;
+            }
             case Constants.ViewerTeamsGroupTypes.MATCH:
                 if (id == 0)
                 {
                     RemoveAllFilters();
                     break;
                 }
-                teamsGroupButton.setText("Q" + id + " Teams");
+                teamsGroupButton.setText("Qual: " + id);
                 TBAHandler.Match m = DataModel.GetMatch(id);
 
                 if (m == null)
                 {
                     RemoveAllFilters();
+                    averagesTable.sortColumn(0, SortState.ASCENDING);
+                    maximumsTable.sortColumn(0, SortState.ASCENDING);
                     break;
                 }
 
@@ -416,14 +405,10 @@ public class ViewerActivity extends AppCompatActivity {
 
                 for (String red : m.redTeams)
                 {
-//                    adapter1.SetRowHeaderHighlight(red, Color.RED);
-//                    adapter2.SetRowHeaderHighlight(red, Color.RED);
                     Filter(Constants.TEAM_NUMBER_COLUMN, red);
                 }
                 for (String blue : m.blueTeams)
                 {
-//                    adapter1.SetRowHeaderHighlight(blue, Color.BLUE);
-//                    adapter2.SetRowHeaderHighlight(blue, Color.BLUE);
                     Filter(Constants.TEAM_NUMBER_COLUMN, blue);
                 }
                 adapter1.setAlliance(m);
@@ -434,14 +419,23 @@ public class ViewerActivity extends AppCompatActivity {
             case Constants.ViewerTeamsGroupTypes.ALLIANCE:
                 if (id != 0)
                 {
-                    teamsGroupButton.setText("A" + id + " Teams");
+                    teamsGroupButton.setText("Alliance: " + id);
                     RemoveAllFilters();
-                    for (String t : DataModel.GetAlliance(id - 1))
+                    List<String> alliance = DataModel.GetAlliance(id - 1);
+                    if (alliance.size() > 0)
+                    {
+                        RemoveAllFilters();
+                        averagesTable.sortColumn(0, SortState.ASCENDING);
+                        maximumsTable.sortColumn(0, SortState.ASCENDING);
+                    }
+                    for (String t : alliance)
                         Filter(Constants.TEAM_NUMBER_COLUMN, t);
                 }
                 else
                 {
                     RemoveAllFilters();
+                    averagesTable.sortColumn(0, SortState.ASCENDING);
+                    maximumsTable.sortColumn(0, SortState.ASCENDING);
                 }
                 break;
         }
