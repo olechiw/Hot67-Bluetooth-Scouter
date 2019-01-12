@@ -76,7 +76,7 @@ public class ScatterPlot {
         newPlot.setLinesPerDomainLabel(1);
         newPlot.setLinesPerRangeLabel(1);
 
-        newPlot.getGraph().setMargins(100, 100, 35, 50);
+        newPlot.getGraph().setMargins(150, 100, 100, 100);
         newPlot.setBackgroundColor(Color.WHITE);
         newPlot.getGraph().getBackgroundPaint().setColor(Color.WHITE);
         newPlot.getGraph().getGridBackgroundPaint().setColor(Color.WHITE);

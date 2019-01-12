@@ -9,7 +9,7 @@
         android:layout_width="fill_parent"
         android:layout_height="70dp"
         android:id="@+id/toolBar"
-        android:background="?attr/colorPrimary"
+        android:background="@color/colorActionBar"
         tools:layout_editor_absoluteX="0dp"
         android:layout_marginBottom="8dp"
         android:minHeight="70dp">
@@ -19,7 +19,8 @@
             android:text="Connected Devices: 0" app:layout_constraintBottom_toBottomOf="parent"
             android:id="@+id/connectButton"
             android:textAppearance="@style/TextAppearance.AppCompat.Button"
-            android:textColor="#000000"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#000000"
             android:layout_gravity="center"
             android:background="@drawable/shape_button_outline"/>
 
@@ -28,7 +29,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:src="@drawable/ic_settings"
-            android:background="?attr/colorPrimary"
+            android:background="#00000000"
+            android:tint="#000000"
             android:scaleX=".4"
             android:scaleY=".4"
             android:id="@+id/configureButton"/>
@@ -45,36 +47,43 @@
             android:src="@drawable/ic_download"
             android:scaleX=".4"
             android:scaleY=".4"
-            android:background="?attr/colorPrimary"
+            android:background="#00000000"
+            android:tint="#000000"
             android:id="@+id/matchesDownloadButton"/>
 
     </android.support.v7.widget.Toolbar>
 
-    <Button
+    <android.support.v7.widget.AppCompatButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/submitButton"
         android:layout_below="@+id/toolBar"
+        app:backgroundTint="@color/colorActionBar"
+        android:textColor="#FFFFFF"
         android:layout_margin="5dp"
         android:text="Get Matches"/>
-    <Button
+    <android.support.v7.widget.AppCompatButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Sync"
         android:id="@+id/syncButton"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="@color/colorActionBar"
         android:layout_centerHorizontal="true"
         android:layout_below="@+id/toolBar"
         android:layout_margin="5dp"/>
-    <Button
+    <android.support.v7.widget.AppCompatButton
         android:layout_width="wrap_content"
         android:layout_margin="5dp"
         android:layout_height="wrap_content"
+        android:textColor="#FFFFFF"
         android:id="@+id/messageButton"
+        app:backgroundTint="@color/colorActionBar"
         android:layout_below="@+id/toolBar"
         android:layout_alignParentEnd="true"
         android:text="Send Message"/>
 
-    <EditText
+    <android.support.v7.widget.AppCompatEditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/submitButton"
@@ -84,6 +93,10 @@
         android:cursorVisible="false"
         android:focusable="false"
         android:focusableInTouchMode="false"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#FFFFFF"
+        android:backgroundTint="#FFFFFF"
+        app:backgroundTint="#FFFFFF"
         android:id="@+id/serverLog"/>
 
 </android.widget.RelativeLayout>

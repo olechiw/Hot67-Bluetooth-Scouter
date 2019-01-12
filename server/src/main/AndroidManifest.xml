@@ -26,7 +26,8 @@
     </activity>
     <activity
         android:name="org.hotteam67.bluetoothserver.PreferencesActivity"
-        android:label="@string/title_activity_preferences" />
+        android:label="@string/title_activity_preferences"
+        android:theme="@style/PreferenceScreen"/>
     <activity android:name="org.hotteam67.bluetoothserver.SchemaActivity" />
   </application>
 

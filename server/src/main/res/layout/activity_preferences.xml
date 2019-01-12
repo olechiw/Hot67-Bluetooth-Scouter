@@ -6,14 +6,15 @@
     <android.support.v7.widget.Toolbar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
+        android:background="@color/colorActionBar"
         android:id="@+id/toolbar">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-            android:text="Settings"/>
+            android:text="Settings"
+            android:textColor="#000000"/>
     </android.support.v7.widget.Toolbar>
 
     <FrameLayout
