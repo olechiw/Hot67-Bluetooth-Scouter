@@ -5,8 +5,8 @@
     <string name="variable_count">15</string>
     <string name="orientation">20</string>
     <string-array name="teamGroupTypesArray">
-        <item>Team Number</item>
         <item>Qualification Match</item>
+        <item>Team Number</item>
         <item>Alliance Number</item>
     </string-array>
 </resources>
