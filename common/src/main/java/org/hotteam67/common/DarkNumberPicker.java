@@ -31,6 +31,8 @@ public class DarkNumberPicker extends LinearLayout
     private EditText mainText;
     private int minimum = 0;
     private int maximum = 100;
+    Button upButton;
+    Button downButton;
 
 
     Runnable valueChangedListener;
@@ -118,12 +120,12 @@ public class DarkNumberPicker extends LinearLayout
         mainText.setLayoutParams(params);
         mainText.setText("0");
 
-        Button upButton = new Button(getContext());
+        upButton = new Button(getContext());
         upButton.setOnClickListener(v -> setValue(getValue() + 1));
         upButton.setText("+");
         upButton.setLayoutParams(params);
 
-        Button downButton = new Button(getContext());
+        downButton = new Button(getContext());
         downButton.setOnClickListener(v -> setValue(getValue() - 1));
         downButton.setText("-");
         downButton.setLayoutParams(params);
@@ -174,5 +176,10 @@ public class DarkNumberPicker extends LinearLayout
             mainText.setText(value.toString());
         else
             mainText.setText("0");
+    }
+
+    public void setButtonTextColor(int color) {
+        upButton.setTextColor(color);
+        downButton.setTextColor(color);
     }
 }

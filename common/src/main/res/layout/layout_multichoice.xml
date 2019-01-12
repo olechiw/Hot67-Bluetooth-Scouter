@@ -10,6 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:paddingBottom="15dp"
+        android:textColor="#FFFFFF"
         android:id="@+id/multiChoiceLabel"
         android:text="Integer:"/>
     <Spinner

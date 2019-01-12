@@ -11,7 +11,7 @@
     <android.support.v7.widget.Toolbar
         android:layout_width="fill_parent"
         android:layout_height="70dp"
-        android:background="@color/colorPrimary"
+        android:background="@color/red"
         android:elevation="4dp"
         android:id="@+id/toolBar"
         android:minHeight="70dp"
@@ -27,6 +27,7 @@
                 android:layout_height="wrap_content"
                 android:text="Team:"
                 android:layout_centerHorizontal="true"
+                android:textColor="@color/textColorActionBar"
                 android:layout_alignParentTop="true"
                 android:textAppearance="@style/TextAppearance.AppCompat"
                 android:layout_gravity="center_horizontal"/>
@@ -34,7 +35,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:maxLength="5"
+                android:backgroundTint="#000000"
                 android:hint="Team"
+                android:textColor="@color/textColorActionBar"
+                android:textColorHint="#000000"
                 android:layout_margin="5dp"
                 android:text="0"
                 android:gravity="center"
@@ -49,7 +53,7 @@
             android:layout_gravity="center"
             android:layout_centerInParent="true"
             android:layout_toRightOf="@+id/teamNumberText"
-            android:background="#000000"
+            android:background="@color/red"
             android:id="@+id/unlockButton"/>
             <ImageView
                 android:layout_width="wrap_content"
@@ -59,8 +63,8 @@
                 android:src="@drawable/ic_network_off"
                 android:id="@+id/connectionStatus"
                 android:layout_gravity="start"
-                android:layout_alignParentStart="true"
-                android:background="@color/colorPrimary"/>
+                android:tint="@color/textColorActionBar"
+                android:layout_alignParentStart="true" />
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -69,8 +73,9 @@
             android:src="@drawable/ic_sync"
             android:id="@+id/sendAllButton"
             android:layout_gravity="end"
-            android:layout_alignParentEnd="true"
-            android:background="@color/colorPrimary"/>
+            android:tint="@color/textColorActionBar"
+            android:background="@color/red"
+            android:layout_alignParentEnd="true" />
         <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -81,6 +86,7 @@
             android:paddingLeft="7dp"
             android:paddingTop="3dp"
             android:paddingBottom="5dp"
+            android:indeterminateTint="#FFFFFF"
             android:id="@+id/indeterminateBar"
             android:layout_alignParentEnd="true"
             android:layout_gravity="end"/>
@@ -144,6 +150,8 @@
             android:layout_alignParentEnd="true"
             android:src="@drawable/ic_right"
             android:id="@+id/nextMatchButton"
+            android:backgroundTint="@color/red"
+            android:tint="#FFFFFF"
             android:layout_margin="24dp"
             app:layout_anchorGravity="bottom|end"
             app:backgroundTint="@color/colorPrimary"
@@ -153,6 +161,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:id="@+id/prevMatchButton"
+            android:backgroundTint="@color/red"
+            android:tint="#FFFFFF"
             android:src="@drawable/ic_left"
             android:layout_margin="24dp"
             app:layout_anchorGravity="bottom|left"

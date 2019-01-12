@@ -2,6 +2,7 @@ package org.hotteam67.common;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v4.widget.TextViewCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -370,6 +371,7 @@ public final class SchemaHandler
                 TextViewCompat.setTextAppearance(
                         v.findViewById(R.id.numberLabel),
                         android.R.style.TextAppearance_DeviceDefault);
+                ((DarkNumberPicker)v.findViewById(R.id.numberPicker)).setButtonTextColor(Color.WHITE);
 
 
                 DarkNumberPicker picker = v.findViewById(R.id.numberPicker);
