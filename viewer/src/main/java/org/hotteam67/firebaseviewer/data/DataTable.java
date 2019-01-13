@@ -20,7 +20,7 @@ import java.util.List;
 public class DataTable implements Serializable {
     private final List<ColumnHeaderModel> columnHeaderList;
     private final List<List<CellModel>> cellList;
-    private List<RowHeaderModel> rowHeaderList;
+    private final List<RowHeaderModel> rowHeaderList;
 
     private List<String> preferredOrder;
 
@@ -281,8 +281,8 @@ public class DataTable implements Serializable {
     }
 
     /**
-     *
-     * @return
+     * Get the Row Headers for a table
+     * @return the RowHeaderModel list
      */
     public List<RowHeaderModel> GetRowHeaders()
     {

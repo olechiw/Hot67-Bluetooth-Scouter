@@ -1,7 +1,5 @@
 package org.hotteam67.common;
 
-import android.app.AlertDialog;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 

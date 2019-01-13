@@ -20,8 +20,8 @@ public class PreferencesActivity extends AppCompatActivity
 
     /**
      * Makes the back button work
-     * @param item
-     * @return
+     * @param item the android item selected, only checks if it is home
+     * @return true, the event was consumed
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
@@ -46,8 +46,11 @@ public class PreferencesActivity extends AppCompatActivity
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        if (getSupportActionBar() != null)
+        {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
 
         prefs = new SimplePreferences();
 
@@ -106,8 +109,8 @@ public class PreferencesActivity extends AppCompatActivity
 
     /**
      * Set the summary on change, for ease of use with edittext
-     * @param sharedPreferences
-     * @param key
+     * @param sharedPreferences the preferences shared between activities in the app
+     * @param key the key for the pref that changed
      */
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                           String key)

@@ -4,10 +4,6 @@ import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
 
-import org.hotteam67.common.Constants;
-
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**

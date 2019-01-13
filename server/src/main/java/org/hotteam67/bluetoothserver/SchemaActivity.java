@@ -69,9 +69,9 @@ public class SchemaActivity extends AppCompatActivity {
 
     /**
      * Confirmation box on back button key down
-     * @param keyCode
-     * @param event
-     * @return
+     * @param keyCode the physical keycode that was pressed
+     * @param event the event data
+     * @return super.onKeyDown(keyCode, event); will determine whether to consume key
      */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -92,8 +92,8 @@ public class SchemaActivity extends AppCompatActivity {
 
     /**
      * Load the menu from R.menu.menu_schema
-     * @param menu
-     * @return
+     * @param menu the menu object to populate
+     * @return true, menu was consumed
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -114,8 +114,11 @@ public class SchemaActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        if (getSupportActionBar() != null)
+        {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
 
         Button numberButton;
         Button booleanButton;

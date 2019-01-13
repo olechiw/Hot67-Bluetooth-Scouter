@@ -28,7 +28,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
     /**
      * Messages, for when any event happens, to be sent to the main thread
      */
-    public static class MessageTypes
+    static class MessageTypes
     {
         static final int MESSAGE_INPUT = 0;
         static final int MESSAGE_CONNECTED = 3;
@@ -230,6 +230,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
                     Log.e("[Bluetooth]", "Error occurred when creating input stream", e);
                 }
                 stream = tmpIn;
+                if (stream == null) break;
 
                 l("Reading stream");
                 if (!read(stream))
@@ -289,6 +290,12 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
                 Log.e("[Bluetooth]", "Error occurred when creating output stream", e);
             }
             stream = tmpOut;
+
+            if (stream == null)
+            {
+                disconnect();
+                return;
+            }
 
             try
             {

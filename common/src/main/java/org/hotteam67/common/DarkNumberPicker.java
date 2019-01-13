@@ -31,11 +31,11 @@ public class DarkNumberPicker extends LinearLayout
     private EditText mainText;
     private int minimum = 0;
     private int maximum = 100;
-    Button upButton;
-    Button downButton;
+    private Button upButton;
+    private Button downButton;
 
 
-    Runnable valueChangedListener;
+    private Runnable valueChangedListener;
     public void setOnValueChangedListener(Runnable r)
     {
         valueChangedListener = r;

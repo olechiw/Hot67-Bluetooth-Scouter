@@ -15,9 +15,6 @@ import com.evrencoskun.tableview.sort.SortState;
 import org.hotteam67.firebaseviewer.data.DataTable;
 import org.hotteam67.firebaseviewer.tableview.MainTableAdapter;
 import org.hotteam67.firebaseviewer.tableview.MainTableViewListener;
-import org.hotteam67.firebaseviewer.data.Sort;
-
-import org.hotteam67.common.Constants;
 
 /**
  * Activity for displaying the raw data selected for a match, and potentially returning a selected
@@ -54,13 +51,16 @@ public class RawDataActivity extends AppCompatActivity {
         setContentView(R.layout.activity_raw_data);
 
         ActionBar bar = getSupportActionBar();
-        View finalView = getLayoutInflater().inflate(R.layout.actionbar_raw, null);
-        finalView.setLayoutParams(new ActionBar.LayoutParams(
-                ActionBar.LayoutParams.MATCH_PARENT,
-                ActionBar.LayoutParams.MATCH_PARENT
-        ));
-        bar.setCustomView(finalView);
-        bar.setDisplayShowCustomEnabled(true);
+        if (bar != null)
+        {
+            View finalView = getLayoutInflater().inflate(R.layout.actionbar_raw, null);
+            finalView.setLayoutParams(new ActionBar.LayoutParams(
+                    ActionBar.LayoutParams.MATCH_PARENT,
+                    ActionBar.LayoutParams.MATCH_PARENT
+            ));
+            bar.setCustomView(finalView);
+            bar.setDisplayShowCustomEnabled(true);
+        }
 
         TextView teamNumberView = findViewById(R.id.teamNumberTextView);
         ImageButton backButton = findViewById(R.id.backButton);
@@ -109,7 +109,7 @@ public class RawDataActivity extends AppCompatActivity {
     /**
      * If there is a match number selected, this is called and ends the activity after giving it
      * the match number as a result
-     * @param matchNumber
+     * @param matchNumber the match number to attach to the intent
      */
     public void doEndWithMatchNumber(int matchNumber) {
         if (matchNumber == -1) return;

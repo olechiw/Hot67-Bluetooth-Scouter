@@ -19,8 +19,8 @@ import java.util.List;
  */
 
 public class MultiFilter extends Filter {
-    private List<FilterItem> filterItems = new ArrayList<>();
-    private ITableView tableView;
+    private final List<FilterItem> filterItems = new ArrayList<>();
+    private final ITableView tableView;
 
     public MultiFilter(ITableView view)
     {
@@ -53,11 +53,9 @@ public class MultiFilter extends Filter {
         );
 
         if (isAlreadyFiltering(column, filterItem)) {
-            if (TextUtils.isEmpty(filter)) {
-                //remove(column, filterItem);
-            } else {
+            if (!TextUtils.isEmpty(filter))
                 add(filterItem);
-            }
+
         } else if (!TextUtils.isEmpty(filter)) {
             add(filterItem);
         }

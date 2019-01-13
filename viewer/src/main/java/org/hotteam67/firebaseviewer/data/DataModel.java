@@ -37,8 +37,6 @@ public class DataModel
     private static DataTable outputMaximums;
     private static DataTable outputAverages;
 
-    private static Integer calculationState = DataCalculator.Calculation.AVERAGE;
-
     /**
      * TBA loaded data - alliances from 1 to 8 as list of list of team numbers(string)
      */
@@ -80,16 +78,6 @@ public class DataModel
 
         connectionProperties = conn;
         dataLoadEvent = progEvent;
-    }
-
-    /**
-     * Get the current table based on the calculation state (averages/maximums)
-     * @return DataTable with the data for maximums/averages
-     */
-    public static synchronized DataTable GetTable()
-    {
-        return calculationState == DataCalculator.Calculation.AVERAGE ?
-                outputAverages : outputMaximums;
     }
 
     /**

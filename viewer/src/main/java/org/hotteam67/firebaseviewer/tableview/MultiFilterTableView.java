@@ -4,24 +4,18 @@ import android.content.Context;
 import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 
-import com.evrencoskun.tableview.ITableView;
 import com.evrencoskun.tableview.TableView;
 import com.evrencoskun.tableview.adapter.AbstractTableAdapter;
 import com.evrencoskun.tableview.adapter.AdapterDataSetChangedListener;
-import com.evrencoskun.tableview.adapter.recyclerview.CellRecyclerView;
 import com.evrencoskun.tableview.adapter.recyclerview.CellRecyclerViewAdapter;
 import com.evrencoskun.tableview.adapter.recyclerview.RowHeaderRecyclerViewAdapter;
 import com.evrencoskun.tableview.filter.Filter;
-import com.evrencoskun.tableview.filter.FilterChangedListener;
 import com.evrencoskun.tableview.filter.FilterItem;
 import com.evrencoskun.tableview.filter.FilterType;
 import com.evrencoskun.tableview.filter.IFilterableModel;
 import com.evrencoskun.tableview.sort.SortState;
-import org.hotteam67.firebaseviewer.data.MultiFilter;
-import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +31,8 @@ public class MultiFilterTableView extends TableView {
 
     private CellRecyclerViewAdapter mCellRecyclerViewAdapter;
     private RowHeaderRecyclerViewAdapter mRowHeaderRecyclerViewAdapter;
-    private List<List<IFilterableModel>> originalCellDataStore, originalCellData, filteredCellList;
-    private List originalRowDataStore, originalRowData, filteredRowList;
+    private List<List<IFilterableModel>> originalCellDataStore;
+    private List originalRowDataStore;
 
     /**
      * The sibling table view to sync filters with
@@ -74,7 +68,7 @@ public class MultiFilterTableView extends TableView {
         FilterInit();
     }
 
-    public void FilterInit() {
+    private void FilterInit() {
         getAdapter().addAdapterDataSetChangedListener(adapterDataSetChangedListener);
         this.mCellRecyclerViewAdapter = (CellRecyclerViewAdapter)
                 getCellRecyclerView().getAdapter();
@@ -89,7 +83,7 @@ public class MultiFilterTableView extends TableView {
         sortColumn(column, sort, false);
     }
 
-    public void sortColumn(int column, SortState sort, boolean skipSibling)
+    private void sortColumn(int column, SortState sort, boolean skipSibling)
     {
         super.sortColumn(column, sort);
         if (!skipSibling && sibling != null)
@@ -114,16 +108,16 @@ public class MultiFilterTableView extends TableView {
      * @param skipSibling whether to skip the sibling table provided, set to true if this filter update
      *                    was already triggered by a sibling, to prevent Stack Overflow
      */
-    public void filter(Filter filter, boolean doContains, boolean skipSibling)
+    private void filter(Filter filter, boolean doContains, boolean skipSibling)
     {
         if (originalCellDataStore == null || originalRowDataStore == null) {
             return;
         }
 
-        originalCellData = new ArrayList<>(originalCellDataStore);
-        originalRowData = new ArrayList<>(originalRowDataStore);
-        filteredCellList = new ArrayList<>();
-        filteredRowList = new ArrayList<>();
+        List<List<IFilterableModel>> originalCellData = new ArrayList<>(originalCellDataStore);
+        List originalRowData = new ArrayList<>(originalRowDataStore);
+        List<List<IFilterableModel>> filteredCellList = new ArrayList<>();
+        List filteredRowList = new ArrayList<>();
 
         if (filter.getFilterItems().isEmpty()) {
             filteredCellList = new ArrayList<>(originalCellDataStore);
@@ -180,7 +174,7 @@ public class MultiFilterTableView extends TableView {
     }
 
     @SuppressWarnings("unchecked")
-    private AdapterDataSetChangedListener adapterDataSetChangedListener =
+    private final AdapterDataSetChangedListener adapterDataSetChangedListener =
             new AdapterDataSetChangedListener() {
                 @Override
                 public void onRowHeaderItemsChanged(List rowHeaderItems) {

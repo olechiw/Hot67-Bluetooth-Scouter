@@ -121,8 +121,8 @@ public class ServerActivity extends BluetoothServerActivity {
 
     /**
      * Load options menu from xml
-     * @param menu
-     * @return
+     * @param menu the menu to populate
+     * @return true, menu was created
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -159,9 +159,9 @@ public class ServerActivity extends BluetoothServerActivity {
     }
 
     /**
-     * handle all of the menu items, such as setup schema or send schema
-     * @param item
-     * @return
+     * Handle all of the menu items, such as setup schema or send schema
+     * @param item the menu item selected, from the xml list
+     * @return true, event was consumed
      */
     @Override
     public synchronized boolean onOptionsItemSelected(MenuItem item)
@@ -426,9 +426,9 @@ public class ServerActivity extends BluetoothServerActivity {
 
     /**
      * When permissions are returned, check if bluetooth was enabled
-     * @param requestCode
-     * @param permissions
-     * @param grantResults
+     * @param requestCode permissions request code assigned at request time
+     * @param permissions the permissions requested
+     * @param grantResults the results of the requested permissions
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)

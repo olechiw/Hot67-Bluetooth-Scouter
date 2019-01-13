@@ -200,6 +200,7 @@ public final class SchemaHandler
         try
         {
             BufferedReader reader = FileHandler.GetReader(FileHandler.Files.SCHEMA_FILE);
+            if (reader == null) return new JSONArray();
             String line = reader.readLine();
             reader.close();
             if (line != null)

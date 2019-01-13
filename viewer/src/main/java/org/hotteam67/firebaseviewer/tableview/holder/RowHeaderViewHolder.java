@@ -1,9 +1,5 @@
 package org.hotteam67.firebaseviewer.tableview.holder;
 
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.TextView;
@@ -12,8 +8,6 @@ import com.evrencoskun.tableview.adapter.recyclerview.holder.AbstractViewHolder;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.firebaseviewer.R;
-
-import java.lang.reflect.Field;
 
 /**
  * RowHeaderViewHolder has a value for the label but also stores a temporary alliance for highlighting

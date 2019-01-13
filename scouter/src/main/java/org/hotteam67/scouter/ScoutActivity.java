@@ -56,7 +56,7 @@ public class ScoutActivity extends BluetoothClientActivity
      * The state of sending matches for sync all
      */
     enum SendingState { SENDING, WAITING }
-    SendingState sendingState = SendingState.WAITING;
+    private SendingState sendingState = SendingState.WAITING;
 
     private ImageView connectionStatus;
     private ImageButton sendAllButton;
@@ -692,9 +692,9 @@ public class ScoutActivity extends BluetoothClientActivity
     }
 
     /**
-     * Trigger a confirmation box to prevent certain disconnects - exit
-     * @param item
-     * @return
+     * Trigger a confirmation box to prevent accidental home button click
+     * @param item the android item that was selected
+     * @return true if consumed. uses
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
@@ -710,9 +710,9 @@ public class ScoutActivity extends BluetoothClientActivity
 
     /**
      * Trigger a confirmation box to prevent certain disconnects - back button
-     * @param keyCode
-     * @param event
-     * @return
+     * @param keyCode the keycode, only checks for the back button
+     * @param event the event data
+     * @return true if the event was consumed
      */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)
@@ -726,9 +726,9 @@ public class ScoutActivity extends BluetoothClientActivity
 
     /**
      * Run setup after bluetooth once bluetooth is setup
-     * @param requestCode
-     * @param permissions
-     * @param grantResults
+     * @param requestCode the permissions request code assigned when it ran
+     * @param permissions the permissions requested list
+     * @param grantResults the results of the granted permissions
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)

@@ -2,12 +2,9 @@ package org.hotteam67.firebaseviewer;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
-import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 
 /**
@@ -30,8 +27,11 @@ public class PreferencesActivity extends AppCompatActivity
                 Toolbar.LayoutParams.MATCH_PARENT,
                 Toolbar.LayoutParams.MATCH_PARENT
         ));
-        getSupportActionBar().setCustomView(finalView);
-        getSupportActionBar().setDisplayShowCustomEnabled(true);
+        if (getSupportActionBar() != null)
+        {
+            getSupportActionBar().setCustomView(finalView);
+            getSupportActionBar().setDisplayShowCustomEnabled(true);
+        }
         finalView.findViewById(R.id.backButton).setOnClickListener(v -> finish());
 
 

@@ -88,16 +88,4 @@ public class ColumnSchema {
         public List<String> columnsNames;
         public String columnName;
     }
-
-    /**
-     * Outlier adjusted column, also serializable, fancy and useless atm
-     */
-    public static class OutlierAdjustedColumn implements Serializable
-    {
-        public String columnName;
-        public String sourceColumnName;
-        public String adjustmentColumnName;
-        public Integer sourceQuartileDisallowed;
-        public Integer adjustmentQuartileDisallowed;
-    }
 }

@@ -95,7 +95,7 @@ public class ViewerActivity extends AppCompatActivity {
     /**
      * Construct the user interface, populate the calculated data if local values are found, and bind
      * event handlers
-     * @param savedInstanceState
+     * @param savedInstanceState ignored
      */
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -104,14 +104,19 @@ public class ViewerActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
         ActionBar bar = getSupportActionBar();
+
         View finalView = getLayoutInflater().inflate(
                 R.layout.actionbar_main,
                 null);
         finalView.setLayoutParams(new ActionBar.LayoutParams(
                 ActionBar.LayoutParams.MATCH_PARENT,
                 ActionBar.LayoutParams.MATCH_PARENT));
-        bar.setCustomView(finalView);
-        bar.setDisplayShowCustomEnabled(true);
+        if (bar != null)
+        {
+            bar.setCustomView(finalView);
+            bar.setDisplayShowCustomEnabled(true);
+        }
+
 
         progressBar = finalView.findViewById(R.id.indeterminateBar);
 
@@ -223,7 +228,7 @@ public class ViewerActivity extends AppCompatActivity {
      * Do the expand animation on a view. Shamelessly copied From Stack Overflow
      * @param v the view to expand (also set to visible)
      */
-    public static void expand(final View v) {
+    private static void expand(final View v) {
         v.measure(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         final int targetHeight = v.getMeasuredHeight();
 
@@ -255,7 +260,7 @@ public class ViewerActivity extends AppCompatActivity {
      * Do the collapse animation on a view. Shamelessly copied from StackOverflow
      * @param v the view to collapse (also set invisible)
      */
-    public static void collapse(final View v) {
+    private static void collapse(final View v) {
         final int initialHeight = v.getMeasuredHeight();
 
         Animation a = new Animation()
@@ -330,7 +335,7 @@ public class ViewerActivity extends AppCompatActivity {
     /**
      * Simply clears all of the filters set
      */
-    public void UpdateUI()
+    private void UpdateUI()
     {
         if (teamsGroupInput.getValue() == 0)
         {
@@ -518,8 +523,8 @@ public class ViewerActivity extends AppCompatActivity {
     /**
      * When disk permissions are requested, check whether they are granted and we can load locally
      * @param requestCode the request code, which should be linked to request enable permissions
-     * @param permissions
-     * @param grantResults
+     * @param permissions the permissions that were requested
+     * @param grantResults the results for requested permissions
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
@@ -562,7 +567,7 @@ public class ViewerActivity extends AppCompatActivity {
     }
 
     /**
-     * Stop spinning the refresh button around, by showing it again and hiding the indetemrinate progress
+     * Stop spinning the refresh button around, by showing it again and hiding the indeterminate progress
      * bar
      */
     private void EndProgressAnimation()

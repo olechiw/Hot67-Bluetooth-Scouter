@@ -80,7 +80,7 @@ public class MainTableViewListener implements ITableViewListener {
             table = Sort.BubbleSortAscendingByRowHeader(table);
 
             String calculatedColumnName =
-                    DataModel.GetTable().GetColumns().get(column).getData();
+                    ColumnSchema.CalculatedColumns().get(column);
 
             String rawColumnName = ColumnSchema.CalculatedColumnsRawNames().get(
                     ColumnSchema.CalculatedColumns().indexOf(calculatedColumnName)
@@ -276,7 +276,7 @@ public class MainTableViewListener implements ITableViewListener {
              */
             List<String> matchNumbers = new ArrayList<>();
             String matches = FileHandler.LoadContents(FileHandler.Files.VIEWER_MATCHES_FILE);
-            if (matches != null && !matches.trim().isEmpty()) {
+            if (!matches.trim().isEmpty()) {
                 List<String> matchesArray = Arrays.asList(matches.split("\n"));
                 if (matchesArray.size() > 0)
                     // Load all team matches

@@ -6,7 +6,6 @@ import android.view.MotionEvent;
 import android.widget.RelativeLayout;
 
 import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 
 /**
  * A layout that will intercept all of its touches based on a condition
@@ -22,7 +21,7 @@ public class InterceptAllLayout extends RelativeLayout {
         super(c, attrs);
     }
 
-    Callable<Boolean> interceptCondition;
+    private Callable<Boolean> interceptCondition;
 
     /**
      * A condition for whether the touches will be intercepted
@@ -33,7 +32,7 @@ public class InterceptAllLayout extends RelativeLayout {
         interceptCondition = condition;
     }
 
-    Runnable interceptEvent;
+    private Runnable interceptEvent;
 
     /**
      * An event to run when a touch is intercepted and the condition is met

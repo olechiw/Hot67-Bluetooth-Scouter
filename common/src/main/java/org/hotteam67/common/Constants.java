@@ -2,7 +2,6 @@ package org.hotteam67.common;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.util.Log;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -188,23 +187,6 @@ public class Constants
 
 
     private static final HashMap<String, Long> times = new HashMap<>();
-
-    /**
-     * Time a value, either starting the timer or ending it and logging it
-     * @param key the key for the timed value
-     */
-    public static void Time(String key)
-    {
-        if (times.containsKey(key))
-        {
-            Log.d("HotTeam67-TIME", "Time for " + key + ": " + times.get(key) + " ms");
-            times.remove(key);
-        }
-        else
-        {
-            times.put(key, System.nanoTime());
-        }
-    }
 
     /**
      * An oncomplete interface that consumes an input, used over java.function.Consumer for

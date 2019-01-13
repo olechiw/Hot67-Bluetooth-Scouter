@@ -334,6 +334,8 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                 }
                 stream = tmpIn;
 
+                if (stream == null) break;
+
                 l("Reading stream");
                 if (!read(stream))
                 {
@@ -392,6 +394,12 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                 Log.e("[Bluetooth]", "Error occurred when creating output stream", e);
             }
             stream = tmpOut;
+
+            if (stream == null)
+            {
+                disconnect(this);
+                return;
+            }
 
             try
             {
@@ -470,9 +478,9 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
 
     /**
      * Activity result for when bluetooth is enabled by the user
-     * @param requestCode
-     * @param resultCode
-     * @param data
+     * @param requestCode code from when the activity was run
+     * @param resultCode the result of the activity
+     * @param data any extra data attached to the activity's end
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
