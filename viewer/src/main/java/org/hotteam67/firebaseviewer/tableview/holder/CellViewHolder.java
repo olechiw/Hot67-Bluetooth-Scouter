@@ -13,50 +13,63 @@ import org.hotteam67.firebaseviewer.R;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 
 /**
- * Created by evrencoskun on 1.12.2017.
+ * The CellViewHolder that is populated by CellModels. Uses the alliance to set its background color,
+ * or otherwise handles selected/unselected colors
  */
-
 public class CellViewHolder extends AbstractViewHolder {
-    private final TextView cell_textview;
-    private final LinearLayout cell_container;
-    CellModel cell;
+    private final TextView cellTextView;
+    private final LinearLayout cellContainer;
+    private CellModel cell;
 
+    /**
+     * Constructor, takes the view that will be used.
+     * @param itemView The view, this is inflated in mainTableAdapter
+     */
     public CellViewHolder(View itemView) {
         super(itemView);
-        cell_textview = itemView.findViewById(R.id.cell_data);
-        cell_container = itemView.findViewById(R.id.cell_container);
+        cellTextView = itemView.findViewById(R.id.cell_data);
+        cellContainer = itemView.findViewById(R.id.cell_container);
     }
 
+    /**
+     * Set the CellModel, updating the values, colors, and layout params
+     * @param cellModel the cellModel to populate the view with
+     */
     public void setCellModel(CellModel cellModel) {
         cell = cellModel;
 
         // Change textView align by column
-        cell_textview.setGravity(Gravity.CENTER |
+        cellTextView.setGravity(Gravity.CENTER |
                 Gravity.CENTER_VERTICAL);
 
         // Set text
-        cell_textview.setText(cellModel.getData());
+        cellTextView.setText(cellModel.getData());
 
         setAlliance(cellModel.GetAlliance());
 
         // It is necessary to remeasure itself.
-        cell_container.getLayoutParams().width = LinearLayout.LayoutParams.WRAP_CONTENT;
-        cell_textview.requestLayout();
+        cellContainer.getLayoutParams().width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        cellTextView.requestLayout();
     }
 
+    /**
+     * Event handler for selection/un-selection, to change the colors of the view. Ignored if there
+     * is an alliance set
+     * @param selectionState either selected or unselected
+     */
     @Override
-    public void setSelected(SelectionState p_nSelectionState) {
-        super.setSelected(p_nSelectionState);
+    public void setSelected(SelectionState selectionState) {
+        super.setSelected(selectionState);
 
-        if (p_nSelectionState == SelectionState.SELECTED) {
-            cell_textview.setTextColor(ContextCompat.getColor(cell_textview.getContext(), R.color
+        if (selectionState == SelectionState.SELECTED) {
+            cellTextView.setTextColor(ContextCompat.getColor(cellTextView.getContext(), R.color
                     .selected_text_color));
-            cell_textview.setBackgroundColor(ContextCompat.getColor(cell_textview.getContext(), R.color
+            cellTextView.setBackgroundColor(ContextCompat.getColor(cellTextView.getContext(), R.color
                     .selected_background_color));
         } else {
-            cell_textview.setTextColor(ContextCompat.getColor(cell_textview.getContext(), R.color
+            cellTextView.setTextColor(ContextCompat.getColor(cellTextView.getContext(), R.color
                     .unselected_text_color));
-            cell_textview.setBackgroundColor(ContextCompat.getColor(cell_textview.getContext(), R.color
+            cellTextView.setBackgroundColor(ContextCompat.getColor(cellTextView.getContext(), R.color
                     .unselected_background_color));
         }
         if (alliance == Constants.ALLIANCE_NONE) return;
@@ -64,7 +77,12 @@ public class CellViewHolder extends AbstractViewHolder {
     }
 
     private int alliance = Constants.ALLIANCE_NONE;
-    public void setAlliance(int alliance)
+
+    /**'
+     * Set the view highlight based on the alliance given
+     * @param alliance the alliance code from Constants
+     */
+    private void setAlliance(int alliance)
     {
         this.alliance = alliance;
         int colorBack;
@@ -84,14 +102,18 @@ public class CellViewHolder extends AbstractViewHolder {
                 colorText = R.color.unselected_text_color;
                 break;
         }
-        cell_textview.setBackgroundColor(ContextCompat.getColor(itemView.getContext(),
+        cellTextView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(),
                 colorBack));
-        cell_textview.setTextColor(ContextCompat.getColor(itemView.getContext(),
+        cellTextView.setTextColor(ContextCompat.getColor(itemView.getContext(),
                 colorText));
         itemView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(),
                 colorBack));
     }
 
+    /**
+     * Get the CellModel that the view is currently populated with
+     * @return CellModel assigned to the view last
+     */
     public CellModel getCellModel() {
         return cell;
     }

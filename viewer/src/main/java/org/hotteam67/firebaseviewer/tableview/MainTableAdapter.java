@@ -24,17 +24,26 @@ import org.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
 import java.util.List;
 
 /**
- * Created by evrencoskun on 27.11.2017.
+ * The adapter responsible for populating views based on the data model. Basically just three
+ * adapters for a RecyclerView built into one, for rows/columns/cells.
+ *
+ * A note about ViewType: it can be used to create different holders with more sophisticated data,
+ * this program only uses one type for everything
  */
-
 public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, RowHeaderModel,
         CellModel> {
 
-    public MainTableAdapter(Context p_jContext) {
-        super(p_jContext);
+    public MainTableAdapter(Context context) {
+        super(context);
     }
 
 
+    /**
+     * Create a viewholder from the template layout
+     * @param parent the parent to use with the inflator
+     * @param viewType the ViewType from getCellViewType(), unused atm
+     * @return the viewholder to create, always a CellViewHolder
+     */
     @Override
     public AbstractViewHolder onCreateCellViewHolder(ViewGroup parent, int viewType) {
         View layout;
@@ -46,6 +55,14 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         return new CellViewHolder(layout);
     }
 
+    /**
+     * When a value from the model (a CellModeL) is bound to a ViewHolder. Just call the holder's
+     * population function
+     * @param holder the view to populate
+     * @param value the CellModel to populate with
+     * @param xPosition the xPos of the cell
+     * @param yPosition the yPos of the cell
+     */
     @Override
     public void onBindCellViewHolder(AbstractViewHolder holder, Object value, int
             xPosition, int yPosition) {
@@ -58,14 +75,28 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
     }
 
 
+    /**
+     * Set all of the data items based on a given DataTable
+     * @param mainTable the table to use to populate everything
+     */
     public void setAllItems(DataTable mainTable) {
         setAllItems(mainTable.GetColumns(), mainTable.GetRowHeaders(), mainTable.GetCells());
     }
 
+    /**
+     * Get the adapter context
+     * @return the stored context from the Adapter's constructor
+     */
     Context GetContext() {
         return this.mContext;
     }
 
+    /**
+     * Populate a column header view holder, ignoring viewtype
+     * @param parent the parent to use with the inflator
+     * @param viewType from getColumnViewType, ignored
+     * @return a ColumnHeaderViewHolder that will go into the RecyclerView
+     */
     @Override
     public AbstractViewHolder onCreateColumnHeaderViewHolder(ViewGroup parent, int viewType) {
         View layout = LayoutInflater.from(mContext).inflate(R.layout
@@ -74,16 +105,28 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         return new ColumnHeaderViewHolder(layout);
     }
 
+    /**
+     * Bind a column header view holder with a given model
+     * @param holder the holder to bind
+     * @param value the ColumnHeaderModel to bind the values with
+     * @param xPosition the x Position of the column
+     */
     @Override
-    public void onBindColumnHeaderViewHolder(AbstractViewHolder holder, Object p_jValue, int
-            p_nXPosition) {
-        ColumnHeaderModel columnHeader = (ColumnHeaderModel) p_jValue;
+    public void onBindColumnHeaderViewHolder(AbstractViewHolder holder, Object value, int
+            xPosition) {
+        ColumnHeaderModel columnHeader = (ColumnHeaderModel) value;
 
         // Get the holder to update cell item text
         ColumnHeaderViewHolder columnHeaderViewHolder = (ColumnHeaderViewHolder) holder;
         columnHeaderViewHolder.setColumnHeaderModel(columnHeader);
     }
 
+    /**
+     * When a rowHeaderViewHolder is created, inflate it from the layout template
+     * @param parent the parent to use with the inflater
+     * @param viewType the type of view, ignored
+     * @return the inflated ViewHolder
+     */
     @Override
     public AbstractViewHolder onCreateRowHeaderViewHolder(ViewGroup parent, int viewType) {
 
@@ -95,47 +138,76 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         return new RowHeaderViewHolder(layout);
     }
 
+    /**
+     * When a rowHeaderModel is bound to a specific value, populate it into the holder
+     * @param holder the holder to populate
+     * @param value the value to populate it with
+     * @param xPosition the xPosition of the rowHeader
+     */
     @Override
-    public void onBindRowHeaderViewHolder(AbstractViewHolder holder, Object p_jValue, int
-            p_nYPosition) {
+    public void onBindRowHeaderViewHolder(AbstractViewHolder holder, Object value, int
+            xPosition) {
 
-        RowHeaderModel rowHeaderModel = (RowHeaderModel) p_jValue;
+        RowHeaderModel rowHeaderModel = (RowHeaderModel) value;
 
         RowHeaderViewHolder rowHeaderViewHolder = (RowHeaderViewHolder) holder;
         try {
-            rowHeaderViewHolder.row_header_textview.setText(String.valueOf(rowHeaderModel.getData()));
+            rowHeaderViewHolder.rowHeaderTextView.setText(String.valueOf(rowHeaderModel.getData()));
         } catch (Exception e) {
-            rowHeaderViewHolder.row_header_textview.setText("ERROR");
+            rowHeaderViewHolder.rowHeaderTextView.setText("ERROR");
         }
 
         rowHeaderViewHolder.setAlliance(rowHeaderModel.GetAlliance());
     }
 
+    /**
+     * The inflator for the corner view. Doesn't have functionality, we leave it simple
+     * @return the corner View inflated
+     */
     @Override
     public View onCreateCornerView() {
         return LayoutInflater.from(mContext).inflate(R.layout.tableview_corner_layout, null,
                 false);
     }
 
+    /**
+     * The viewType functions, unused rn
+     * @param position the position of the ColumnHeaderModel to get a ViewType for
+     * @return 0 always, default view type
+     */
     @Override
     public int getColumnHeaderItemViewType(int position) {
         return 0;
     }
 
+    /**
+     * The viewType functions, unused rn
+     * @param position the position of the RowHeaderModel to get a ViewType for
+     * @return 0 always, default view type
+     */
     @Override
     public int getRowHeaderItemViewType(int position) {
         return 0;
     }
 
-    //TODO: ADD AN ALLIANCE COLUMN HERE WITH RED OR BLUE
+    /**
+     * The viewType functions, unused rn
+     * @param position the position of the CellModel to get a ViewType for
+     * @return 0 always, default view type
+     */
     @Override
     public int getCellItemViewType(int position) {
 
-        // Not needed, using the data model instead
         return 0;
     }
 
-    public void setAlliance(TBAHandler.Match match) {
+    /**
+     * Set the alliances for a current match, flagging CellModels as being Red or Blue alliance,
+     * by parsing team number, so when they are bound the holders will adjust the
+     * background color likewise
+     * @param match the Match object to use
+     */
+    public void setAllianceHighlights(TBAHandler.Match match) {
 
         CellRecyclerViewAdapter cells = ((CellRecyclerViewAdapter)getTableView().getCellRecyclerView().getAdapter());
 //        ColumnHeaderRecyclerViewAdapter headers = ((ColumnHeaderRecyclerViewAdapter)getTableView().getColumnHeaderRecyclerView().getAdapter());
@@ -168,8 +240,11 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
         rows.setItems(rows.getItems());
     }
 
+    /**
+     * Remove all of the alilance highlights
+     */
     public void clearAllianceHighlights()
     {
-        setAlliance(null);
+        setAllianceHighlights(null);
     }
 }

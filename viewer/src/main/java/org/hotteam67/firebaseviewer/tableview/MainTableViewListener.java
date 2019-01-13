@@ -17,6 +17,7 @@ import org.hotteam67.firebaseviewer.data.DataTable;
 import org.hotteam67.firebaseviewer.data.Sort;
 import org.hotteam67.firebaseviewer.tableview.holder.CellViewHolder;
 import org.hotteam67.firebaseviewer.tableview.holder.ColumnHeaderViewHolder;
+import org.hotteam67.firebaseviewer.tableview.holder.RowHeaderViewHolder;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
@@ -30,29 +31,47 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by evrencoskun on 2.12.2017.
+ * The listener for all onTouch events for the TableView
  */
 public class MainTableViewListener implements ITableViewListener {
 
     private final ITableView tableView;
     private final MainTableAdapter adapter;
 
-    public MainTableViewListener(ITableView pTableView, MainTableAdapter adapter) {
-        this.tableView = pTableView;
+    /**
+     * Constructor
+     * @param tableView the table view that events will come from
+     * @param adapter the main adapter for the tableView
+     */
+    public MainTableViewListener(ITableView tableView, MainTableAdapter adapter) {
+        this.tableView = tableView;
         this.adapter = adapter;
     }
 
+    /**
+     * When a cell is clicked - if there is rawData then it is a calculated table, so show a
+     * ScatterPlot with values from the DataModel.
+     * @param cellView the cell that was clicked
+     * @param column the column it was clicked in
+     * @param row the row it was clicked in
+     */
     @Override
-    public void onCellClicked(@NonNull RecyclerView.ViewHolder p_jCellView, int column, int
+    public void onCellClicked(@NonNull RecyclerView.ViewHolder cellView, int column, int
             row) {
+
         MainTableAdapter adapter = (MainTableAdapter) tableView.getAdapter();
+
+        // No event for raw data
+        if (adapter.GetContext() instanceof RawDataActivity) return;
+
         DataTable rawData = DataModel.GetRawData();
 
+        // No raw data means something is not loaded properly
         if (rawData == null)
             return;
 
         try {
-            CellModel cell = ((CellViewHolder)p_jCellView).getCellModel();
+            CellModel cell = ((CellViewHolder)cellView).getCellModel();
             if (cell == null) return;
             String teamNumber = cell.getTeamNumber();
 
@@ -105,7 +124,7 @@ public class MainTableViewListener implements ITableViewListener {
         }
         catch (Exception ignored)
         {
-
+            // Will throw an exception if RawData can't be found
         }
     }
 
@@ -127,12 +146,24 @@ public class MainTableViewListener implements ITableViewListener {
         }
     }
 
+    /**
+     * Cell long press listener, ignored
+     * @param cellView the view long pressed
+     * @param column the xPosition
+     * @param row the yPosition
+     */
     @Override
     public void onCellLongPressed(@NonNull RecyclerView.ViewHolder cellView, int column, int row) {
 
     }
 
     private int lastColumnClicked = -1;
+
+    /**
+     * The columnHeaderClicked listener, sorts ascending/descending if not in RawDataActivity
+     * @param columnViewHolder the ViewHolder that was clicked
+     * @param column the column index of the clicked column
+     */
     @Override
     public void onColumnHeaderClicked(@NonNull RecyclerView.ViewHolder columnViewHolder, int
             column) {
@@ -156,26 +187,37 @@ public class MainTableViewListener implements ITableViewListener {
     }
 
 
+    /**
+     * Column header long press is ignored
+     * @param columnHeaderView the view pressed
+     * @param xPosition the xPosition of the column
+     */
     @Override
-    public void onColumnHeaderLongPressed(@NonNull RecyclerView.ViewHolder p_jColumnHeaderView,
-                                          int p_nXPosition) {
+    public void onColumnHeaderLongPressed(@NonNull RecyclerView.ViewHolder columnHeaderView,
+                                          int xPosition) {
     }
 
+    /**
+     * rowHeader Clicked. If it is RawDataActivity, end with the selected Match Number to be shown
+     * in calculated data. Otherwise Start the RawDataActivity
+     * @param rowHeaderView the view that was clicked, will have the team number
+     * @param yPosition the yPosition of the row header
+     */
     @Override
-    public void onRowHeaderClicked(@NonNull RecyclerView.ViewHolder p_jRowHeaderView, int
-            p_nYPosition) {
+    public void onRowHeaderClicked(@NonNull RecyclerView.ViewHolder rowHeaderView, int
+            yPosition) {
 
 
         if (adapter.GetContext() instanceof RawDataActivity) {
             try {
-                ((RawDataActivity) adapter.GetContext()).doEndWithMatchNumber(Integer.valueOf(GetRowHeaderValue(p_nYPosition)));
+                ((RawDataActivity) adapter.GetContext()).doEndWithMatchNumber(Integer.valueOf(GetRowHeaderValue(yPosition)));
             } catch (Exception e)
             { e.printStackTrace(); }
 
             return;
         }
 
-        String teamNumber = GetRowHeaderValue(p_nYPosition);
+        String teamNumber = ((RowHeaderViewHolder)rowHeaderView).rowHeaderTextView.getText().toString();
 
             Log.d("HotTeam67", "Set team number filter: " + teamNumber);
 
@@ -200,6 +242,11 @@ public class MainTableViewListener implements ITableViewListener {
 
     }
 
+    /**
+     * Get the formatted raw data from the DataModel for a given team, to be given to the RawDataActivity
+     * @param teamNumber team number to get data for
+     * @return a DataTable containing the formatted/sorted data with match numbers as row headers etc.
+     */
     private DataTable GetFormattedRawData(String teamNumber) {
         DataTable rawData = DataModel.GetRawData();
         rawData.SetTeamNumberFilter(teamNumber);
@@ -297,9 +344,14 @@ public class MainTableViewListener implements ITableViewListener {
             return null;
     }
 
+    /**
+     * Long press ignored
+     * @param rowHeaderView the row header view pressed
+     * @param yPosition the yPosition of the row
+     */
     @Override
-    public void onRowHeaderLongPressed(@NonNull RecyclerView.ViewHolder p_jRowHeaderView, int
-            p_nYPosition) {
+    public void onRowHeaderLongPressed(@NonNull RecyclerView.ViewHolder rowHeaderView, int
+            yPosition) {
 
     }
 }

@@ -12,8 +12,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,11 +19,9 @@ import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
-import android.widget.ToggleButton;
 
 import com.evrencoskun.tableview.TableView;
 import com.evrencoskun.tableview.sort.SortState;
@@ -412,8 +408,8 @@ public class ViewerActivity extends AppCompatActivity {
                 {
                     Filter(Constants.TEAM_NUMBER_COLUMN, blue);
                 }
-                adapter1.setAlliance(m);
-                adapter2.setAlliance(m);
+                adapter1.setAllianceHighlights(m);
+                adapter2.setAllianceHighlights(m);
 
 
                 break;

@@ -16,55 +16,31 @@ import org.hotteam67.firebaseviewer.R;
 import java.lang.reflect.Field;
 
 /**
- * Created by evrencoskun on 1.12.2017.
+ * RowHeaderViewHolder has a value for the label but also stores a temporary alliance for highlighting
  */
-
 public class RowHeaderViewHolder extends AbstractViewHolder {
-    public final TextView row_header_textview;
+    public final TextView rowHeaderTextView;
 
     public RowHeaderViewHolder(View p_jItemView) {
         super(p_jItemView);
-        row_header_textview = p_jItemView.findViewById(R.id.row_header_textview);
+        rowHeaderTextView = p_jItemView.findViewById(R.id.row_header_textview);
     }
 
-    public static int getBackgroundColor(View view) {
-        Drawable drawable = view.getBackground();
-        if (drawable instanceof ColorDrawable) {
-            ColorDrawable colorDrawable = (ColorDrawable) drawable;
-            if (Build.VERSION.SDK_INT >= 11) {
-                return colorDrawable.getColor();
-            }
-            try {
-                Field field = colorDrawable.getClass().getDeclaredField("mState");
-                field.setAccessible(true);
-                Object object = field.get(colorDrawable);
-                field = object.getClass().getDeclaredField("mUseColor");
-                field.setAccessible(true);
-                return field.getInt(object);
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return 0;
-    }
-
+    /**
+     * Selection event handler. Will be overridden if there is an alliance set
+     * @param selectionState for determining colors, assuming there is no alliance
+     */
     @Override
-    public void setSelected(SelectionState p_nSelectionState) {
-        super.setSelected(p_nSelectionState);
-
-        int color = getBackgroundColor(row_header_textview);
-        if (color == Color.RED || color == Color.BLUE)
-            return;
+    public void setSelected(SelectionState selectionState) {
+        super.setSelected(selectionState);
 
         int nBackgroundColorId;
         int nForegroundColorId;
 
-        if (p_nSelectionState == SelectionState.SELECTED) {
+        if (selectionState == SelectionState.SELECTED) {
             nForegroundColorId = R.color.selected_text_color;
             nBackgroundColorId = R.color.selected_background_color;
-        } else if (p_nSelectionState == SelectionState.UNSELECTED) {
+        } else if (selectionState == SelectionState.UNSELECTED) {
             nBackgroundColorId = R.color.unselected_background_color;
             nForegroundColorId = R.color.unselected_text_color;
 
@@ -76,9 +52,9 @@ public class RowHeaderViewHolder extends AbstractViewHolder {
 
         itemView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(),
                 nBackgroundColorId));
-        row_header_textview.setTextColor(ContextCompat.getColor(row_header_textview.getContext(),
+        rowHeaderTextView.setTextColor(ContextCompat.getColor(rowHeaderTextView.getContext(),
                 nForegroundColorId));
-        row_header_textview.setBackgroundColor(ContextCompat.getColor(itemView.getContext(),
+        rowHeaderTextView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(),
                 nBackgroundColorId));
 
         if (alliance == Constants.ALLIANCE_NONE) return;
@@ -86,6 +62,12 @@ public class RowHeaderViewHolder extends AbstractViewHolder {
     }
 
     private int alliance = Constants.ALLIANCE_NONE;
+
+    /**
+     * Set the alliance, to be stored, and also the highlight colors. Also called when setSelected
+     * is called to make sure colors are up to date
+     * @param alliance the alliance from Constants to determine colors
+     */
     public void setAlliance(int alliance)
     {
         this.alliance = alliance;
@@ -106,9 +88,9 @@ public class RowHeaderViewHolder extends AbstractViewHolder {
                 colorText = R.color.unselected_text_color;
                 break;
         }
-        row_header_textview.setBackgroundColor(ContextCompat.getColor(itemView.getContext(),
+        rowHeaderTextView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(),
                 colorBack));
-        row_header_textview.setTextColor(ContextCompat.getColor(itemView.getContext(),
+        rowHeaderTextView.setTextColor(ContextCompat.getColor(itemView.getContext(),
                 colorText));
         itemView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(),
                 colorBack));
