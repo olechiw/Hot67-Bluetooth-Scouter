@@ -8,17 +8,40 @@ import com.evrencoskun.tableview.adapter.recyclerview.holder.AbstractViewHolder;
 
 import org.hotteam67.common.Constants;
 import org.hotteam67.firebaseviewer.R;
+import org.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
 
 /**
  * RowHeaderViewHolder has a value for the label but also stores a temporary alliance for highlighting
  */
 public class RowHeaderViewHolder extends AbstractViewHolder {
     public final TextView rowHeaderTextView;
+    private int yPosition = -1;
 
-    public RowHeaderViewHolder(View p_jItemView) {
-        super(p_jItemView);
-        rowHeaderTextView = p_jItemView.findViewById(R.id.row_header_textview);
+    /**
+     * Constructor just takse simple inflated view
+     * @param itemView the view inflated from template
+     */
+    public RowHeaderViewHolder(View itemView) {
+        super(itemView);
+        rowHeaderTextView = itemView.findViewById(R.id.row_header_textview);
     }
+
+    /**
+     * Bind the values of a model to the view holder
+     * @param row the row to get data from
+     * @param yPosition the yPosition of the row
+     */
+    public void setRowHeaderModel(RowHeaderModel row, int yPosition)
+    {
+        this.yPosition = yPosition;
+        try {
+            rowHeaderTextView.setText(String.valueOf(row.getData()));
+        } catch (Exception e) {
+            rowHeaderTextView.setText("ERROR");
+        }
+        setAlliance(row.GetAlliance());
+    }
+
 
     /**
      * Selection event handler. Will be overridden if there is an alliance set
@@ -35,7 +58,10 @@ public class RowHeaderViewHolder extends AbstractViewHolder {
             nForegroundColorId = R.color.selected_text_color;
             nBackgroundColorId = R.color.selected_background_color;
         } else if (selectionState == SelectionState.UNSELECTED) {
-            nBackgroundColorId = R.color.unselected_background_color;
+            if (yPosition != -1 && yPosition % 2 == 0)
+                nBackgroundColorId = R.color.unselected_background_color;
+            else
+                nBackgroundColorId = R.color.unselected_background_color_odd;
             nForegroundColorId = R.color.unselected_text_color;
 
         } else { // SelectionState.SHADOWED
@@ -62,7 +88,7 @@ public class RowHeaderViewHolder extends AbstractViewHolder {
      * is called to make sure colors are up to date
      * @param alliance the alliance from Constants to determine colors
      */
-    public void setAlliance(int alliance)
+    private void setAlliance(int alliance)
     {
         this.alliance = alliance;
         int colorBack;

@@ -70,7 +70,7 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
 
         if (holder instanceof CellViewHolder) {
             // Get the holder to update cell item text
-            ((CellViewHolder) holder).setCellModel(cell);
+            ((CellViewHolder) holder).setCellModel(cell, yPosition);
         }
     }
 
@@ -142,22 +142,16 @@ public class MainTableAdapter extends AbstractTableAdapter<ColumnHeaderModel, Ro
      * When a rowHeaderModel is bound to a specific value, populate it into the holder
      * @param holder the holder to populate
      * @param value the value to populate it with
-     * @param xPosition the xPosition of the rowHeader
+     * @param yPosition the yPosition of the rowHeader
      */
     @Override
     public void onBindRowHeaderViewHolder(AbstractViewHolder holder, Object value, int
-            xPosition) {
+            yPosition) {
 
         RowHeaderModel rowHeaderModel = (RowHeaderModel) value;
 
         RowHeaderViewHolder rowHeaderViewHolder = (RowHeaderViewHolder) holder;
-        try {
-            rowHeaderViewHolder.rowHeaderTextView.setText(String.valueOf(rowHeaderModel.getData()));
-        } catch (Exception e) {
-            rowHeaderViewHolder.rowHeaderTextView.setText("ERROR");
-        }
-
-        rowHeaderViewHolder.setAlliance(rowHeaderModel.GetAlliance());
+        rowHeaderViewHolder.setRowHeaderModel(rowHeaderModel, yPosition);
     }
 
     /**

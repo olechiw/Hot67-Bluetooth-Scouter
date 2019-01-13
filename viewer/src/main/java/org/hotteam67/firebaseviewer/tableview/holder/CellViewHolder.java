@@ -20,6 +20,7 @@ public class CellViewHolder extends AbstractViewHolder {
     private final TextView cellTextView;
     private final LinearLayout cellContainer;
     private CellModel cell;
+    private int yPosition = -1;
 
     /**
      * Constructor, takes the view that will be used.
@@ -35,7 +36,9 @@ public class CellViewHolder extends AbstractViewHolder {
      * Set the CellModel, updating the values, colors, and layout params
      * @param cellModel the cellModel to populate the view with
      */
-    public void setCellModel(CellModel cellModel) {
+    public void setCellModel(CellModel cellModel, int yPosition) {
+        this.yPosition = yPosition;
+
         cell = cellModel;
 
         // Change textView align by column
@@ -67,10 +70,14 @@ public class CellViewHolder extends AbstractViewHolder {
             cellTextView.setBackgroundColor(ContextCompat.getColor(cellTextView.getContext(), R.color
                     .selected_background_color));
         } else {
+            int nBackgroundColorId;
+            if (yPosition != -1 && yPosition % 2 == 0)
+                nBackgroundColorId = R.color.unselected_background_color;
+            else
+                nBackgroundColorId = R.color.unselected_background_color_odd;
             cellTextView.setTextColor(ContextCompat.getColor(cellTextView.getContext(), R.color
                     .unselected_text_color));
-            cellTextView.setBackgroundColor(ContextCompat.getColor(cellTextView.getContext(), R.color
-                    .unselected_background_color));
+            cellTextView.setBackgroundColor(ContextCompat.getColor(cellTextView.getContext(), nBackgroundColorId));
         }
         if (alliance == Constants.ALLIANCE_NONE) return;
         setAlliance(alliance);

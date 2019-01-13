@@ -5,17 +5,18 @@
     <color name="actionBarColor">#C82828</color>
 
     <color name="selected_background_color">#000000</color>
-    <color name="unselected_background_color">#ffffff</color>
-    <color name="shadow_background_color">#ffffff</color>
-    <color name="unselected_header_background_color">#ffffff</color>
+    <color name="unselected_background_color">#FFFFFF</color>
+    <color name="unselected_background_color_odd">#FFFFFF</color>
+    <color name="shadow_background_color">#FFFFFF</color>
+    <color name="unselected_header_background_color">#FFFFFF</color>
 
     <color name="unselected_text_color">#000000</color>
-    <color name="selected_text_color">#ffffff</color>
+    <color name="selected_text_color">#FFFFFF</color>
     <color name="separator_color">#000000</color>
 
     <color name="alliance_blue_highlight">#4169E1</color>
-    <color name="alliance_blue_text">#ffffff</color>
+    <color name="alliance_blue_text">#FFFFFF</color>
     <color name="alliance_red_highlight">#CD5C5C</color>
-    <color name="alliance_red_text">#ffffff</color>
+    <color name="alliance_red_text">#FFFFFF</color>
 
 </resources>
