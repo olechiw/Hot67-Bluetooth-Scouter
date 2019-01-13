@@ -59,6 +59,9 @@ public class MainTableViewListener implements ITableViewListener {
     public void onCellClicked(@NonNull RecyclerView.ViewHolder cellView, int column, int
             row) {
 
+        // Ignored for first column - rankings. HACK btw
+        if (column == 0) return;
+
         MainTableAdapter adapter = (MainTableAdapter) tableView.getAdapter();
 
         // No event for raw data
@@ -79,12 +82,8 @@ public class MainTableViewListener implements ITableViewListener {
             if (table == null) return;
             table = Sort.BubbleSortAscendingByRowHeader(table);
 
-            String calculatedColumnName =
-                    ColumnSchema.CalculatedColumns().get(column);
-
-            String rawColumnName = ColumnSchema.CalculatedColumnsRawNames().get(
-                    ColumnSchema.CalculatedColumns().indexOf(calculatedColumnName)
-            );
+            // -1 to account for ranking column. HACK btw
+            String rawColumnName = ColumnSchema.CalculatedColumnsRawNames().get(column - 1);
 
             // Find the x value in the raw data table
             int index = -1;

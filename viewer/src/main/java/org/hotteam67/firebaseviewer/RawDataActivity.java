@@ -74,7 +74,7 @@ public class RawDataActivity extends AppCompatActivity {
             String title = "Raw Data: " + teamNumber;
             try
             {
-                title += " -" + b.getString(TEAM_NAME_ATTRIBUTE);
+                title += " - " + b.getString(TEAM_NAME_ATTRIBUTE);
             }
             catch (Exception e)
             {

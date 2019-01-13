@@ -48,7 +48,7 @@ public class CellViewHolder extends AbstractViewHolder {
         // Set text
         cellTextView.setText(cellModel.getData());
 
-        setAlliance(cellModel.GetAlliance());
+        setAllianceHighlight(cellModel.GetAlliance(), SelectionState.UNSELECTED);
 
         // It is necessary to remeasure itself.
         cellContainer.getLayoutParams().width = LinearLayout.LayoutParams.WRAP_CONTENT;
@@ -64,6 +64,14 @@ public class CellViewHolder extends AbstractViewHolder {
     public void setSelected(SelectionState selectionState) {
         super.setSelected(selectionState);
 
+        // Alliance colors
+        if (alliance != Constants.ALLIANCE_NONE)
+        {
+            setAllianceHighlight(alliance, selectionState);
+            return;
+        }
+
+        // Normal colors
         if (selectionState == SelectionState.SELECTED) {
             cellTextView.setTextColor(ContextCompat.getColor(cellTextView.getContext(), R.color
                     .selected_text_color));
@@ -79,8 +87,6 @@ public class CellViewHolder extends AbstractViewHolder {
                     .unselected_text_color));
             cellTextView.setBackgroundColor(ContextCompat.getColor(cellTextView.getContext(), nBackgroundColorId));
         }
-        if (alliance == Constants.ALLIANCE_NONE) return;
-        setAlliance(alliance);
     }
 
     private int alliance = Constants.ALLIANCE_NONE;
@@ -89,7 +95,7 @@ public class CellViewHolder extends AbstractViewHolder {
      * Set the view highlight based on the alliance given
      * @param alliance the alliance code from Constants
      */
-    private void setAlliance(int alliance)
+    private void setAllianceHighlight(int alliance, SelectionState selectionState)
     {
         this.alliance = alliance;
         int colorBack;
@@ -98,10 +104,12 @@ public class CellViewHolder extends AbstractViewHolder {
         {
             case Constants.ALLIANCE_BLUE:
                 colorBack = R.color.alliance_blue_highlight;
+                if (selectionState == SelectionState.SELECTED) colorBack = R.color.alliance_blue_selected;
                 colorText = R.color.alliance_blue_text;
                 break;
             case Constants.ALLIANCE_RED:
                 colorBack = R.color.alliance_red_highlight;
+                if (selectionState == SelectionState.SELECTED) colorBack = R.color.alliance_red_selected;
                 colorText = R.color.alliance_red_text;
                 break;
             default:

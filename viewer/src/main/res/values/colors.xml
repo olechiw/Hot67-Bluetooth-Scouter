@@ -15,8 +15,10 @@
     <color name="separator_color">#000000</color>
 
     <color name="alliance_blue_highlight">#4169E1</color>
+    <color name="alliance_blue_selected">#0000FF</color>
     <color name="alliance_blue_text">#FFFFFF</color>
     <color name="alliance_red_highlight">#CD5C5C</color>
+    <color name="alliance_red_selected">#FF0000</color>
     <color name="alliance_red_text">#FFFFFF</color>
 
 </resources>
