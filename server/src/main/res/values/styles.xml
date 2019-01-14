@@ -13,7 +13,14 @@
         <item name="colorButtonNormal">@color/colorActionBar</item>
         <item name="android:actionOverflowButtonStyle">@style/OverFlowTheme</item>
     </style>
-    <style name="TextTheme" parent="AppTheme">
+
+    <style name="AlertDialogTheme" parent="@style/Theme.AppCompat.Dialog.Alert">
+        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:textColorHint">@color/colorAccent</item>
+        <item name="android:textColor">@color/colorAccent</item>
+    </style>
+
+    <style name="TextTheme" parent="TextAppearance.AppCompat">
         <item name="android:textColor">@color/colorAccent</item>
     </style>
 
@@ -45,7 +52,7 @@
     <style name="PreferenceScreen" parent="@style/AppTheme">
         <item name="android:listSeparatorTextViewStyle">@style/PreferenceListHeader</item>
         <item name="android:windowBackground">@color/colorPrimary</item>
-        <item name="android:alertDialogTheme">@style/Theme.AppCompat.Light.Dialog.Alert</item>
+        <item name="android:alertDialogTheme">@style/AlertDialogTheme</item>
     </style>
 
     <style name="ActionBarOverlay" parent="ThemeOverlay.AppCompat.Light">
