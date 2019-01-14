@@ -31,7 +31,7 @@
     <activity
         android:name=".PreferencesActivity"
         android:screenOrientation="landscape"
-        android:theme="@style/AppThemePreferences" />
+        android:theme="@style/PreferenceScreen" />
   </application>
 
 </manifest>

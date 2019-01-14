@@ -9,9 +9,8 @@
         <item name="android:windowBackground">@color/unselected_background_color</item>
         <item name="android:popupMenuStyle">@style/PopupMenu</item>
         <item name="colorButtonNormal">#000000</item>
+        <item name="android:homeAsUpIndicator">@drawable/ic_back</item>
     </style>
-
-    <style name="AppThemePreferences" parent="Theme.AppCompat"/>
 
     <style name="PopupMenu" parent="@android:style/Widget.PopupMenu">
         <item name="android:popupBackground">@color/shadow_background_color</item>
@@ -34,5 +33,42 @@
         <!-- inactive thumb color -->
         <item name="colorSwitchThumbNormal">#000000
         </item>
+    </style>
+
+
+    <style name="Widget.TextView.ListSeparator" parent="@android:style/Widget.TextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <style name="PreferenceListHeader" parent="Widget.TextView.ListSeparator">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:background">@color/unselected_text_color</item>
+        <item name="android:backgroundTint">@color/selected_text_color</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:paddingLeft">12dp</item>
+    </style>
+
+    <style name="AlertDialogThemeViewer" parent="@style/Theme.AppCompat.Dialog.Alert">
+        <item name="android:background">@color/unselected_text_color</item>
+        <item name="android:textColorHint">@color/selected_text_color</item>
+        <item name="android:textColor">@color/selected_text_color</item>
+    </style>
+
+    <style name="PreferenceScreen" parent="@style/AppTheme">
+        <item name="android:listSeparatorTextViewStyle">@style/PreferenceListHeader</item>
+       <item name="android:windowBackground">@color/unselected_text_color</item>
+        <item name="android:alertDialogTheme">@style/AlertDialogThemeViewer</item>
+    </style>
+
+    <style name="ActionBarOverlay" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:colorBackground">@color/colorPrimary</item>
+        <item name="android:textColor">@color/colorAccent</item>
     </style>
 </resources>

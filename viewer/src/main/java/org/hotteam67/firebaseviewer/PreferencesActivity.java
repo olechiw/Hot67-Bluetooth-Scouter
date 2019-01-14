@@ -2,26 +2,49 @@ package org.hotteam67.firebaseviewer;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
+import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 
 /**
- * Preferences activity to set the connection properties of the Firebase endpoint (url, api key, etc.)
+ * Simple preferences activity, loads preferences from xml and saves them to shared preferences
+ * to be accessed in ServerActivity
  */
 public class PreferencesActivity extends AppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener
 {
+
     /**
-     * Constructor sets up user interface
-     * @param savedInstanceState previous app state after sleep, ignored
+     * Makes the back button work
+     * @param item the android item selected, only checks if it is home
+     * @return true, the event was consumed
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case android.R.id.home:
+                finish();
+        }
+        return true;
+    }
+
+    /**
+     * Constructor adds a back button and loads simple UI
+     * @param savedInstanceState saved state is ignored
      */
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preferences);
+
         View finalView = getLayoutInflater().inflate(R.layout.actionbar_preferences, null);
         finalView.setLayoutParams(new Toolbar.LayoutParams(
                 Toolbar.LayoutParams.MATCH_PARENT,
@@ -34,7 +57,6 @@ public class PreferencesActivity extends AppCompatActivity
         }
         finalView.findViewById(R.id.backButton).setOnClickListener(v -> finish());
 
-
         prefs = new SimplePreferences();
 
         getFragmentManager()
@@ -46,7 +68,7 @@ public class PreferencesActivity extends AppCompatActivity
     private SimplePreferences prefs;
 
     /**
-     * Simple preferences just loads the resource from R.xml.preferences
+     * Preferences fragment with an editText that shows in the summary, for easier use
      */
     public static class SimplePreferences extends PreferenceFragment
     {
@@ -55,11 +77,23 @@ public class PreferencesActivity extends AppCompatActivity
         {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences);
+
+
+            for (int i = 0; i < getPreferenceScreen().getPreferenceCount(); ++i)
+            {
+                Log.d("BLUETOOTH_SCOUTER_DEBUG", "Loaded preference:" + i);
+                Preference pref = getPreferenceScreen().getPreference(i);
+                if (pref instanceof EditTextPreference)
+                {
+                    EditTextPreference etp = (EditTextPreference) pref;
+                    pref.setSummary(etp.getText());
+                }
+            }
         }
     }
 
     /**
-     * Register shared preferences
+     * Register change listener
      */
     protected void onResume()
     {
@@ -69,7 +103,7 @@ public class PreferencesActivity extends AppCompatActivity
     }
 
     /**
-     * Unregister shared preferences
+     * Unregister change listener
      */
     protected void onPause()
     {
@@ -79,13 +113,18 @@ public class PreferencesActivity extends AppCompatActivity
     }
 
     /**
-     * Ignore the change - just here to implement interface
-     * @param sharedPreferences prefs
-     * @param key specific preference key
+     * Set the summary on change, for ease of use with edittext
+     * @param sharedPreferences the preferences shared between activities in the app
+     * @param key the key for the pref that changed
      */
-    @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                           String key)
     {
+        Preference pref = prefs.findPreference(key);
+        if (pref instanceof EditTextPreference)
+        {
+            EditTextPreference etp = (EditTextPreference) pref;
+            pref.setSummary(etp.getText());
+        }
     }
 }
