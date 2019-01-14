@@ -76,6 +76,7 @@ public class TBAHandler {
             }
             catch (Exception e)
             {
+                onCompleteEvent.onFail();
                 e.printStackTrace();
             }
             return "";
@@ -145,6 +146,7 @@ public class TBAHandler {
                 }
                 catch (Exception e)
                 {
+                    returnEvent.onFail();
                     e.printStackTrace();
                 }
             }
@@ -201,12 +203,13 @@ public class TBAHandler {
                     returnEvent.onComplete(matches);
                 } catch (Exception e) {
                     e.printStackTrace();
+                    returnEvent.onFail();
                 }
             }
 
             @Override
             public void onFail() {
-
+                returnEvent.onFail();
             }
         }); retrieveUrl.execute(url);
     }
@@ -237,6 +240,7 @@ public class TBAHandler {
                     }
                     returnEvent.onComplete(returnObject);
                 } catch (Exception e) {
+                    returnEvent.onFail();
                     e.printStackTrace();
                 }
             }
@@ -281,6 +285,7 @@ public class TBAHandler {
                     returnEvent.onComplete(alliances);
                 } catch (Exception e) {
                     e.printStackTrace();
+                    returnEvent.onFail();
                 }
             }
 

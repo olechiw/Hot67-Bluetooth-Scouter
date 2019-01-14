@@ -217,7 +217,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
     {
         List<String> result = new ArrayList<>();
         boolean[] checkedItems = new boolean[options.size()];
-        new AlertDialog.Builder(context).setTitle(title).setMultiChoiceItems(
+        new AlertDialog.Builder(context, R.style.AlertDialogTheme).setTitle(title).setMultiChoiceItems(
                 options.toArray(new CharSequence[0]), checkedItems, (dialogInterface, i, b) ->
                 {
                     if (b)

@@ -8,6 +8,14 @@
         <item name="colorAccent">@color/colorAccent</item>
 
     </style>
+
+    <style name="AlertDialogTheme" parent="@style/Theme.AppCompat.Dialog.Alert">
+        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:textColorHint">@color/colorAccent</item>
+        <item name="android:textColor">@color/colorAccent</item>
+    </style>
+
+
     <style name="NumberPickerTheme" parent="@android:style/Widget.Holo">
         <item name="android:colorBackground">#000000</item>
         <item name="android:textColor">#ffffff</item>

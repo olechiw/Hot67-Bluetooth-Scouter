@@ -166,7 +166,7 @@ public class Constants
      */
     public static void OnConfirm(String message, Context context, final Runnable effect)
     {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, R.style.AlertDialogTheme);
         builder.setMessage(message);
         builder.setPositiveButton("Ok", (dialog, which) -> effect.run());
         builder.setNegativeButton("Cancel", (dialog, which) ->

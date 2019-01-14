@@ -80,7 +80,7 @@ public class ServerActivity extends BluetoothServerActivity {
     private void MessageBox(String text)
     {
         try {
-            AlertDialog.Builder dlg = new AlertDialog.Builder(this);
+            AlertDialog.Builder dlg = new AlertDialog.Builder(this, R.style.AlertDialogTheme);
             dlg.setTitle("");
             dlg.setMessage(text);
             dlg.setPositiveButton("Ok", (dialog, which) -> dialog.dismiss());
@@ -142,7 +142,7 @@ public class ServerActivity extends BluetoothServerActivity {
         input.setText(defaultValue);
 
         try {
-            AlertDialog.Builder dlg = new AlertDialog.Builder(this);
+            AlertDialog.Builder dlg = new AlertDialog.Builder(this, R.style.AlertDialogTheme);
             dlg.setTitle("");
             dlg.setMessage(prompt);
             dlg.setView(input);

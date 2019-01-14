@@ -288,7 +288,7 @@ public class SchemaActivity extends AppCompatActivity {
             }
         };
 
-        final AlertDialog.Builder builder =  new AlertDialog.Builder(this);
+        final AlertDialog.Builder builder =  new AlertDialog.Builder(this, R.style.AlertDialogTheme);
         final EditText view = new EditText(this);
         view.setFilters(new InputFilter[] { filter });
         builder.setView(view).setTitle(prompt).setPositiveButton("Ok", (dialogInterface, i) ->

@@ -3,19 +3,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="org.hotteam67.bluetoothserver.SchemaActivity">
     <android.support.v7.widget.Toolbar
         android:layout_width="match_parent"
         android:layout_height="70dp"
-        android:background="?attr/colorPrimary"
+        android:background="@color/colorActionBar"
         android:minHeight="70dp"
-        android:id="@+id/toolbar">
+        android:id="@+id/toolbar"
+        app:popupTheme="@style/ActionBarOverlay">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:textAppearance="@style/TextAppearance.AppCompat"
-            android:text="Schema Setup"/>
+            android:text="Schema Setup"
+            android:textColor="#000000"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"/>
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -24,7 +27,8 @@
             android:layout_gravity="end"
             android:src="@drawable/ic_save"
             android:id="@+id/saveButton"
-            android:background="?attr/colorPrimary"/>
+            android:background="#00000000"
+            android:tint="#000000"/>
     </android.support.v7.widget.Toolbar>
 
     <TableLayout
@@ -36,23 +40,38 @@
         <TableRow>
             <Button
                 android:id="@+id/booleanButton"
-                android:text="Boolean" />
+                android:text="Boolean"
+                app:backgroundTint="@color/colorActionBar"
+                android:textColor="#FFFFFF"
+                android:layout_margin="5dp"/>
             <Button
                 android:id="@+id/multiChoiceButton"
-                android:text="Select"/>
+                android:text="Select"
+                app:backgroundTint="@color/colorActionBar"
+                android:textColor="#FFFFFF"
+                android:layout_margin="5dp"/>
             <Button
                 android:id="@+id/numberButton"
-                android:text="Number"/>
+                android:text="Number"
+                app:backgroundTint="@color/colorActionBar"
+                android:textColor="#FFFFFF"
+                android:layout_margin="5dp"/>
         </TableRow>
         <TableRow>
             <Button
                 android:id="@+id/headerButton"
                 android:text="Header"
-                android:layout_span="2"/>
+                android:layout_span="2"
+                app:backgroundTint="@color/colorActionBar"
+                android:textColor="#FFFFFF"
+                android:layout_margin="5dp"/>
             <Button
                 android:id="@+id/deleteButton"
                 android:text="Delete"
-                android:layout_span="1"/>
+                android:layout_span="1"
+                app:backgroundTint="@color/colorActionBar"
+                android:textColor="#FFFFFF"
+                android:layout_margin="5dp"/>
         </TableRow>
 
     </TableLayout>

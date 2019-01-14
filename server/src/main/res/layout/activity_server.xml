@@ -12,7 +12,8 @@
         android:background="@color/colorActionBar"
         tools:layout_editor_absoluteX="0dp"
         android:layout_marginBottom="8dp"
-        android:minHeight="70dp">
+        android:minHeight="70dp"
+        app:popupTheme="@style/ActionBarOverlay">
 
         <Button android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:padding="5dp"

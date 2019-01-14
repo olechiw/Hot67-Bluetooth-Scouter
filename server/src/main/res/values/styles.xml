@@ -1,13 +1,22 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme" parent="@style/Theme.AppCompat.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowBackground">@color/colorPrimary</item>
+        <item name="android:textAppearance">@style/TextTheme</item>
+        <item name="alertDialogStyle">@style/AlertDialogTheme</item>
+        <item name="homeAsUpIndicator">@drawable/ic_back</item>
+        <item name="colorButtonNormal">@color/colorActionBar</item>
+        <item name="android:actionOverflowButtonStyle">@style/OverFlowTheme</item>
     </style>
+    <style name="TextTheme" parent="AppTheme">
+        <item name="android:textColor">@color/colorAccent</item>
+    </style>
+
     <style name="NumberPickerTheme" parent="@android:style/Widget.Holo">
         <item name="android:colorBackground">#000000</item>
         <item name="android:textColor">#ffffff</item>
@@ -33,10 +42,19 @@
         <item name="android:paddingLeft">12dp</item>
     </style>
 
-    <style name="PreferenceScreen" parent="Theme.AppCompat.NoActionBar">
+    <style name="PreferenceScreen" parent="@style/AppTheme">
         <item name="android:listSeparatorTextViewStyle">@style/PreferenceListHeader</item>
         <item name="android:windowBackground">@color/colorPrimary</item>
         <item name="android:alertDialogTheme">@style/Theme.AppCompat.Light.Dialog.Alert</item>
+    </style>
+
+    <style name="ActionBarOverlay" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:colorBackground">@color/colorPrimary</item>
+        <item name="android:textColor">@color/colorAccent</item>
+    </style>
+
+    <style name="OverFlowTheme" parent="@style/Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:tint">@color/colorPrimary</item>
     </style>
 
 </resources>
