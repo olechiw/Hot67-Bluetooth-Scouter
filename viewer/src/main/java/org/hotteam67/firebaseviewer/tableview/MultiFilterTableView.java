@@ -88,6 +88,7 @@ public class MultiFilterTableView extends TableView {
         super.sortColumn(column, sort);
         if (!skipSibling && sibling != null)
             sibling.sortColumn(column, sort, true);
+        this.scrollTo(0, 0);
     }
 
     @Override

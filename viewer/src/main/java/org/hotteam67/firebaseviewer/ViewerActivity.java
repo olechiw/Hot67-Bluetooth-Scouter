@@ -487,9 +487,10 @@ public class ViewerActivity extends AppCompatActivity {
                 "AVG" : "MAX");
 
         View active = GetActiveTable();
-        View inActive = GetInactiveTable();
+        TableView inActive = GetInactiveTable();
         active.setVisibility(View.GONE);
         inActive.setVisibility(View.VISIBLE);
+        inActive.scrollToRowPosition(0);
 //         UpdateUI();
     }
 
