@@ -86,6 +86,7 @@ public class PreferencesActivity extends AppCompatActivity
                 if (pref instanceof EditTextPreference)
                 {
                     EditTextPreference etp = (EditTextPreference) pref;
+                    etp.getEditText().setBackgroundTintList(getResources().getColorStateList(R.color.unselected_background_color));
                     pref.setSummary(etp.getText());
                 }
             }
