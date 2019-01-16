@@ -2,6 +2,7 @@ package org.hotteam67.firebaseviewer.data;
 
 import android.util.Log;
 
+import org.hotteam67.common.Constants;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
@@ -64,7 +65,7 @@ public class DataTable implements Serializable {
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
 
             if (row_id == 0)
@@ -104,7 +105,7 @@ public class DataTable implements Serializable {
                 }
                 catch (Exception e)
                 {
-                    e.printStackTrace();
+                    Constants.Log(e);
                 }
             }
 
@@ -152,7 +153,7 @@ public class DataTable implements Serializable {
                 }
                 catch (Exception e)
                 {
-                    e.printStackTrace();
+                    Constants.Log(e);
                 }
             }
 
@@ -274,7 +275,7 @@ public class DataTable implements Serializable {
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
                 return cellList;
             }
         }

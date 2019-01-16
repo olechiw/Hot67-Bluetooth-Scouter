@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="org.hotteam67.bluetoothserver">
+    package="org.hotteam67.master">
 
   <uses-permission android:name="android.permission.BLUETOOTH" />
   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -20,7 +20,7 @@
       android:theme="@style/AppTheme"
       tools:ignore="GoogleAppIndexingWarning"
       android:fullBackupContent="true">
-    <activity android:name="org.hotteam67.bluetoothserver.ServerActivity">
+    <activity android:name="org.hotteam67.master.MasterActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
 
@@ -28,10 +28,10 @@
       </intent-filter>
     </activity>
     <activity
-        android:name="org.hotteam67.bluetoothserver.PreferencesActivity"
+        android:name="org.hotteam67.master.PreferencesActivity"
         android:label="@string/title_activity_preferences"
         android:theme="@style/PreferenceScreen"/>
-    <activity android:name="org.hotteam67.bluetoothserver.SchemaActivity"
+    <activity android:name="org.hotteam67.master.SchemaActivity"
         android:theme="@style/AppTheme"
         android:screenOrientation="portrait"
         android:label="Schema Setup" />

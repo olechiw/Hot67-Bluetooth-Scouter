@@ -1,4 +1,4 @@
-package org.hotteam67.bluetoothserver;
+package org.hotteam67.master;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -245,7 +245,7 @@ public class SchemaActivity extends AppCompatActivity {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
             return null;
         }
     }

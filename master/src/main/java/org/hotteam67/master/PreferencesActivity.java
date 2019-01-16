@@ -1,4 +1,4 @@
-package org.hotteam67.bluetoothserver;
+package org.hotteam67.master;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -12,7 +12,7 @@ import android.view.MenuItem;
 
 /**
  * Simple preferences activity, loads preferences from xml and saves them to shared preferences
- * to be accessed in ServerActivity
+ * to be accessed in MasterActivity
  */
 public class PreferencesActivity extends AppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener

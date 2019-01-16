@@ -98,12 +98,12 @@ public class ScoutActivity extends BluetoothClientActivity
     private void CheckBluetooth()
     {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            l("Permission granted");
+        Constants.Log("Permission granted");
             SetupAfterBluetooth();
         }
         else
         {
-            l("Permission requested!");
+        Constants.Log("Permission requested!");
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     REQUEST_ENABLE_PERMISSION);
@@ -159,7 +159,7 @@ public class ScoutActivity extends BluetoothClientActivity
         matchNumber.clearFocus();
         matchNumber.setText("1");
         if (!matches.isEmpty()) {
-            l("Loading first match!");
+        Constants.Log("Loading first match!");
             teamNumber.setText(GetMatchTeamNumber(GetCurrentMatchNumber()));
             DisplayMatch(1);
         }
@@ -205,7 +205,7 @@ public class ScoutActivity extends BluetoothClientActivity
     {
         SaveCurrentMatch();
         SaveAllMatches();
-        l("Loading Next Match");
+        Constants.Log("Loading Next Match");
         DisplayMatch(GetCurrentMatchNumber() + 1);
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
     }
@@ -219,7 +219,7 @@ public class ScoutActivity extends BluetoothClientActivity
         SaveAllMatches();
         if (GetCurrentMatchNumber() > 1)
         {
-            l("Loading Previous Match");
+        Constants.Log("Loading Previous Match");
             DisplayMatch(GetCurrentMatchNumber() - 1);
         }
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
@@ -268,8 +268,8 @@ public class ScoutActivity extends BluetoothClientActivity
                 if (val != null)
                     SchemaHandler.SetCurrentValues(inputTable, val);
             } catch (Exception e) {
-                l("Failed to load match, corrupted, out of sync, or doesn't exist " + e.getMessage());
-                l("Offending match: " + matches.get(match - 1));
+                Constants.Log(e);
+                Constants.Log("Offending match: " + matches.get(match - 1));
                 SchemaHandler.ClearCurrentValues(inputTable);
             }
 
@@ -313,7 +313,7 @@ public class ScoutActivity extends BluetoothClientActivity
                 else return "";
             } catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
         return "";
     }
@@ -332,7 +332,7 @@ public class ScoutActivity extends BluetoothClientActivity
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
             return "0";
         }
     }
@@ -398,7 +398,7 @@ public class ScoutActivity extends BluetoothClientActivity
         // Check if something actually changed since the value was loaded
         JSONObject currentMatch = GetCurrentInputValues();
         if (currentMatch == null || currentMatch.toString().equals(lastValuesBeforeChange) && !saveDuplicates) {
-            l("nothing changed, not saving: " + GetCurrentInputValues());
+        Constants.Log("nothing changed, not saving: " + GetCurrentInputValues());
             return;
         }
 
@@ -424,7 +424,7 @@ public class ScoutActivity extends BluetoothClientActivity
             if (matches.size() >= GetCurrentMatchNumber() && matches.get(GetCurrentMatchNumber() - 1) != null)
                 SendMatch(matches.get(GetCurrentMatchNumber() - 1));
             else
-                l("Saving local only due to missing match data");
+            Constants.Log("Saving local only due to missing match data");
         }
     }
 
@@ -441,12 +441,12 @@ public class ScoutActivity extends BluetoothClientActivity
         {
             // Send the match over bluetooth
             BluetoothWrite(match.toString());
-            l("Output JSON: " + match);
+        Constants.Log("Output JSON: " + match);
         }
         catch (Exception e)
         {
-            l("Failure to send json match: " + match);
-            e.printStackTrace();
+        Constants.Log("Failure to send json match: " + match);
+            Constants.Log(e);
         }
     }
 
@@ -477,7 +477,7 @@ public class ScoutActivity extends BluetoothClientActivity
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
             return null;
         }
     }
@@ -507,8 +507,8 @@ public class ScoutActivity extends BluetoothClientActivity
         }
         catch (Exception e)
         {
-            l("Failed to load contents of matches database: " + e.getMessage());
-            e.printStackTrace();
+        Constants.Log("Failed to load contents of matches database: " + e.getMessage());
+            Constants.Log(e);
         }
     }
 
@@ -529,7 +529,7 @@ public class ScoutActivity extends BluetoothClientActivity
                 case Constants.SERVER_TEAMS_RECEIVED_TAG:
                     if (queuedMatchesToSend.size() > 0 && sendingState == SendingState.SENDING)
                     {
-                        l("Server received last, sending again");
+                    Constants.Log("Server received last, sending again");
                         SendMatch(queuedMatchesToSend.get(0));
                         queuedMatchesToSend.remove(0);
                     }
@@ -576,7 +576,7 @@ public class ScoutActivity extends BluetoothClientActivity
                             }
                             catch (Exception e)
                             {
-                                e.printStackTrace();
+                                Constants.Log(e);
                             }
                         }
                         DisplayMatch(1);
@@ -604,8 +604,8 @@ public class ScoutActivity extends BluetoothClientActivity
                         }
                         catch (Exception e)
                         {
-                            l("Error processing match number request: " + message);
-                            e.printStackTrace();
+                        Constants.Log("Error processing match number request: " + message);
+                            Constants.Log(e);
                         }
                     }
                     break;
@@ -613,13 +613,12 @@ public class ScoutActivity extends BluetoothClientActivity
                     SendAllMatches();
                     break;
                 default:
-                    l("Received unknown tag: " + tag);
+                Constants.Log("Received unknown tag: " + tag);
             }
         }
         catch (Exception e)
         {
-            l("Failed to load processed input: " + e.getMessage());
-            e.printStackTrace();
+            Constants.Log(e);
         }
     }
 
@@ -650,7 +649,7 @@ public class ScoutActivity extends BluetoothClientActivity
      */
     private void SubmitCountDown()
     {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogTheme);
         AlertDialog dialog;
         dialog = builder
                 .setTitle("Auto submitting Soon...").setMessage("Submitting in 15 seconds")
@@ -737,7 +736,7 @@ public class ScoutActivity extends BluetoothClientActivity
         {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
             {
-                l("Permission granted");
+            Constants.Log("Permission granted");
                 SetupAfterBluetooth();
             }
             else

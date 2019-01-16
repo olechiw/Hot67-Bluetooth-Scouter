@@ -1,5 +1,6 @@
 package org.hotteam67.firebaseviewer.data;
 
+import org.hotteam67.common.Constants;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
@@ -52,7 +53,7 @@ public final class Sort {
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
         }
 

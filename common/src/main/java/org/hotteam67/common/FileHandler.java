@@ -110,7 +110,7 @@ public final class FileHandler
         }
         catch (FileNotFoundException e)
         {
-            l("File not found: " + file(FILE));
+        Constants.Log("File not found: " + file(FILE));
             new File(DIRECTORY).mkdirs();
 
             try
@@ -125,7 +125,7 @@ public final class FileHandler
         }
         catch (Exception e)
         {
-            l("Exception occured in loading reader : " + e.getMessage());
+            Constants.Log(e);
         }
 
         return null;
@@ -146,7 +146,7 @@ public final class FileHandler
         }
         catch (FileNotFoundException e)
         {
-            l("File not found");
+        Constants.Log("File not found");
             new File(f).mkdirs();
 
             try
@@ -161,7 +161,7 @@ public final class FileHandler
         }
         catch (Exception e)
         {
-            l("Exception occured in loading reader : " + e.getMessage());
+        Constants.Log("Exception occured in loading reader : " + e.getMessage());
         }
 
         return null;
@@ -188,7 +188,7 @@ public final class FileHandler
         }
         catch (Exception e)
         {
-            l("Failed to load :" + e.getMessage());
+            Constants.Log(e);
         }
 
         return content.toString();
@@ -212,8 +212,8 @@ public final class FileHandler
         }
         catch (Exception e)
         {
-            l("Failed to write: " + s + ": " + e.getMessage());
-            e.printStackTrace();
+        Constants.Log("Failed to write: " + s + ": " + e.getMessage());
+            Constants.Log(e);
         }
     }
 
@@ -232,7 +232,7 @@ public final class FileHandler
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
         }
     }
 
@@ -255,13 +255,8 @@ public final class FileHandler
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
             return null;
         }
-    }
-
-    private static void l(String s)
-    {
-        Log.d("[File Handling]", s);
     }
 }

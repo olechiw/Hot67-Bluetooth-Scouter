@@ -88,7 +88,7 @@ class DataCalculator implements Serializable {
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
                 calculatedColumnIndices.add(-1);
             }
         }
@@ -143,7 +143,7 @@ class DataCalculator implements Serializable {
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
             ++i;
         }
@@ -200,7 +200,7 @@ class DataCalculator implements Serializable {
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
                 calcCells.get(r).add(0,
                         new CellModel("0_0", "", team));
             }
@@ -221,7 +221,7 @@ class DataCalculator implements Serializable {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
         }
 
 
@@ -278,7 +278,7 @@ class DataCalculator implements Serializable {
                 }
                 catch (Exception e)
                 {
-                    e.printStackTrace();
+                    Constants.Log(e);
                     Log.e("FirebaseScouter",
                             "Failed to do average calculation on column: " + columnName);
                     return -1;
@@ -296,7 +296,7 @@ class DataCalculator implements Serializable {
                 }
                 catch (Exception e)
                 {
-                    e.printStackTrace();
+                    Constants.Log(e);
                     Log.e("FirebaseScouter",
                             "Failed to do max calculation on column: " + columnName);
                     return -1;
@@ -311,7 +311,7 @@ class DataCalculator implements Serializable {
                 }
                 catch (Exception e)
                 {
-                    e.printStackTrace();
+                    Constants.Log(e);
                     Log.e("FirebaseScouter",
                             "Failed to do max calculation on column: " + columnName);
                     return -1;

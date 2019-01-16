@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import com.evrencoskun.tableview.TableView;
 import com.evrencoskun.tableview.sort.SortState;
+
+import org.hotteam67.common.Constants;
 import org.hotteam67.firebaseviewer.data.DataTable;
 import org.hotteam67.firebaseviewer.tableview.MainTableAdapter;
 import org.hotteam67.firebaseviewer.tableview.MainTableViewListener;
@@ -78,7 +80,7 @@ public class RawDataActivity extends AppCompatActivity {
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
             teamNumberView.setText(title);
         }
@@ -101,7 +103,7 @@ public class RawDataActivity extends AppCompatActivity {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
         }
     }
 

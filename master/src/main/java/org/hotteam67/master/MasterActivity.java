@@ -1,4 +1,4 @@
-package org.hotteam67.bluetoothserver;
+package org.hotteam67.master;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -42,19 +42,10 @@ import java.util.List;
 /**
  * Server activity, handles the connections to all of the devices and input
  */
-public class ServerActivity extends BluetoothServerActivity {
+public class MasterActivity extends BluetoothServerActivity {
 
     private static final int REQUEST_PREFERENCES = 2;
     private static final int REQUEST_ENABLE_PERMISSION = 3;
-
-    /**
-     * Simple log
-     * @param s text to output
-     */
-    void l(String s)
-    {
-        Log.d(TAG, s);
-    }
 
     /**
      * Log tag
@@ -90,7 +81,7 @@ public class ServerActivity extends BluetoothServerActivity {
         }
         catch (Exception e)
         {
-            l("Failed to create dialog: " + e.getMessage());
+            Constants.Log(e);
         }
     }
 
@@ -154,7 +145,7 @@ public class ServerActivity extends BluetoothServerActivity {
         }
         catch (Exception e)
         {
-            l("Failed to create dialog: " + e.getMessage());
+        Constants.Log("Failed to create dialog: " + e.getMessage());
         }
     }
 
@@ -190,7 +181,7 @@ public class ServerActivity extends BluetoothServerActivity {
                     catch (Exception e)
                     {
                         VisualLog("Failed to send schema to devices: " + e.getMessage());
-                        e.printStackTrace();
+                        Constants.Log(e);
                     }
                 });
                 break;
@@ -211,7 +202,7 @@ public class ServerActivity extends BluetoothServerActivity {
                     }
                     catch (Exception e)
                     {
-                        e.printStackTrace();
+                        Constants.Log(e);
                     }
                 });
             }
@@ -321,7 +312,7 @@ public class ServerActivity extends BluetoothServerActivity {
                         }
                         catch (Exception e)
                         {
-                            e.printStackTrace();
+                            Constants.Log(e);
                         }
                     }
 
@@ -399,8 +390,8 @@ public class ServerActivity extends BluetoothServerActivity {
             }
             catch (Exception e)
             {
-                l("Failed to send matches from stored file!");
-                e.printStackTrace();
+            Constants.Log("Failed to send matches from stored file!");
+                Constants.Log(e);
             }
         });
     }
@@ -411,12 +402,12 @@ public class ServerActivity extends BluetoothServerActivity {
     private void setupPermissions()
     {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            l("Permission granted");
+        Constants.Log("Permission granted");
             setupBluetooth(this::setupUI);
         }
         else
         {
-            l("Permission requested!");
+        Constants.Log("Permission requested!");
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     REQUEST_ENABLE_PERMISSION);
@@ -437,7 +428,7 @@ public class ServerActivity extends BluetoothServerActivity {
         {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
             {
-                l("Permission granted");
+            Constants.Log("Permission granted");
                 setupBluetooth(this::setupUI);
             }
             else
@@ -488,21 +479,21 @@ public class ServerActivity extends BluetoothServerActivity {
                 }
                 catch (IndexOutOfBoundsException e)
                 {
-                    e.printStackTrace();
-                    l("Failed to find connected thread: " + id + " was it disposed?");
+                    Constants.Log(e);
+                    Constants.Log("Failed to find connected thread: " + id + " was it disposed?");
                 }
                 catch (Exception e)
                 {
-                    e.printStackTrace();
-                    l("Exception occured in trying to write team received tag: " + e.getMessage());
+                    Constants.Log(e);
+                    Constants.Log("Exception occured in trying to write team received tag: " + e.getMessage());
                 }
                 //m_sendButton.setText(message);
 
                 try {
                     saveJsonObject(new JSONObject(message));
                 } catch (Exception e) {
-                    l("Failed to load and send input json, most likely not logged in:" + message);
-                    e.printStackTrace();
+                    Constants.Log("Failed to load and send input json, most likely not logged in:" + message);
+                    Constants.Log(e);
                 }
 
                 break;
@@ -515,21 +506,21 @@ public class ServerActivity extends BluetoothServerActivity {
                 VisualLog("Connection Timed Out");
                 break;
             case Messages.MESSAGE_CONNECTED:
-                l("Received Connect");
-                l("Size of connected threads: " + GetDevices());
+            Constants.Log("Received Connect");
+            Constants.Log("Size of connected threads: " + GetDevices());
                 VisualLog("Device Connected!");
                 connectButton.setText("Connected Devices: " + String.valueOf(GetDevices()));
 
                 break;
             case Messages.MESSAGE_DISCONNECTED:
                 //MessageBox("DISCONNECTED FROM DEVICE");
-                l("Received Disconnect");
+            Constants.Log("Received Disconnect");
                 VisualLog("Device Disconnected!");
-                l("Size of connected threads: " + GetDevices());
+            Constants.Log("Size of connected threads: " + GetDevices());
                 connectButton.setText("Connected Devices: " + String.valueOf(GetDevices()));
                 break;
             default:
-                l("Received Message: " + msg.what);
+            Constants.Log("Received Message: " + msg.what);
         }
     }
 
@@ -595,7 +586,7 @@ public class ServerActivity extends BluetoothServerActivity {
                 try {
                     eventUrl = eventUrl.replace("http://", "https://");
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Constants.Log(e);
                 }
 
             String finalUrl = eventUrl + eventName;
@@ -649,7 +640,7 @@ public class ServerActivity extends BluetoothServerActivity {
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
             String tag =
                     json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
@@ -659,7 +650,7 @@ public class ServerActivity extends BluetoothServerActivity {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
         }
     }
 
@@ -702,7 +693,7 @@ public class ServerActivity extends BluetoothServerActivity {
                     try {
                         conn.getOutputStream().write(jsonString.getBytes());
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Constants.Log(e);
                     }
 
                     Log.d("BLUETOOTH_SCOUTER", "Received response code:" + conn.getResponseCode());
@@ -713,7 +704,7 @@ public class ServerActivity extends BluetoothServerActivity {
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
 
             if (json != null && json.length > 0)

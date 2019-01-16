@@ -6,7 +6,7 @@ android {
     compileSdkVersion 27
     buildToolsVersion '28.0.3'
     defaultConfig {
-        applicationId "org.hotteam67.bluetoothserver"
+        applicationId 'org.hotteam67.master'
         minSdkVersion 19
         targetSdkVersion 27
         versionCode 1
@@ -36,6 +36,8 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    productFlavors {
     }
 }
 

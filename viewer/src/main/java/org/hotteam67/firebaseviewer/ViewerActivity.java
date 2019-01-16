@@ -83,7 +83,7 @@ public class ViewerActivity extends AppCompatActivity {
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
         }
         else if (requestCode == Constants.PreferencesRequestCode)

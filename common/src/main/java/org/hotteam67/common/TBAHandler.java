@@ -77,7 +77,7 @@ public class TBAHandler {
             catch (Exception e)
             {
                 onCompleteEvent.onFail();
-                e.printStackTrace();
+                Constants.Log(e);
             }
             return "";
         }
@@ -147,7 +147,7 @@ public class TBAHandler {
                 catch (Exception e)
                 {
                     returnEvent.onFail();
-                    e.printStackTrace();
+                    Constants.Log(e);
                 }
             }
 
@@ -202,7 +202,7 @@ public class TBAHandler {
                     matches.removeAll(Collections.singleton(null));
                     returnEvent.onComplete(matches);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Constants.Log(e);
                     returnEvent.onFail();
                 }
             }
@@ -241,7 +241,7 @@ public class TBAHandler {
                     returnEvent.onComplete(returnObject);
                 } catch (Exception e) {
                     returnEvent.onFail();
-                    e.printStackTrace();
+                    Constants.Log(e);
                 }
             }
             @Override
@@ -284,7 +284,7 @@ public class TBAHandler {
                     }
                     returnEvent.onComplete(alliances);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Constants.Log(e);
                     returnEvent.onFail();
                 }
             }

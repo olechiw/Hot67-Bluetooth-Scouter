@@ -50,7 +50,7 @@ public class RowHeaderModel implements Serializable, ISortableModel {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
             return 0;
         }
     }

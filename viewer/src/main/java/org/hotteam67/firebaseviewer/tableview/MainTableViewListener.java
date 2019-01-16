@@ -140,7 +140,7 @@ public class MainTableViewListener implements ITableViewListener {
             return ((RowHeaderModel)rowHeaders.get(row)).getData();
         } catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
             return "-1";
         }
     }
@@ -211,7 +211,7 @@ public class MainTableViewListener implements ITableViewListener {
             try {
                 ((RawDataActivity) adapter.GetContext()).doEndWithMatchNumber(Integer.valueOf(GetRowHeaderValue(yPosition)));
             } catch (Exception e)
-            { e.printStackTrace(); }
+            { Constants.Log(e); }
 
             return;
         }
@@ -234,7 +234,7 @@ public class MainTableViewListener implements ITableViewListener {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
         }
 
         activity.startActivityForResult(rawDataIntent, Constants.RawDataRequestCode);
@@ -312,7 +312,7 @@ public class MainTableViewListener implements ITableViewListener {
                         }
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Constants.Log(e);
                 }
             }
 
@@ -329,7 +329,7 @@ public class MainTableViewListener implements ITableViewListener {
                         }
                         cells.add(naRow);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Constants.Log(e);
                     }
                 }
             }

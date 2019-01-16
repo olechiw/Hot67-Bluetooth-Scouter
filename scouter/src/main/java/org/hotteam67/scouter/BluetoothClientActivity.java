@@ -45,16 +45,6 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
      */
     private Handler m_handler;
 
-    void l(String s)
-    {
-        Log.d(TAG, s);
-    }
-
-    /**
-     * The logging tag
-     */
-    private static final String TAG = "BLUETOOTH_SCOUTER_DEBUG";
-
     /**
      * Whether the bluetooth hardware setup has completely failed (typically means something like it failed to be enabled)
      */
@@ -78,7 +68,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
             }
         };
 
-        l("Setting up bluetooth");
+        Constants.Log("Setting up bluetooth");
         setupBluetooth();
     }
 
@@ -99,7 +89,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
         }
         catch (Exception e)
         {
-            l("Failed to create dialog: " + e.getMessage());
+            Constants.Log(e);
         }
     }
 
@@ -128,7 +118,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
             }
             catch (java.io.IOException e)
             {
-                Log.e("[Bluetooth]", "Socket connection failed", e);
+                Constants.Log(e);
             }
 
 
@@ -168,9 +158,9 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
                 // Already closed, probably
             } catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
-            l("Accept Thread Ended!");
+        Constants.Log("Accept Thread Ended!");
         }
     }
 
@@ -208,8 +198,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
             }
             catch (Exception e)
             {
-                l("Error: " + e.getMessage());
-                e.printStackTrace();
+                Constants.Log(e);
             }
         }
 
@@ -224,7 +213,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
                 InputStream stream;
                 InputStream tmpIn = null;
                 try {
-                    l("Loading input stream");
+                Constants.Log("Loading input stream");
                     tmpIn = connectedSocket.getInputStream();
                 } catch (IOException e) {
                     Log.e("[Bluetooth]", "Error occurred when creating input stream", e);
@@ -232,7 +221,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
                 stream = tmpIn;
                 if (stream == null) break;
 
-                l("Reading stream");
+            Constants.Log("Reading stream");
                 if (!read(stream))
                 {
                     break;
@@ -243,7 +232,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
                     break;
                 }
             }
-            l("Connected Thread Ended!!!");
+        Constants.Log("Connected Thread Ended!!!");
             disconnect();
         }
 
@@ -260,7 +249,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
             {
                 numBytes = stream.read(buffer);
 
-                l("Reading Bytes of Length:" + numBytes);
+            Constants.Log("Reading Bytes of Length:" + numBytes);
 
                 m_handler.obtainMessage(MessageTypes.MESSAGE_INPUT, numBytes, -1, new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "")).sendToTarget();
                 return true;
@@ -279,8 +268,8 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
          */
         void write(byte[] bytes)
         {
-            l("Writing: " + new String(bytes));
-            l("Bytes Length: " + bytes.length);
+        Constants.Log("Writing: " + new String(bytes));
+        Constants.Log("Bytes Length: " + bytes.length);
             OutputStream stream;
 
             OutputStream tmpOut = null;
@@ -299,7 +288,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
 
             try
             {
-                l("Writing bytes to outstream");
+            Constants.Log("Writing bytes to outstream");
                 stream.write(bytes);
             }
             catch (Exception e)
@@ -315,12 +304,12 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
      */
     private synchronized void setupBluetooth()
     {
-        l("Getting adapter");
+    Constants.Log("Getting adapter");
         m_bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
 
         if (m_bluetoothAdapter == null) {
-            l("Bluetooth not detected");
+        Constants.Log("Bluetooth not detected");
             bluetoothFailed = true;
         }
 
@@ -354,7 +343,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
     {
         if (!Destroyed())
         {
-            l("Storing socket in connected devices");
+        Constants.Log("Storing socket in connected devices");
             connectedThread = new ConnectedThread(socket);
             connectedThread.start();
             MSG(MessageTypes.MESSAGE_CONNECTED);
@@ -367,14 +356,14 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
      */
     synchronized void BluetoothWrite(String text)
     {
-        l("EVENT: send() " + text);
+    Constants.Log("EVENT: send() " + text);
         try {
             connectedThread.write(text.getBytes());
         }
         catch (Exception e)
         {
-            l("Failed to write: Exception: " + e.getMessage());
-            e.printStackTrace();
+        Constants.Log("Failed to write: Exception: " + e.getMessage());
+            Constants.Log(e);
         }
     }
 
@@ -403,7 +392,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
     public void onDestroy()
     {
         super.onDestroy();
-        l("Destroying application threads");
+    Constants.Log("Destroying application threads");
         SetDestroyed();
         if (bluetoothFailed)
             return;

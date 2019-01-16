@@ -12,6 +12,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.hotteam67.common.Constants;
 import org.hotteam67.common.OnDownloadResultListener;
 import org.json.JSONObject;
 
@@ -96,7 +97,7 @@ public class FireBaseHandler {
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
             return "";
         }
@@ -145,7 +146,7 @@ public class FireBaseHandler {
         {
             fireBaseCompleteEvent.onFail();
             results = new HashMap<>();
-            e.printStackTrace();
+            Constants.Log(e);
             return;
         }
         DoFinish();
@@ -162,7 +163,7 @@ public class FireBaseHandler {
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
             Log.e("FirebaseScouter", "Failed to call completeEvent");
         }
     }

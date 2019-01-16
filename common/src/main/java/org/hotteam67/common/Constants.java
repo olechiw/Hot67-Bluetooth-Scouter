@@ -2,6 +2,7 @@ package org.hotteam67.common;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.util.Log;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -196,5 +197,15 @@ public class Constants
     public interface OnCompleteEvent<type>
     {
         void OnComplete(type arg);
+    }
+
+    public static void Log(String value)
+    {
+        Log.d("BLUETOOTH_SCOUTER_DEBUG", value);
+    }
+
+    public static void Log(Exception e)
+    {
+        Constants.Log(e);
     }
 }

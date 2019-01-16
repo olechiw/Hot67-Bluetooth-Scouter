@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.hotteam67.common.Constants;
 import org.hotteam67.firebaseviewer.web.FireBaseHandler;
 
 import org.hotteam67.common.FileHandler;
@@ -155,14 +156,14 @@ public class DataModel
                         averages = (DataTable)FileHandler.DeSerialize(FileHandler.Files.AVERAGES_CACHE);
                     } catch (Exception e)
                     {
-                        e.printStackTrace();
+                        Constants.Log(e);
                     }
                     try
                     {
                         maximums = (DataTable)FileHandler.DeSerialize(FileHandler.Files.MAXIMUMS_CACHE);
                     } catch (Exception e)
                     {
-                        e.printStackTrace();
+                        Constants.Log(e);
                     }
 
                     try
@@ -170,7 +171,7 @@ public class DataModel
                         rawData = (DataTable)FileHandler.DeSerialize(FileHandler.Files.RAW_CACHE);
                     } catch (Exception e)
                     {
-                        e.printStackTrace();
+                        Constants.Log(e);
                     }
                     return null;
                 }
@@ -188,7 +189,7 @@ public class DataModel
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
         }
     }
 
@@ -345,7 +346,7 @@ public class DataModel
                     }
                     catch (Exception e)
                     {
-                        e.printStackTrace();
+                        Constants.Log(e);
                     }
                 }
 
@@ -371,7 +372,7 @@ public class DataModel
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
             try {
                 TBAHandler.Rankings(eventKey, new OnDownloadResultListener<JSONObject>() {
@@ -389,7 +390,7 @@ public class DataModel
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
             try {
                 TBAHandler.Alliances(eventKey, new OnDownloadResultListener<List<List<String>>>() {
@@ -413,14 +414,14 @@ public class DataModel
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
 
             LoadTBADataLocal();
         }
         catch (Exception e)
         {
-            Log.e("HotTeam67", "Failed to get event: " + e.getMessage(), e);
+            Constants.Log(e);
         }
     }
 
@@ -454,7 +455,7 @@ public class DataModel
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
 
             try
@@ -470,7 +471,7 @@ public class DataModel
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
         }
 
@@ -479,7 +480,7 @@ public class DataModel
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
         }
         try
         {
@@ -487,7 +488,7 @@ public class DataModel
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
         }
 
         try
@@ -507,7 +508,7 @@ public class DataModel
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
         }
     }
 
@@ -524,7 +525,7 @@ public class DataModel
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            Constants.Log(e);
             return new ArrayList<>();
         }
     }

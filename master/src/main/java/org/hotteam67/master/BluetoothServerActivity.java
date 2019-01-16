@@ -1,4 +1,4 @@
-package org.hotteam67.bluetoothserver;
+package org.hotteam67.master;
 
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -78,15 +78,6 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
     private synchronized void MSG(int msg) { m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget(); }
 
     /**
-     * Simple log function
-     * @param s text to output
-     */
-    void l(String s)
-    {
-        Log.d("BLUETOOTH_SCOUTER_DEBUG", s);
-    }
-
-    /**
      * Instance of the thread actively connecting to the devices
      */
     private ConnectThread connectThread;
@@ -115,7 +106,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                 connectionSocket = null;
                 try
                 {
-                    l("Getting Connection");
+                Constants.Log("Getting Connection");
                     connectionSocket = device.createRfcommSocketToServiceRecord(Constants.uuid);
                 } catch (java.io.IOException e)
                 {
@@ -138,7 +129,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                     // Send the message to UI thread we are connecting to device i
                     m_handler.obtainMessage(Messages.MESSAGE_CONNECTING, 0, 0,
                             devices.get(sockets.indexOf(connectionSocket)).getName()).sendToTarget();
-                    l("Connecting to socket");
+                Constants.Log("Connecting to socket");
                     connectionSocket.connect();
                     connectSocket(connectionSocket);
                 } catch (java.io.IOException e)
@@ -153,7 +144,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                     }
                 }
             }
-            l("Connect thread ended!");
+        Constants.Log("Connect thread ended!");
         }
     }
 
@@ -169,10 +160,10 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             if (connectedThreads.size() > 0)
                 disconnect(connectedThreads.get(0));
         }
-        l("Connecting");
+    Constants.Log("Connecting");
 
         if (bluetoothFailed) {
-            l("Failed to connect, bluetooth setup was unsuccessful");
+        Constants.Log("Failed to connect, bluetooth setup was unsuccessful");
             return;
         }
 
@@ -257,7 +248,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
 
         if (connectedThreads.size() < allowedDevices)
         {
-            l("Received a connection, adding a new thread: " + connectedThreads.size());
+        Constants.Log("Received a connection, adding a new thread: " + connectedThreads.size());
             ConnectedThread thread = new ConnectedThread(connection);
             thread.setId(connectedThreads.size() + 1);
             thread.start();
@@ -314,8 +305,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             }
             catch (Exception e)
             {
-                l("Error: " + e.getMessage());
-                e.printStackTrace();
+                Constants.Log(e);
             }
         }
 
@@ -329,7 +319,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                 InputStream stream;
                 InputStream tmpIn = null;
                 try {
-                    l("Loading input stream");
+                Constants.Log("Loading input stream");
                     tmpIn = connectedSocket.getInputStream();
                 } catch (IOException e) {
                     Log.e("[Bluetooth]", "Error occurred when creating input stream", e);
@@ -338,7 +328,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
 
                 if (stream == null) break;
 
-                l("Reading stream");
+            Constants.Log("Reading stream");
                 if (!read(stream))
                 {
                     break;
@@ -349,7 +339,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                     break;
                 }
             }
-            l("Connected Thread Ended!!!");
+        Constants.Log("Connected Thread Ended!!!");
             disconnect(this);
             MSG(Messages.MESSAGE_DISCONNECTED);
         }
@@ -366,8 +356,9 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             try
             {
                 numBytes = stream.read(buffer);
+                String s = new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "");
 
-                l("Reading Bytes of Length:" + numBytes);
+            Constants.Log("String Received: " + s);
 
                 m_handler.obtainMessage(Messages.MESSAGE_INPUT, numBytes, id, new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "")).sendToTarget();
                 return true;
@@ -385,8 +376,8 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
          */
         void write(byte[] bytes)
         {
-            l("Writing: " + new String(bytes));
-            l("Bytes Length: " + bytes.length);
+        Constants.Log("Writing: " + new String(bytes));
+        Constants.Log("Bytes Length: " + bytes.length);
             OutputStream stream;
 
             OutputStream tmpOut = null;
@@ -405,7 +396,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
 
             try
             {
-                l("Writing bytes to outstream");
+            Constants.Log("Writing bytes to outstream");
                 stream.write(bytes);
             }
             catch (Exception e)
@@ -458,12 +449,12 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
      */
     synchronized void setupBluetooth(Runnable oncomplete)
     {
-        l("Getting adapter");
+    Constants.Log("Getting adapter");
         m_bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
 
         if (m_bluetoothAdapter == null) {
-            l("Bluetooth not detected");
+        Constants.Log("Bluetooth not detected");
             bluetoothFailed = true;
         }
 
@@ -501,7 +492,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
     public void onDestroy()
     {
         super.onDestroy();
-        l("Destroying application threads");
+    Constants.Log("Destroying application threads");
         if (bluetoothFailed)
             return;
         for (ConnectedThread thread : connectedThreads)

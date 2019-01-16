@@ -168,7 +168,7 @@ public final class SchemaHandler
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                Constants.Log(e);
             }
         }
        // "Returning output of length: " + output.size());
@@ -212,7 +212,7 @@ public final class SchemaHandler
         }
         catch (Exception e)
         {
-            l("Failed to load schema: " + e.getMessage());
+            Constants.Log(e);
             return new JSONArray();
         }
     }
@@ -264,7 +264,7 @@ public final class SchemaHandler
             }
             catch (Exception e)
             {
-                Log.e("[Schema Handler", "Failed to set value : " + e.getMessage(), e);
+                Constants.Log(e);
             }
         }
     }
@@ -304,7 +304,7 @@ public final class SchemaHandler
                 }
             } catch (Exception e)
             {
-                Log.e("[Schema Handler", "Failed to set value : " + e.getMessage(), e);
+                Constants.Log(e);
                 ClearCurrentValues(table);
             }
         }
@@ -391,7 +391,7 @@ public final class SchemaHandler
                 ((TextView)v).setText(tag);
                 break;
             case -1:
-                l("Failed to determine type of obj " + variable.toString());
+            Constants.Log("Failed to determine type of obj " + variable.toString());
             case Constants.InputTypes.TYPE_MULTI:
                 v = getInflater(c).inflate(R.layout.layout_multichoice, null);
                 ((TextView)v.findViewById(R.id.multiChoiceLabel)).setText(tag);
@@ -416,7 +416,7 @@ public final class SchemaHandler
 
                 }
             default:
-                l("Error, invalid type given: " + type);
+            Constants.Log("Error, invalid type given: " + type);
         }
 
         if (v != null)
@@ -449,13 +449,8 @@ public final class SchemaHandler
             int w = v.getMeasuredWidth();
             maxColumnWidth = (w > maxColumnWidth) ? w : maxColumnWidth;
         }
-        l("Measured maximum width: " + maxColumnWidth);
+    Constants.Log("Measured maximum width: " + maxColumnWidth);
 
         return maxColumnWidth;
-    }
-
-    private static void l(String s)
-    {
-        Log.d("[Schema Handler]", s);
     }
 }
