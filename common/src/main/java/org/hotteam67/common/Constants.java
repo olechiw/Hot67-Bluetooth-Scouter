@@ -206,6 +206,6 @@ public class Constants
 
     public static void Log(Exception e)
     {
-        Constants.Log(e);
+        Log.e("BLUETOOTH_SCOUTER_DEBUG", e.getMessage(), e);
     }
 }

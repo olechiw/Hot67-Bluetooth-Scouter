@@ -151,10 +151,9 @@
             android:layout_alignParentEnd="true"
             android:src="@drawable/ic_right"
             android:id="@+id/nextMatchButton"
-            android:tint="#FFFFFF"
             android:layout_margin="24dp"
             app:layout_anchorGravity="bottom|end"
-            app:backgroundTint="@color/colorPrimary"
+            app:backgroundTint="@color/red"
             app:layout_anchor="@id/scrollView"/>
         <android.support.design.widget.FloatingActionButton
             android:layout_width="wrap_content"
@@ -165,7 +164,7 @@
             android:src="@drawable/ic_left"
             android:layout_margin="24dp"
             app:layout_anchorGravity="bottom|left"
-            app:backgroundTint="@color/colorPrimary"
+            app:backgroundTint="@color/red"
             app:layout_anchor="@id/scrollView"/>
     </android.support.design.widget.CoordinatorLayout>
 </RelativeLayout>

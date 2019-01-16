@@ -160,7 +160,7 @@ public class ScoutActivity extends BluetoothClientActivity
         matchNumber.setText("1");
         if (!matches.isEmpty()) {
         Constants.Log("Loading first match!");
-            teamNumber.setText(GetMatchTeamNumber(GetCurrentMatchNumber()));
+            teamNumber.setText(GetMatchTeamNumber(GetDisplayedMatchNumber()));
             DisplayMatch(1);
         }
 
@@ -175,7 +175,7 @@ public class ScoutActivity extends BluetoothClientActivity
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                DisplayMatch(GetCurrentMatchNumber(), false);
+                DisplayMatch(GetDisplayedMatchNumber(), false);
             }
 
             @Override
@@ -206,7 +206,7 @@ public class ScoutActivity extends BluetoothClientActivity
         SaveCurrentMatch();
         SaveAllMatches();
         Constants.Log("Loading Next Match");
-        DisplayMatch(GetCurrentMatchNumber() + 1);
+        DisplayMatch(GetDisplayedMatchNumber() + 1);
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
     }
 
@@ -217,19 +217,19 @@ public class ScoutActivity extends BluetoothClientActivity
     {
         SaveCurrentMatch();
         SaveAllMatches();
-        if (GetCurrentMatchNumber() > 1)
+        if (GetDisplayedMatchNumber() > 1)
         {
         Constants.Log("Loading Previous Match");
-            DisplayMatch(GetCurrentMatchNumber() - 1);
+            DisplayMatch(GetDisplayedMatchNumber() - 1);
         }
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
     }
 
     /**
-     * Get the currently <b>displayed</b> match number
+     * Get the currently <b>displayed</b> match number, not the INDEX
      * @return match number
      */
-    private int GetCurrentMatchNumber()
+    private int GetDisplayedMatchNumber()
     {
         try {
             int i = Integer.valueOf(matchNumber.getText().toString());
@@ -278,7 +278,7 @@ public class ScoutActivity extends BluetoothClientActivity
         } else // New match
         {
             // Save current matches (no bluetooth)
-            SaveCurrentMatch(true, false);
+            SaveMatch(GetCurrentInputValues(), true, false);
             SaveAllMatches();
 
             // Load the new match
@@ -386,46 +386,60 @@ public class ScoutActivity extends BluetoothClientActivity
     /**
      * Save the current match locally and also send it, not saving duplicates
      */
-    private void SaveCurrentMatch() { SaveCurrentMatch(false, false); }
+    private void SaveCurrentMatch() { SaveMatch(GetCurrentInputValues(), false, false); }
 
     /**
      * Save the current match locally
      * @param localOnly whether to send the match or just save it locally
      * @param saveDuplicates whether to save even if the value has not been detected as changed
      */
-    private void SaveCurrentMatch(boolean localOnly, boolean saveDuplicates)
+    private void SaveMatch(JSONObject match, boolean localOnly, boolean saveDuplicates)
     {
+        int matchNumber = -1;
+
+        try
+        {
+            matchNumber  = Integer.valueOf((String)match.get(Constants.MATCH_NUMBER_JSON_TAG));
+        }
+        catch (Exception e)
+        {
+            Constants.Log(e);
+            Constants.Log("Attempted to get match number of match in SaveMatch()");
+        }
+
         // Check if something actually changed since the value was loaded
-        JSONObject currentMatch = GetCurrentInputValues();
-        if (currentMatch == null || currentMatch.toString().equals(lastValuesBeforeChange) && !saveDuplicates) {
-        Constants.Log("nothing changed, not saving: " + GetCurrentInputValues());
+        if (match == null || match.toString().equals(lastValuesBeforeChange) && !saveDuplicates) {
+            Constants.Log("Nothing changed, not saving: " + GetCurrentInputValues());
+            return;
+        }
+        if (matchNumber < 0)
+        {
+            Constants.Log("Invalid Match Number in SaveMatch(): " + matchNumber);
             return;
         }
 
         // Existing match
-        if (GetCurrentMatchNumber() <= matches.size())
+        if (matchNumber <= matches.size())
         {
-            matches.set(GetCurrentMatchNumber() - 1, GetCurrentInputValues());
+            matches.set(matchNumber - 1, GetCurrentInputValues());
         }
         // New match when we are on the last match or there are no matches yet
-        else if (GetCurrentMatchNumber() + 1 == matches.size() || matches.size() == 0)
+        else if (matchNumber + 1 == matches.size() || matches.size() == 0)
         {
-            matches.add(GetCurrentInputValues());
+            matches.add(match);
         }
         // Too large of a match number
         else
         {
             return;
         }
-        // Write to bluetooth
-        if (!localOnly)
+        // Write to bluetooth, after potentially saving match. Make sure actual match is there
+        if (!localOnly && matches.size() >= matchNumber && matches.get(matchNumber - 1) != null)
         {
-            // Make sure actual match is there
-            if (matches.size() >= GetCurrentMatchNumber() && matches.get(GetCurrentMatchNumber() - 1) != null)
-                SendMatch(matches.get(GetCurrentMatchNumber() - 1));
-            else
-            Constants.Log("Saving local only due to missing match data");
+            SendMatch(matches.get(matchNumber - 1));
         }
+        else
+            Constants.Log("Saving local only");
     }
 
     /**
@@ -580,7 +594,7 @@ public class ScoutActivity extends BluetoothClientActivity
                             }
                         }
                         DisplayMatch(1);
-                        SaveCurrentMatch(true, true);
+                        SaveMatch(matches.get(GetDisplayedMatchNumber() - 1), true, true);
                         SaveAllMatches();
                     });
                     break;
@@ -590,7 +604,7 @@ public class ScoutActivity extends BluetoothClientActivity
                     break;
                 case Constants.SERVER_SUBMIT_TAG:
                     // If the match is still open show a countdown before sending
-                    if (String.valueOf(GetCurrentMatchNumber()).equals(message))
+                    if (String.valueOf(GetDisplayedMatchNumber()).equals(message))
                         SubmitCountDown();
                     else
                     {
@@ -604,7 +618,7 @@ public class ScoutActivity extends BluetoothClientActivity
                         }
                         catch (Exception e)
                         {
-                        Constants.Log("Error processing match number request: " + message);
+                            Constants.Log("Error processing match number request: " + message);
                             Constants.Log(e);
                         }
                     }
@@ -655,8 +669,12 @@ public class ScoutActivity extends BluetoothClientActivity
                 .setTitle("Auto submitting Soon...").setMessage("Submitting in 15 seconds")
                 .setPositiveButton("Submit", (dialogInterface, i) ->
         {
-            // Submit
-            OnNextMatch();
+            {
+                // Submit
+                SaveMatch(GetCurrentInputValues(), false, true);
+                OnNextMatch();
+                dialogInterface.dismiss();
+            }
         }).setNegativeButton("Cancel", (dialogInterface, i) ->
         {
             // Cancelled
@@ -683,6 +701,7 @@ public class ScoutActivity extends BluetoothClientActivity
                 if (dialog.isShowing())
                 {
                     // Submit
+                    SaveMatch(GetCurrentInputValues(), false, true);
                     OnNextMatch();
                     dialog.dismiss();
                 }
