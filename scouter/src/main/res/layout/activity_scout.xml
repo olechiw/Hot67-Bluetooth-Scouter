@@ -116,7 +116,7 @@
                 android:layout_gravity="center"
                 android:text="Match Number:"
                 android:textAppearance="@style/TextAppearance.AppCompat"/>
-            <EditText
+            <android.support.v7.widget.AppCompatEditText
                 android:layout_gravity="center"
                 android:layout_width="wrap_content"
                 android:inputType="number"
@@ -135,9 +135,10 @@
                 android:layout_gravity="center_horizontal"
                 android:text="Notes:"
                 android:textAppearance="@style/TextAppearance.AppCompat.Title"/>
-            <EditText
+            <android.support.v7.widget.AppCompatEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:backgroundTint="#FFFFFF"
                 android:lines="10"
                 android:id="@+id/notesText"/>
             </LinearLayout>
@@ -150,7 +151,6 @@
             android:layout_alignParentEnd="true"
             android:src="@drawable/ic_right"
             android:id="@+id/nextMatchButton"
-            android:backgroundTint="@color/red"
             android:tint="#FFFFFF"
             android:layout_margin="24dp"
             app:layout_anchorGravity="bottom|end"
@@ -161,7 +161,6 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:id="@+id/prevMatchButton"
-            android:backgroundTint="@color/red"
             android:tint="#FFFFFF"
             android:src="@drawable/ic_left"
             android:layout_margin="24dp"

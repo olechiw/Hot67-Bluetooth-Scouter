@@ -471,6 +471,7 @@ public class ServerActivity extends BluetoothServerActivity {
      */
     @SuppressLint("SetTextI18n")
     private synchronized void handle(Message msg) {
+
         switch (msg.what) {
             case Messages.MESSAGE_INPUT:
 

@@ -164,9 +164,11 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
     synchronized void Connect()
     {
         // Reset all connections
-        if (connectedThreads.size() > 0)
-            for (ConnectedThread thread : connectedThreads) disconnect(thread);
-
+        for (int i = 0; i < connectedThreads.size(); ++i)
+        {
+            if (connectedThreads.size() > 0)
+                disconnect(connectedThreads.get(0));
+        }
         l("Connecting");
 
         if (bluetoothFailed) {
