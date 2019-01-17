@@ -85,11 +85,37 @@ public class ScoutActivity extends BluetoothClientActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        CheckUUID(this::CheckBluetooth);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scout);
+    }
 
-        CheckBluetooth();
-
+    /**
+     * Prompt user repeatedly for unique ending to the UUID
+     * @param r the event to run once complete
+     */
+    private void CheckUUID(Runnable r)
+    {
+        if (FileHandler.Exists(FileHandler.Files.UUID))
+        {
+            UUID = Constants.incompleteUUID + FileHandler.LoadContents(FileHandler.Files.UUID);
+            r.run();
+        }
+        else
+        {
+            Constants.GetString(this, "Enter 4-digit UUID ending", "", (val) ->
+            {
+                if (val.length() != 4)
+                {
+                    CheckUUID(r);
+                }
+                else
+                {
+                    FileHandler.Write(FileHandler.Files.UUID, val);
+                    r.run();
+                }
+            });
+        }
     }
 
     /**

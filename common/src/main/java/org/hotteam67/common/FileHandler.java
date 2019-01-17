@@ -43,9 +43,19 @@ public final class FileHandler
         public static final String SCOUTER_FILE = "Scouter/scouterDatabase.json";
 
         /**
+         * The UUID file for the scouter, configured once at first start
+         */
+        public static final String SCOUTER_UUID = "Scouter/uuid";
+
+        /**
          * The match schedule downloaded on the server, all unscouted
          */
-        public static final String MATCHES_FILE = "Server/serverMatches.csv";
+        public static final String MASTER_MATCHES_CSV = "Master/masterMatches.csv";
+
+        /**
+         * The UUID file for the server, must be written manually
+         */
+        public static final String MASTER_UUID = "Master/uuid";
 
         /**
          * The viewer's team names JSON file containing numbers keyed to the team nicknames from TBA
@@ -95,6 +105,12 @@ public final class FileHandler
     private static String file(String file)
     {
         return DIRECTORY + file;
+    }
+
+
+    public static boolean Exists(String file)
+    {
+        return new File(file(file)).isFile();
     }
 
     /**

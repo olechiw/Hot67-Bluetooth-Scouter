@@ -3,6 +3,7 @@ package org.hotteam67.common;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.util.Log;
+import android.widget.EditText;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -16,6 +17,33 @@ public class Constants
     public static final int ALLIANCE_BLUE = 1;
     public static final int ALLIANCE_RED = 2;
     public static final int ALLIANCE_NONE = -1;
+
+    /**
+     * Get a string input, and run an oncomplete event
+     * @param prompt the text prompt the user will see when asked to input a string
+     * @param defaultValue the default value of the string, if any
+     * @param onInput the event to run when input is received, assuming it isn't canceled
+     */
+    public static void GetString(Context c, final String prompt, final String defaultValue, final StringInputEvent onInput) {
+        final EditText input = new EditText(c);
+        input.setText(defaultValue);
+
+        try {
+            AlertDialog.Builder dlg = new AlertDialog.Builder(c, R.style.AlertDialogTheme);
+            dlg.setTitle("");
+            dlg.setMessage(prompt);
+            dlg.setView(input);
+            dlg.setPositiveButton("Ok", (dialog, which) ->
+                    onInput.Run(input.getText().toString()));
+            dlg.setCancelable(true);
+            dlg.create();
+            dlg.show();
+        }
+        catch (Exception e)
+        {
+        Log("Failed to create dialog: " + e.getMessage());
+        }
+    }
 
     /**
      * An event for after the user has input a string. No consumer because compatibility
@@ -157,7 +185,7 @@ public class Constants
     /**
      * Application UUID to look for during connection, may be configurable in future
      */
-    public static final UUID uuid = UUID.fromString("1cb5d5ce-00f5-11e7-93ae-92361f002671");
+    public static final String incompleteUUID = "1cb5d5ce-00f5-11e7-93ae-92361f00";
 
     /**
      * Show a dialog and run an effect if the user chooses to confirm

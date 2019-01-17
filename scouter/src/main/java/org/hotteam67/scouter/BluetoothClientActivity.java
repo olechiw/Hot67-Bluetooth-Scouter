@@ -16,6 +16,7 @@ import org.hotteam67.common.Constants;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.UUID;
 
 
 /**
@@ -24,6 +25,7 @@ import java.io.OutputStream;
  */
 public abstract class BluetoothClientActivity extends AppCompatActivity {
 
+    protected String UUID = "";
 
     /**
      * Messages, for when any event happens, to be sent to the main thread
@@ -114,9 +116,10 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
             BluetoothServerSocket tmp = null;
             try
             {
-                tmp = m_bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ConnectDevice", Constants.uuid);
+                tmp = m_bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord("ConnectDevice",
+                        java.util.UUID.fromString(UUID));
             }
-            catch (java.io.IOException e)
+            catch (Exception e)
             {
                 Constants.Log(e);
             }
@@ -315,7 +318,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
 
         if (!bluetoothFailed && !m_bluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, 1);
+            startActivityForResult(enableBtIntent, Constants.REQUEST_ENABLE_PERMISSION);
         }
         else
         {
@@ -328,7 +331,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
 
-            if (requestCode==1)
+            if (requestCode==Constants.REQUEST_ENABLE_PERMISSION)
             {
                 bluetoothFailed = resultCode != RESULT_OK;
                 setupBluetooth();
