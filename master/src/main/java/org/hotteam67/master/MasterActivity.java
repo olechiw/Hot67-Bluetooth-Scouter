@@ -47,11 +47,6 @@ public class MasterActivity extends BluetoothServerActivity {
     private static final int REQUEST_PREFERENCES = 2;
     private static final int REQUEST_ENABLE_PERMISSION = 3;
 
-    /**
-     * Log tag
-     */
-    private static final String TAG = "BLUETOOTH_SCOUTER_DEBUG";
-
     private String lastMatchNumber = "0";
     /**
      * List of team numbers for the last match, used to check if a match was received already
@@ -101,14 +96,34 @@ public class MasterActivity extends BluetoothServerActivity {
         if (!FileHandler.Exists(FileHandler.Files.MASTER_UUID))
         {
             MessageBox("No UUIDs detected");
+            // Get UUIDs instead of finish();
             finish();
         }
         else
         {
-            // One UUID per line, only the last four digits
-            UUIDs = new ArrayList<>(
-                    Arrays.asList(
-                            FileHandler.LoadContents(FileHandler.Files.MASTER_UUID).split("\n")));
+            try {
+                // One UUID per line, only the last four digits
+                UUIDs = new ArrayList<>(
+                        Arrays.asList(
+                                FileHandler.LoadContents(FileHandler.Files.MASTER_UUID).split(",")));
+                boolean failed = false;
+                for (int i = 0; i < UUIDs.size(); ++i)
+                {
+                    if (UUIDs.get(i).length() != 4)
+                        failed = true;
+                }
+                if (UUIDs.size() != 6 || failed)
+                {
+                    MessageBox("Failed to load UUIDs");
+                    finish();
+                }
+            }
+            catch (Exception e)
+            {
+                Constants.Log(e);
+                MessageBox("Failed to load UUIDs");
+                finish();
+            }
         }
 
         SetHandler(new Handler() {

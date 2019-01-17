@@ -85,9 +85,9 @@ public class ScoutActivity extends BluetoothClientActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-        CheckUUID(this::CheckBluetooth);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scout);
+        CheckUUID(this::CheckBluetooth);
     }
 
     /**
@@ -96,9 +96,9 @@ public class ScoutActivity extends BluetoothClientActivity
      */
     private void CheckUUID(Runnable r)
     {
-        if (FileHandler.Exists(FileHandler.Files.UUID))
+        if (FileHandler.Exists(FileHandler.Files.SCOUTER_UUID))
         {
-            UUID = Constants.incompleteUUID + FileHandler.LoadContents(FileHandler.Files.UUID);
+            UUID = Constants.incompleteUUID + FileHandler.LoadContents(FileHandler.Files.SCOUTER_UUID);
             r.run();
         }
         else
@@ -111,7 +111,8 @@ public class ScoutActivity extends BluetoothClientActivity
                 }
                 else
                 {
-                    FileHandler.Write(FileHandler.Files.UUID, val);
+                    FileHandler.Write(FileHandler.Files.SCOUTER_UUID, val);
+                    UUID = Constants.incompleteUUID + FileHandler.LoadContents(FileHandler.Files.SCOUTER_UUID);
                     r.run();
                 }
             });
@@ -123,6 +124,7 @@ public class ScoutActivity extends BluetoothClientActivity
      */
     private void CheckBluetooth()
     {
+        super.setupBluetooth();
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
         Constants.Log("Permission granted");
             SetupAfterBluetooth();

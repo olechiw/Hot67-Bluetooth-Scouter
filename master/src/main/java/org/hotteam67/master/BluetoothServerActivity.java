@@ -27,7 +27,7 @@ import java.util.UUID;
  */
 public abstract class BluetoothServerActivity extends AppCompatActivity
 {
-    protected List<String> UUIDs = "";
+    protected List<String> UUIDs = new ArrayList<>();
 
     /**
      * Messages for communicating with the main thread
@@ -106,17 +106,25 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             for (BluetoothDevice device : this.devices)
             {
                 connectionSocket = null;
-                try
+                for (int i = 0; i < UUIDs.size(); ++i)
                 {
-                Constants.Log("Getting Connection");
-                    connectionSocket = device.createInsecureRfcommSocketToServiceRecord(
-                            java.util.UUID.fromString(UUID)
-                    );
-                } catch (java.io.IOException e)
-                {
-                    Log.e("[Bluetooth]", "Failed to connect to socket", e);
+                    try
+                    {
+                        Constants.Log("Getting Connection");
+                        connectionSocket = device.createInsecureRfcommSocketToServiceRecord(
+                                java.util.UUID.fromString(UUIDs.get(i))
+                        );
+                        Constants.Log("Succeeded to connect with UUID: " + UUIDs.get(i));
+                    }
+                    catch (java.io.IOException e)
+                    {
+                        Constants.Log("Failed to connect with UUID: " + UUIDs.get(i));
+                    }
                 }
-                sockets.add(connectionSocket);
+                if (connectionSocket != null)
+                    sockets.add(connectionSocket);
+                else
+                    Constants.Log("Failed to connect with any UUIDs");
             }
         }
 
