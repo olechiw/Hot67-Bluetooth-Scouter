@@ -93,51 +93,92 @@ public class MasterActivity extends BluetoothServerActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_server);
 
+        Runnable postUUIDSetup = () -> {
+            SetHandler(new Handler() {
+                @Override
+                public void handleMessage(Message msg)
+                {
+                    handle(msg);
+                }
+            });
+
+            setupPermissions();
+
+            loadJsonDatabase();
+        };
+
         if (!FileHandler.Exists(FileHandler.Files.MASTER_UUID))
         {
-            MessageBox("No UUIDs detected");
-            // Get UUIDs instead of finish();
-            finish();
+            GetUUIDs(postUUIDSetup);
         }
         else
         {
-            try {
+            try
+            {
                 // One UUID per line, only the last four digits
-                UUIDs = new ArrayList<>(
+                uuidEndings = new ArrayList<>(
                         Arrays.asList(
-                                FileHandler.LoadContents(FileHandler.Files.MASTER_UUID).split(",")));
+                                FileHandler.LoadContents(FileHandler.Files.MASTER_UUID)
+                                        .replace("\n", "").trim().split(",")));
                 boolean failed = false;
-                for (int i = 0; i < UUIDs.size(); ++i)
+                for (int i = 0; i < uuidEndings.size(); ++i)
                 {
-                    if (UUIDs.get(i).length() != 4)
+                    if (uuidEndings.get(i).length() != 4)
                         failed = true;
                 }
-                if (UUIDs.size() != 6 || failed)
+                if (uuidEndings.size() != 6 || failed)
                 {
-                    MessageBox("Failed to load UUIDs");
-                    finish();
+                    uuidEndings = new ArrayList<>();
+                    GetUUIDs(postUUIDSetup);
+                }
+                else
+                {
+                    postUUIDSetup.run();
                 }
             }
             catch (Exception e)
             {
                 Constants.Log(e);
-                MessageBox("Failed to load UUIDs");
-                finish();
+                GetUUIDs(postUUIDSetup);
             }
         }
-
-        SetHandler(new Handler() {
-            @Override
-            public void handleMessage(Message msg)
-            {
-                handle(msg);
-            }
-        });
-
-        setupPermissions();
-
-        loadJsonDatabase();
     }
+
+    /**
+     * Request uuidEndings over and over until valid
+     */
+    private void GetUUIDs(Runnable onComplete)
+    {
+        Constants.GetString(this, "Unable to load, please enter six IDs separated by commas", "", (val) ->
+        {
+            boolean failed = false;
+            try {
+                String[] vals = val.split(",");
+                if (vals.length == 6) {
+                    for (int i = 0; i < 6; ++i) {
+                        if (vals[i].length() != 4)
+                            failed = true;
+                        else {
+                            uuidEndings.add(vals[i]);
+                        }
+                    }
+                } else failed = true;
+            }
+            catch (Exception e)
+            {
+                Constants.Log(e);
+                failed = true;
+            }
+
+            if (!failed)
+            {
+                FileHandler.Write(FileHandler.Files.MASTER_UUID, val);
+                onComplete.run();
+            }
+            else GetUUIDs(onComplete);
+        });
+    }
+
 
     /**
      * Load options menu from xml
@@ -505,7 +546,7 @@ public class MasterActivity extends BluetoothServerActivity {
 
                 break;
             case Messages.MESSAGE_CONNECTION_FAILED:
-                VisualLog("Connection Timed Out");
+                VisualLog("Connection Failed");
                 break;
             case Messages.MESSAGE_CONNECTED:
             Constants.Log("Received Connect");

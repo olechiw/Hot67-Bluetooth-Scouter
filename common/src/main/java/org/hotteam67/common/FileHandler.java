@@ -45,7 +45,7 @@ public final class FileHandler
         /**
          * The UUID file for the scouter, configured once at first start
          */
-        public static final String SCOUTER_UUID = "Scouter/uuid";
+        public static final String SCOUTER_UUID = "Scouter/uuid.txt";
 
         /**
          * The match schedule downloaded on the server, all unscouted
@@ -55,7 +55,7 @@ public final class FileHandler
         /**
          * The UUID file for the server, must be written manually
          */
-        public static final String MASTER_UUID = "Master/uuid";
+        public static final String MASTER_UUID = "Master/uuid.txt";
 
         /**
          * The viewer's team names JSON file containing numbers keyed to the team nicknames from TBA
@@ -80,17 +80,17 @@ public final class FileHandler
         /**
          * The viewer's "cache" of averages - the serialized Averages DataTable written to disk
          */
-        public static final String AVERAGES_CACHE = "Viewer/averagesCache";
+        public static final String AVERAGES_CACHE = "Viewer/averages.cache";
 
         /**
          * The viewer's "cache" of maximums - the serialized Maximums DataTable written to disk
          */
-        public static final String MAXIMUMS_CACHE = "Viewer/maximumsCache";
+        public static final String MAXIMUMS_CACHE = "Viewer/maximums.cache";
 
         /**
          * The viewer's "cache" of raw data - the serialized RawData DataTable written to disk
          */
-        public static final String RAW_CACHE = "Viewer/matchesCache";
+        public static final String RAW_CACHE = "Viewer/matches.cache";
     }
 
     private static final String DIRECTORY =
@@ -158,7 +158,9 @@ public final class FileHandler
 
         try
         {
-            return new FileWriter(new File(f).getAbsolutePath(), false);
+            File file = new File(f);
+            if (!file.exists()) file.createNewFile();
+            return new FileWriter(file, false);
         }
         catch (FileNotFoundException e)
         {

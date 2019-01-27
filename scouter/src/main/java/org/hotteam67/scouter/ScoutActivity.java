@@ -87,7 +87,11 @@ public class ScoutActivity extends BluetoothClientActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scout);
-        CheckUUID(this::CheckBluetooth);
+        CheckUUID(() -> {
+            UUID = Constants.incompleteUUID + FileHandler.LoadContents(FileHandler.Files.SCOUTER_UUID);
+            UUID = UUID.replace("\n", "").trim();
+            CheckBluetooth();
+        });
     }
 
     /**
@@ -98,7 +102,6 @@ public class ScoutActivity extends BluetoothClientActivity
     {
         if (FileHandler.Exists(FileHandler.Files.SCOUTER_UUID))
         {
-            UUID = Constants.incompleteUUID + FileHandler.LoadContents(FileHandler.Files.SCOUTER_UUID);
             r.run();
         }
         else
@@ -112,7 +115,6 @@ public class ScoutActivity extends BluetoothClientActivity
                 else
                 {
                     FileHandler.Write(FileHandler.Files.SCOUTER_UUID, val);
-                    UUID = Constants.incompleteUUID + FileHandler.LoadContents(FileHandler.Files.SCOUTER_UUID);
                     r.run();
                 }
             });
