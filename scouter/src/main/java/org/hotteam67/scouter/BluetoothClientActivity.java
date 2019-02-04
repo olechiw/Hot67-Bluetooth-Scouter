@@ -350,7 +350,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
     {
         if (!Destroyed())
         {
-            Constants.Log("Storing socket in connected devices");
+        Constants.Log("Storing socket in connected devices");
             connectedThread = new ConnectedThread(socket);
             connectedThread.start();
             MSG(MessageTypes.MESSAGE_CONNECTED);
@@ -415,9 +415,10 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
      */
     private void disconnect()
     {
-        if (connectedThread != null) {
-            connectedThread.close();
-            connectedThread.interrupt();
-        }
+        connectedThread.close();
+        connectedThread.interrupt();
+
+        acceptThread = new AcceptThread();
+        acceptThread.start();
     }
 }

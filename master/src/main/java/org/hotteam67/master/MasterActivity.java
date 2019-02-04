@@ -93,92 +93,51 @@ public class MasterActivity extends BluetoothServerActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_server);
 
-        Runnable postUUIDSetup = () -> {
-            SetHandler(new Handler() {
-                @Override
-                public void handleMessage(Message msg)
-                {
-                    handle(msg);
-                }
-            });
-
-            setupPermissions();
-
-            loadJsonDatabase();
-        };
-
         if (!FileHandler.Exists(FileHandler.Files.MASTER_UUID))
         {
-            GetUUIDs(postUUIDSetup);
+            MessageBox("No UUIDs detected");
+            // Get UUIDs instead of finish();
+            finish();
         }
         else
         {
-            try
-            {
+            try {
                 // One UUID per line, only the last four digits
-                uuidEndings = new ArrayList<>(
+                UUIDs = new ArrayList<>(
                         Arrays.asList(
-                                FileHandler.LoadContents(FileHandler.Files.MASTER_UUID)
-                                        .replace("\n", "").trim().split(",")));
+                                FileHandler.LoadContents(FileHandler.Files.MASTER_UUID).split(",")));
                 boolean failed = false;
-                for (int i = 0; i < uuidEndings.size(); ++i)
+                for (int i = 0; i < UUIDs.size(); ++i)
                 {
-                    if (uuidEndings.get(i).length() != 4)
+                    if (UUIDs.get(i).length() != 4)
                         failed = true;
                 }
-                if (uuidEndings.size() != 6 || failed)
+                if (UUIDs.size() != 6 || failed)
                 {
-                    uuidEndings = new ArrayList<>();
-                    GetUUIDs(postUUIDSetup);
-                }
-                else
-                {
-                    postUUIDSetup.run();
+                    MessageBox("Failed to load UUIDs");
+                    finish();
                 }
             }
             catch (Exception e)
             {
                 Constants.Log(e);
-                GetUUIDs(postUUIDSetup);
+                MessageBox("Failed to load UUIDs");
+                finish();
             }
         }
-    }
 
-    /**
-     * Request uuidEndings over and over until valid
-     */
-    private void GetUUIDs(Runnable onComplete)
-    {
-        Constants.GetString(this, "Unable to load, please enter six IDs separated by commas", "", (val) ->
-        {
-            boolean failed = false;
-            try {
-                String[] vals = val.split(",");
-                if (vals.length == 6) {
-                    for (int i = 0; i < 6; ++i) {
-                        if (vals[i].length() != 4)
-                            failed = true;
-                        else {
-                            uuidEndings.add(vals[i]);
-                        }
-                    }
-                } else failed = true;
-            }
-            catch (Exception e)
+        SetHandler(new Handler() {
+            @Override
+            public void handleMessage(Message msg)
             {
-                Constants.Log(e);
-                failed = true;
+                handle(msg);
             }
-
-            if (!failed)
-            {
-                FileHandler.Write(FileHandler.Files.MASTER_UUID, val);
-                onComplete.run();
-            }
-            else GetUUIDs(onComplete);
         });
-    }
 
+        setupPermissions();
+
+        loadJsonDatabase();
+    }
 
     /**
      * Load options menu from xml
@@ -546,7 +505,7 @@ public class MasterActivity extends BluetoothServerActivity {
 
                 break;
             case Messages.MESSAGE_CONNECTION_FAILED:
-                VisualLog("Connection Failed");
+                VisualLog("Connection Timed Out");
                 break;
             case Messages.MESSAGE_CONNECTED:
             Constants.Log("Received Connect");

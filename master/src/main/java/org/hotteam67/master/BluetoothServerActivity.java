@@ -27,7 +27,7 @@ import java.util.UUID;
  */
 public abstract class BluetoothServerActivity extends AppCompatActivity
 {
-    protected List<String> uuidEndings = new ArrayList<>();
+    protected List<String> UUIDs = new ArrayList<>();
 
     /**
      * Messages for communicating with the main thread
@@ -90,6 +90,7 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
      */
     private class ConnectThread extends Thread {
         private final List<BluetoothDevice> devices;
+        private final List<BluetoothSocket> sockets;
 
         /**
          * Constructor, turns devices into sockets with uuid
@@ -98,6 +99,33 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
         ConnectThread(List<BluetoothDevice> devices)
         {
             this.devices = devices;
+
+            sockets = new ArrayList<>();
+
+            BluetoothSocket connectionSocket;
+            for (BluetoothDevice device : this.devices)
+            {
+                connectionSocket = null;
+                for (int i = 0; i < UUIDs.size(); ++i)
+                {
+                    try
+                    {
+                        Constants.Log("Getting Connection");
+                        connectionSocket = device.createInsecureRfcommSocketToServiceRecord(
+                                java.util.UUID.fromString(UUIDs.get(i))
+                        );
+                        Constants.Log("Succeeded to connect with UUID: " + UUIDs.get(i));
+                    }
+                    catch (java.io.IOException e)
+                    {
+                        Constants.Log("Failed to connect with UUID: " + UUIDs.get(i));
+                    }
+                }
+                if (connectionSocket != null)
+                    sockets.add(connectionSocket);
+                else
+                    Constants.Log("Failed to connect with any UUIDs");
+            }
         }
 
         /**
@@ -106,54 +134,29 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
          */
         public void run()
         {
-            for (BluetoothDevice device : devices)
+            for (BluetoothSocket connectionSocket : sockets)
             {
-                BluetoothSocket connectionSocket;
-                boolean success = false;
                 try
                 {
                     // Send the message to UI thread we are connecting to device i
                     m_handler.obtainMessage(Messages.MESSAGE_CONNECTING, 0, 0,
-                            device.getName()).sendToTarget();
-                    Constants.Log("Connecting to device: " + device.getName());
-
-                    for (int i = 0; i < uuidEndings.size(); ++i)
-                    {
-                        try
-                        {
-                            connectionSocket = device.createInsecureRfcommSocketToServiceRecord(
-                                    UUID.fromString(Constants.incompleteUUID + uuidEndings.get(i)));
-                            connectionSocket.connect();
-                            Constants.Log("Succeeded UUID: " + uuidEndings.get(i));
-                            connectSocket(connectionSocket);
-                            success = true;
-                            break;
-                        }
-                        catch (IOException e)
-                        {
-                            Constants.Log("Tried and failed UUID: " + uuidEndings.get(i));
-                        }
-                        catch (Exception e)
-                        {
-                            Constants.Log(e);
-                            Constants.Log("Tried and failed UUID: " + uuidEndings.get(i));
-                        }
-                    }
-                    if (!success) MSG(Messages.MESSAGE_CONNECTION_FAILED);
-                }
-                catch (Exception e)
+                            devices.get(sockets.indexOf(connectionSocket)).getName()).sendToTarget();
+                Constants.Log("Connecting to socket");
+                    connectionSocket.connect();
+                    connectSocket(connectionSocket);
+                } catch (java.io.IOException e)
                 {
                     try
                     {
                         MSG(Messages.MESSAGE_CONNECTION_FAILED);
-                    }
-                    catch (Exception e2)
+                        connectionSocket.close();
+                    } catch (java.io.IOException e2)
                     {
-                        Constants.Log(e2);
+                        Log.e("[Bluetooth]", "Failed to close socket after failure to connect", e2);
                     }
                 }
             }
-            Constants.Log("Connect thread ended!");
+        Constants.Log("Connect thread ended!");
         }
     }
 
@@ -337,9 +340,11 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
 
                 if (stream == null) break;
 
-               if (!read(stream)) break;
-
-                Constants.Log("Reading stream");
+            Constants.Log("Reading stream");
+                if (!read(stream))
+                {
+                    break;
+                }
 
                 if (Thread.currentThread().isInterrupted())
                 {
@@ -365,14 +370,14 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                 numBytes = stream.read(buffer);
                 String s = new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "");
 
-                Constants.Log("String Received: " + s);
+            Constants.Log("String Received: " + s);
 
                 m_handler.obtainMessage(Messages.MESSAGE_INPUT, numBytes, id, new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "")).sendToTarget();
                 return true;
             }
             catch (java.io.IOException e)
             {
-                Constants.Log(e);
+                Log.d("[Bluetooth]", "Input stream disconnected", e);
                 return false;
             }
         }
@@ -383,8 +388,8 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
          */
         void write(byte[] bytes)
         {
-            Constants.Log("Writing: " + new String(bytes));
-            Constants.Log("Bytes Length: " + bytes.length);
+        Constants.Log("Writing: " + new String(bytes));
+        Constants.Log("Bytes Length: " + bytes.length);
             OutputStream stream;
 
             OutputStream tmpOut = null;
