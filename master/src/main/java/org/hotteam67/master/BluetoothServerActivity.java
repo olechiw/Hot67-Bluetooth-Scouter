@@ -19,7 +19,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * The subclass for the server activity, handles bluetooth input/output and communication with main
@@ -27,8 +26,6 @@ import java.util.UUID;
  */
 public abstract class BluetoothServerActivity extends AppCompatActivity
 {
-    protected List<String> UUIDs = "";
-
     /**
      * Messages for communicating with the main thread
      */
@@ -105,13 +102,12 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             BluetoothSocket connectionSocket;
             for (BluetoothDevice device : this.devices)
             {
+
                 connectionSocket = null;
                 try
                 {
                 Constants.Log("Getting Connection");
-                    connectionSocket = device.createInsecureRfcommSocketToServiceRecord(
-                            java.util.UUID.fromString(UUID)
-                    );
+                    connectionSocket = device.createRfcommSocketToServiceRecord(Constants.uuid);
                 } catch (java.io.IOException e)
                 {
                     Log.e("[Bluetooth]", "Failed to connect to socket", e);

@@ -97,20 +97,6 @@ public class MasterActivity extends BluetoothServerActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_server);
-
-        if (!FileHandler.Exists(FileHandler.Files.MASTER_UUID))
-        {
-            MessageBox("No UUIDs detected");
-            finish();
-        }
-        else
-        {
-            // One UUID per line, only the last four digits
-            UUIDs = new ArrayList<>(
-                    Arrays.asList(
-                            FileHandler.LoadContents(FileHandler.Files.MASTER_UUID).split("\n")));
-        }
-
         SetHandler(new Handler() {
             @Override
             public void handleMessage(Message msg)
@@ -134,6 +120,33 @@ public class MasterActivity extends BluetoothServerActivity {
     {
         getMenuInflater().inflate(R.menu.menu_server, menu);
         return true;
+    }
+
+    /**
+     * Get a string input, and run an oncomplete event
+     * @param prompt the text prompt the user will see when asked to input a string
+     * @param defaultValue the default value of the string, if any
+     * @param onInput the event to run when input is received, assuming it isn't canceled
+     */
+    private void GetString(final String prompt, final String defaultValue, final Constants.StringInputEvent onInput) {
+        final EditText input = new EditText(this);
+        input.setText(defaultValue);
+
+        try {
+            AlertDialog.Builder dlg = new AlertDialog.Builder(this, R.style.AlertDialogTheme);
+            dlg.setTitle("");
+            dlg.setMessage(prompt);
+            dlg.setView(input);
+            dlg.setPositiveButton("Ok", (dialog, which) ->
+                    onInput.Run(input.getText().toString()));
+            dlg.setCancelable(true);
+            dlg.create();
+            dlg.show();
+        }
+        catch (Exception e)
+        {
+        Constants.Log("Failed to create dialog: " + e.getMessage());
+        }
     }
 
     /**
@@ -245,12 +258,12 @@ public class MasterActivity extends BluetoothServerActivity {
         });
 
         findViewById(R.id.messageButton)
-                .setOnClickListener(view -> Constants.GetString(this, "Enter Message:", "",
+                .setOnClickListener(view -> GetString("Enter Message:", "",
                 input -> WriteAllDevices((Constants.SERVER_MESSAGE_TAG + input).getBytes())));
 
         findViewById(R.id.submitButton)
                 .setOnClickListener(view ->
-                        Constants.GetString(this, "Get Match Number", lastMatchNumber, (input) ->
+                        GetString("Get Match Number", lastMatchNumber, (input) ->
                                 WriteAllDevices((Constants.SERVER_SUBMIT_TAG + input).getBytes())));
 
         findViewById(R.id.syncButton)
@@ -265,7 +278,7 @@ public class MasterActivity extends BluetoothServerActivity {
      */
     private void downloadEventMatches()
     {
-        Constants.GetString(this, "Enter Event Key:", "", eventKey ->
+        GetString("Enter Event Key:", "", eventKey ->
                 TBAHandler.Matches(eventKey, new OnDownloadResultListener<List<TBAHandler.Match>>() {
                     @Override
                     public void onComplete(List<TBAHandler.Match> result) {
@@ -295,7 +308,7 @@ public class MasterActivity extends BluetoothServerActivity {
                             }
                             MessageBox("Downloaded Matches: " +
                                     matchesBuilder.toString().split("\n").length);
-                            FileHandler.Write(FileHandler.Files.MASTER_MATCHES_CSV, matchesBuilder.toString());
+                            FileHandler.Write(FileHandler.Files.MATCHES_FILE, matchesBuilder.toString());
                         }
                         catch (Exception e)
                         {
@@ -333,7 +346,7 @@ public class MasterActivity extends BluetoothServerActivity {
                 List<String> matches =
                         new ArrayList<>(
                                 Arrays.asList(
-                                        FileHandler.LoadContents(FileHandler.Files.MASTER_MATCHES_CSV)
+                                        FileHandler.LoadContents(FileHandler.Files.MATCHES_FILE)
                                                 .split("\n")
                                 )
                         );
