@@ -111,7 +111,7 @@ public class Constants
      */
     public static String getScouterInputWithoutTag(String input)
     {
-        return input.substring(SCOUTER_TAG_LENGTH, input.length());
+        return input.substring(SCOUTER_TAG_LENGTH);
     }
 
     /**

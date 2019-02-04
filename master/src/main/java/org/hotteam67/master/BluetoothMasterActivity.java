@@ -16,6 +16,7 @@ import org.hotteam67.common.Constants;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -24,7 +25,7 @@ import java.util.Set;
  * The subclass for the server activity, handles bluetooth input/output and communication with main
  * thread
  */
-public abstract class BluetoothServerActivity extends AppCompatActivity
+public abstract class BluetoothMasterActivity extends AppCompatActivity
 {
     /**
      * Messages for communicating with the main thread
@@ -136,11 +137,11 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
                 {
                     try
                     {
-                        MSG(Messages.MESSAGE_CONNECTION_FAILED);
+                        // MSG(Messages.MESSAGE_CONNECTION_FAILED);
                         connectionSocket.close();
                     } catch (java.io.IOException e2)
                     {
-                        Log.e("[Bluetooth]", "Failed to close socket after failure to connect", e2);
+                        Constants.Log(e2);
                     }
                 }
             }
@@ -356,11 +357,11 @@ public abstract class BluetoothServerActivity extends AppCompatActivity
             try
             {
                 numBytes = stream.read(buffer);
-                String s = new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "");
+                String s = new String(buffer, StandardCharsets.UTF_8).substring(0, numBytes).replace("\0", "");
 
             Constants.Log("String Received: " + s);
 
-                m_handler.obtainMessage(Messages.MESSAGE_INPUT, numBytes, id, new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "")).sendToTarget();
+                m_handler.obtainMessage(Messages.MESSAGE_INPUT, numBytes, id, new String(buffer, StandardCharsets.UTF_8).substring(0, numBytes).replace("\0", "")).sendToTarget();
                 return true;
             }
             catch (java.io.IOException e)

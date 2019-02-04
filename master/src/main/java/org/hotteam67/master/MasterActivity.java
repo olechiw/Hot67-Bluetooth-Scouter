@@ -42,15 +42,10 @@ import java.util.List;
 /**
  * Server activity, handles the connections to all of the devices and input
  */
-public class MasterActivity extends BluetoothServerActivity {
+public class MasterActivity extends BluetoothMasterActivity {
 
     private static final int REQUEST_PREFERENCES = 2;
     private static final int REQUEST_ENABLE_PERMISSION = 3;
-
-    /**
-     * Log tag
-     */
-    private static final String TAG = "BLUETOOTH_SCOUTER_DEBUG";
 
     private String lastMatchNumber = "0";
     /**
@@ -66,10 +61,10 @@ public class MasterActivity extends BluetoothServerActivity {
 
     /**
      * Show a messagebox on the Server
+     *
      * @param text the text to display in the message box
      */
-    private void MessageBox(String text)
-    {
+    private void MessageBox(String text) {
         try {
             AlertDialog.Builder dlg = new AlertDialog.Builder(this, R.style.AlertDialogTheme);
             dlg.setTitle("");
@@ -78,9 +73,7 @@ public class MasterActivity extends BluetoothServerActivity {
             dlg.setCancelable(true);
             dlg.create();
             dlg.show();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Constants.Log(e);
         }
     }
@@ -90,6 +83,7 @@ public class MasterActivity extends BluetoothServerActivity {
 
     /**
      * Setup UI and the handler for communicating with bluetooth threads
+     *
      * @param savedInstanceState saved instance state is ignored
      */
     @SuppressLint("HandlerLeak")
@@ -99,8 +93,7 @@ public class MasterActivity extends BluetoothServerActivity {
         setContentView(R.layout.activity_server);
         SetHandler(new Handler() {
             @Override
-            public void handleMessage(Message msg)
-            {
+            public void handleMessage(Message msg) {
                 handle(msg);
             }
         });
@@ -112,21 +105,22 @@ public class MasterActivity extends BluetoothServerActivity {
 
     /**
      * Load options menu from xml
+     *
      * @param menu the menu to populate
      * @return true, menu was created
      */
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_server, menu);
         return true;
     }
 
     /**
      * Get a string input, and run an oncomplete event
-     * @param prompt the text prompt the user will see when asked to input a string
+     *
+     * @param prompt       the text prompt the user will see when asked to input a string
      * @param defaultValue the default value of the string, if any
-     * @param onInput the event to run when input is received, assuming it isn't canceled
+     * @param onInput      the event to run when input is received, assuming it isn't canceled
      */
     private void GetString(final String prompt, final String defaultValue, final Constants.StringInputEvent onInput) {
         final EditText input = new EditText(this);
@@ -142,66 +136,53 @@ public class MasterActivity extends BluetoothServerActivity {
             dlg.setCancelable(true);
             dlg.create();
             dlg.show();
-        }
-        catch (Exception e)
-        {
-        Constants.Log("Failed to create dialog: " + e.getMessage());
+        } catch (Exception e) {
+            Constants.Log("Failed to create dialog: " + e.getMessage());
         }
     }
 
     /**
      * Handle all of the menu items, such as setup schema or send schema
+     *
      * @param item the menu item selected, from the xml list
      * @return true, event was consumed
      */
     @Override
-    public synchronized boolean onOptionsItemSelected(MenuItem item)
-    {
-        switch (item.getItemId())
-        {
-            case R.id.menuItemSetupSchema:
-            {
+    public synchronized boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menuItemSetupSchema: {
                 final Context c = this;
                 Intent launchSchemaActivityIntent = new Intent(c, SchemaActivity.class);
                 startActivity(launchSchemaActivityIntent);
                 break;
             }
-            case R.id.menuItemSendSchema:
-            {
+            case R.id.menuItemSendSchema: {
                 Constants.OnConfirm("Send Schema?", this, () ->
                 {
-                    try
-                    {
+                    try {
                         // Obtain schema
                         String schema = SchemaHandler.LoadSchemaFromFile().toString();
 
                         int devices = WriteAllDevices((Constants.SCOUTER_SCHEMA_TAG + schema).getBytes());
                         VisualLog("Wrote schema to " + devices + " devices");
-                    }
-                    catch (Exception e)
-                    {
+                    } catch (Exception e) {
                         VisualLog("Failed to send schema to devices: " + e.getMessage());
                         Constants.Log(e);
                     }
                 });
                 break;
             }
-            case R.id.menuItemSendMatches:
-            {
+            case R.id.menuItemSendMatches: {
                 sendEventMatches();
                 break;
             }
-            case R.id.menuItemClearDatabase:
-            {
+            case R.id.menuItemClearDatabase: {
                 Constants.OnConfirm("Clear Local Database?", this, () ->
                 {
                     jsonDatabase = new JSONObject();
-                    try
-                    {
+                    try {
                         FileHandler.Write(FileHandler.Files.SERVER_FILE, "");
-                    }
-                    catch (Exception e)
-                    {
+                    } catch (Exception e) {
                         Constants.Log(e);
                     }
                 });
@@ -214,8 +195,7 @@ public class MasterActivity extends BluetoothServerActivity {
     /**
      * Setup the user interface and event handlers once bluetooth has been confirmed as active
      */
-    private void setupUI()
-    {
+    private void setupUI() {
         connectButton = findViewById(R.id.connectButton);
         connectButton.setOnClickListener(view ->
                 Constants.OnConfirm("Disconnect all existing devices?",
@@ -245,8 +225,7 @@ public class MasterActivity extends BluetoothServerActivity {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 if (v != null)
                     v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-            }else
-            {
+            } else {
                 //deprecated in API 26
                 if (v != null)
                     v.vibrate(500);
@@ -259,7 +238,7 @@ public class MasterActivity extends BluetoothServerActivity {
 
         findViewById(R.id.messageButton)
                 .setOnClickListener(view -> GetString("Enter Message:", "",
-                input -> WriteAllDevices((Constants.SERVER_MESSAGE_TAG + input).getBytes())));
+                        input -> WriteAllDevices((Constants.SERVER_MESSAGE_TAG + input).getBytes())));
 
         findViewById(R.id.submitButton)
                 .setOnClickListener(view ->
@@ -269,36 +248,31 @@ public class MasterActivity extends BluetoothServerActivity {
         findViewById(R.id.syncButton)
                 .setOnClickListener(view -> Constants.OnConfirm("Sync All Matches?",
                         this, () ->
-                        saveJsonObject(jsonDatabase, true)));
+                                saveJsonObject(jsonDatabase, true)));
     }
 
 
     /**
      * Download the event matches given an event key from user input
      */
-    private void downloadEventMatches()
-    {
+    private void downloadEventMatches() {
         GetString("Enter Event Key:", "", eventKey ->
                 TBAHandler.Matches(eventKey, new OnDownloadResultListener<List<TBAHandler.Match>>() {
                     @Override
                     public void onComplete(List<TBAHandler.Match> result) {
-                        try
-                        {
+                        try {
                             StringBuilder matchesBuilder = new StringBuilder();
 
-                            for (TBAHandler.Match match : result)
-                            {
+                            for (TBAHandler.Match match : result) {
                                 List<String> redTeams = match.redTeams;
                                 List<String> blueTeams = match.blueTeams;
                                 StringBuilder rowBuilder = new StringBuilder();
 
-                                for (int t = 0; t < redTeams.size(); ++t)
-                                {
+                                for (int t = 0; t < redTeams.size(); ++t) {
                                     rowBuilder.append(redTeams.get(t));
                                     rowBuilder.append(",");
                                 }
-                                for (int t = 0; t < blueTeams.size(); ++t)
-                                {
+                                for (int t = 0; t < blueTeams.size(); ++t) {
                                     rowBuilder.append(blueTeams.get(t));
                                     if (t + 1 < blueTeams.size())
                                         rowBuilder.append(",");
@@ -309,9 +283,7 @@ public class MasterActivity extends BluetoothServerActivity {
                             MessageBox("Downloaded Matches: " +
                                     matchesBuilder.toString().split("\n").length);
                             FileHandler.Write(FileHandler.Files.MATCHES_FILE, matchesBuilder.toString());
-                        }
-                        catch (Exception e)
-                        {
+                        } catch (Exception e) {
                             Constants.Log(e);
                         }
                     }
@@ -328,8 +300,7 @@ public class MasterActivity extends BluetoothServerActivity {
      * Splits all of the event schedule into six, and sends all of the teams to each device, in the
      * order they are found in the CSV match schedule file
      */
-    private void sendEventMatches()
-    {
+    private void sendEventMatches() {
         Constants.OnConfirm("Send Matches?", this, () ->
         {
             try {
@@ -387,10 +358,8 @@ public class MasterActivity extends BluetoothServerActivity {
                 if (failed > 0)
                     s += " Dropped " + failed + " matches";
                 MessageBox(s);
-            }
-            catch (Exception e)
-            {
-            Constants.Log("Failed to send matches from stored file!");
+            } catch (Exception e) {
+                Constants.Log("Failed to send matches from stored file!");
                 Constants.Log(e);
             }
         });
@@ -399,15 +368,12 @@ public class MasterActivity extends BluetoothServerActivity {
     /**
      * Setup the permissions if bluetooth is not setup, otherwise setup the user interface
      */
-    private void setupPermissions()
-    {
+    private void setupPermissions() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-        Constants.Log("Permission granted");
+            Constants.Log("Permission granted");
             setupBluetooth(this::setupUI);
-        }
-        else
-        {
-        Constants.Log("Permission requested!");
+        } else {
+            Constants.Log("Permission requested!");
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     REQUEST_ENABLE_PERMISSION);
@@ -417,22 +383,18 @@ public class MasterActivity extends BluetoothServerActivity {
 
     /**
      * When permissions are returned, check if bluetooth was enabled
-     * @param requestCode permissions request code assigned at request time
-     * @param permissions the permissions requested
+     *
+     * @param requestCode  permissions request code assigned at request time
+     * @param permissions  the permissions requested
      * @param grantResults the results of the requested permissions
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
-        if (requestCode == REQUEST_ENABLE_PERMISSION)
-        {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-            {
-            Constants.Log("Permission granted");
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_ENABLE_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Constants.Log("Permission granted");
                 setupBluetooth(this::setupUI);
-            }
-            else
-            {
+            } else {
                 setupPermissions();
             }
         }
@@ -441,23 +403,23 @@ public class MasterActivity extends BluetoothServerActivity {
     /**
      * Configure the preferences by starting the preferences activity
      */
-    private void configurePreferences()
-    {
+    private void configurePreferences() {
         Intent intent = new Intent(this, PreferencesActivity.class);
         startActivityForResult(intent, REQUEST_PREFERENCES);
     }
 
     private int currentLog = 1;
+
     // Log to the end user about things like connected and disconnected devices
-    private void VisualLog(String text)
-    {
+    private void VisualLog(String text) {
         serverLogText.append(currentLog + ": " + text + "\n");
         currentLog++;
     }
 
     // Handle an input message from one of the bluetooth threads
+
     /**
-     * Handle, the function that is attached to the handler of subclass BluetoothServerActivity and
+     * Handle, the function that is attached to the handler of subclass BluetoothMasterActivity and
      * receives messages about connections and bluetooth input
      */
     @SuppressLint("SetTextI18n")
@@ -472,18 +434,13 @@ public class MasterActivity extends BluetoothServerActivity {
 
                 int id = msg.arg2; // The id of the thread received from
                 // Send a "message received" in the form of a match tag
-                try
-                {
+                try {
                     // Send on the connected thread
                     WriteDevice(Constants.SERVER_TEAMS_RECEIVED_TAG.getBytes(), id - 1);
-                }
-                catch (IndexOutOfBoundsException e)
-                {
+                } catch (IndexOutOfBoundsException e) {
                     Constants.Log(e);
                     Constants.Log("Failed to find connected thread: " + id + " was it disposed?");
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     Constants.Log(e);
                     Constants.Log("Exception occured in trying to write team received tag: " + e.getMessage());
                 }
@@ -498,7 +455,7 @@ public class MasterActivity extends BluetoothServerActivity {
 
                 break;
             case Messages.MESSAGE_CONNECTING:
-                String name = (String)msg.obj;
+                String name = (String) msg.obj;
                 VisualLog("Attempting Connection with " + name);
 
                 break;
@@ -506,41 +463,35 @@ public class MasterActivity extends BluetoothServerActivity {
                 VisualLog("Connection Timed Out");
                 break;
             case Messages.MESSAGE_CONNECTED:
-            Constants.Log("Received Connect");
-            Constants.Log("Size of connected threads: " + GetDevices());
+                Constants.Log("Received Connect");
+                Constants.Log("Size of connected threads: " + GetDevices());
                 VisualLog("Device Connected!");
                 connectButton.setText("Connected Devices: " + String.valueOf(GetDevices()));
 
                 break;
             case Messages.MESSAGE_DISCONNECTED:
                 //MessageBox("DISCONNECTED FROM DEVICE");
-            Constants.Log("Received Disconnect");
+                Constants.Log("Received Disconnect");
                 VisualLog("Device Disconnected!");
-            Constants.Log("Size of connected threads: " + GetDevices());
+                Constants.Log("Size of connected threads: " + GetDevices());
                 connectButton.setText("Connected Devices: " + String.valueOf(GetDevices()));
                 break;
             default:
-            Constants.Log("Received Message: " + msg.what);
+                Constants.Log("Received Message: " + msg.what);
         }
     }
 
     /**
      * Load the local database into the json object in memory, or handle exceptions
      */
-    private void loadJsonDatabase()
-    {
+    private void loadJsonDatabase() {
         String fileContents = FileHandler.LoadContents(FileHandler.Files.SERVER_FILE);
         if (fileContents.trim().isEmpty()) {
             jsonDatabase = new JSONObject();
-        }
-        else
-        {
-            try
-            {
+        } else {
+            try {
                 jsonDatabase = new JSONObject(fileContents);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 jsonDatabase = new JSONObject();
             }
         }
@@ -549,18 +500,17 @@ public class MasterActivity extends BluetoothServerActivity {
     /**
      * Save the JSON object from memory to disk
      */
-    private void saveJsonDatabase()
-    {
+    private void saveJsonDatabase() {
         FileHandler.Write(FileHandler.Files.SERVER_FILE, jsonDatabase.toString());
     }
 
     /**
      * Save the json object from memory to the firebase database, as a sub-object of the event name
      * tag, as opposed to writing to the root url and overwriting all data
+     *
      * @param json the object to send
      */
-    private void saveJsonObject(JSONObject json)
-    {
+    private void saveJsonObject(JSONObject json) {
         saveJsonObject(json, false);
     }
 
@@ -568,11 +518,11 @@ public class MasterActivity extends BluetoothServerActivity {
      * Write a json object to firebase. Either write to rootUrl and overwrite everything with the object,
      * or determine its tag from teamNumber_matchNumber and write it as a subtag of the configured
      * event name
-     * @param json the object to write
+     *
+     * @param json       the object to write
      * @param useRootUrl whether to overwrite everything or write as a sub object
      */
-    private void saveJsonObject(final JSONObject json, boolean useRootUrl)
-    {
+    private void saveJsonObject(final JSONObject json, boolean useRootUrl) {
         try {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             String eventName = (String) prefs.getAll().get(Constants.PREF_EVENTNAME);
@@ -592,13 +542,12 @@ public class MasterActivity extends BluetoothServerActivity {
             String finalUrl = eventUrl + eventName;
 
             // Oncomplete event only used for sync-all to notify completion
-            Runnable onComplete = () -> {};
-            if (useRootUrl)
-            {
+            Runnable onComplete = () -> {
+            };
+            if (useRootUrl) {
                 finalUrl += ".json?auth=" + apiKey;
                 onComplete = () -> this.VisualLog("Synced All!");
-            }
-            else {
+            } else {
                 String tag =
                         json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
                                 json.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
@@ -615,31 +564,23 @@ public class MasterActivity extends BluetoothServerActivity {
             try {
                 String matchNumber = (String) json.get(Constants.MATCH_NUMBER_JSON_TAG);
 
-                if (matchNumber.equals(lastMatchNumber))
-                {
+                if (matchNumber.equals(lastMatchNumber)) {
                     //noinspection SuspiciousMethodCalls
-                    if (!lastMatchTeamNumbers.contains(json.get(Constants.TEAM_NUMBER_JSON_TAG)))
-                    {
+                    if (!lastMatchTeamNumbers.contains(json.get(Constants.TEAM_NUMBER_JSON_TAG))) {
                         matchesReceived++;
                         lastMatchTeamNumbers.add((String) json.get(Constants.TEAM_NUMBER_JSON_TAG));
                     }
-                    serverLogText.setText(
-                            "Last Match: " + lastMatchNumber + " Received: " + matchesReceived + "\n"
-                    );
-                }
-                else
-                {
+                    VisualLog(
+                            "Match Received: " + lastMatchNumber + " Received: " + matchesReceived + "\n");
+                } else {
                     lastMatchNumber = matchNumber;
                     matchesReceived = 1;
                     lastMatchTeamNumbers = new ArrayList<>();
                     lastMatchTeamNumbers.add((String) json.get(Constants.TEAM_NUMBER_JSON_TAG));
-                    serverLogText.setText(
-                            "Last Match: " + matchNumber + " Received: " + matchesReceived + "\n"
-                    );
+                    VisualLog(
+                            "Match Received: " + matchNumber + " Received: " + matchesReceived + "\n");
                 }
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 Constants.Log(e);
             }
             String tag =
@@ -647,9 +588,7 @@ public class MasterActivity extends BluetoothServerActivity {
                             json.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
             jsonDatabase.put(tag, json);
             saveJsonDatabase();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Constants.Log(e);
         }
     }
@@ -663,14 +602,13 @@ public class MasterActivity extends BluetoothServerActivity {
 
         private final String uploadUrl;
         private final Runnable onCompleteEvent;
-        AsyncUploadTask(String url, Runnable onComplete)
-        {
+
+        AsyncUploadTask(String url, Runnable onComplete) {
             uploadUrl = url;
             onCompleteEvent = onComplete;
         }
 
-        protected JSONObject doInBackground(JSONObject... json)
-        {
+        protected JSONObject doInBackground(JSONObject... json) {
             try {
                 // Each individual match gets a tag, with the team number then match number,
                 // so unique for every team's match. For instance:
@@ -679,8 +617,7 @@ public class MasterActivity extends BluetoothServerActivity {
                 // or 2048_15 for team 2048 match 15
                 //
                 // This is simply to make sure no duplicate matches are recorded for any team
-                if (json != null && json.length > 0)
-                {
+                if (json != null && json.length > 0) {
                     String jsonString = json[0].toString();
                     Log.d("BluetoothScouter", "Outputting json: " + jsonString);
 
@@ -701,9 +638,7 @@ public class MasterActivity extends BluetoothServerActivity {
                     String resp = conn.getResponseMessage();
                     Log.d("BLUETOOTH_SCOUTER", "Response: " + resp);
                 }
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 Constants.Log(e);
             }
 
@@ -713,8 +648,7 @@ public class MasterActivity extends BluetoothServerActivity {
                 return null;
         }
 
-        protected void onPostExecute(JSONObject j)
-        {
+        protected void onPostExecute(JSONObject j) {
             onCompleteEvent.run();
         }
     }
@@ -724,8 +658,7 @@ public class MasterActivity extends BluetoothServerActivity {
      * Save the database when the activity ends, just in case.
      */
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         super.onDestroy();
 
 

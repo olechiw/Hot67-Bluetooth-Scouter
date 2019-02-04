@@ -186,8 +186,8 @@ public class TBAHandler {
                         if (!matchObject.get("comp_level").equals("qm")) continue;
 
                         JSONObject allianceObject = matchObject.getJSONObject("alliances");
-                        JSONObject blue = allianceObject.getJSONObject("alliances").getJSONObject("blue");
-                        JSONObject red = allianceObject.getJSONObject("alliances").getJSONObject("red");
+                        JSONObject blue = allianceObject.getJSONObject("blue");
+                        JSONObject red = allianceObject.getJSONObject("red");
 
                         JSONArray redTeamKeys = (JSONArray) red.get("team_keys");
                         for (int r = 0; r < redTeamKeys.length(); ++r)

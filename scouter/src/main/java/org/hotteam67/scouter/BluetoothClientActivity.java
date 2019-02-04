@@ -16,6 +16,7 @@ import org.hotteam67.common.Constants;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -251,7 +252,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
 
             Constants.Log("Reading Bytes of Length:" + numBytes);
 
-                m_handler.obtainMessage(MessageTypes.MESSAGE_INPUT, numBytes, -1, new String(buffer, "UTF-8").substring(0, numBytes).replace("\0", "")).sendToTarget();
+                m_handler.obtainMessage(MessageTypes.MESSAGE_INPUT, numBytes, -1, new String(buffer, StandardCharsets.UTF_8).substring(0, numBytes).replace("\0", "")).sendToTarget();
                 return true;
             }
             catch (java.io.IOException e)
