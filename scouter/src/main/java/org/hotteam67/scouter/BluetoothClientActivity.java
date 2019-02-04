@@ -71,6 +71,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
         };
 
         Constants.Log("Setting up bluetooth");
+        setupBluetooth();
     }
 
     /**
@@ -123,6 +124,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
                 Constants.Log(e);
             }
 
+
             connectionSocket = tmp;
         }
 
@@ -134,12 +136,6 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
         {
             while (!Thread.currentThread().isInterrupted())
             {
-                if (connectionSocket == null)
-                {
-                    disconnect();
-                    break;
-                }
-
                 BluetoothSocket conn = null;
                 try
                 {
@@ -309,7 +305,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
     /**
      * Setup the bluetooth adapter of the activity
      */
-    protected synchronized void setupBluetooth()
+    private synchronized void setupBluetooth()
     {
     Constants.Log("Getting adapter");
         m_bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
