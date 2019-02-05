@@ -337,7 +337,7 @@ public class ScoutActivity extends BluetoothClientActivity {
         sendAllButton.setVisibility(View.INVISIBLE);
         sendAllProgress.setVisibility(View.VISIBLE);
         queuedMatchesToSend = new ArrayList<>(matches.subList(1, matches.size() - 1));
-        SendMatch(matches.get(0));
+        BluetoothWrite(matches.get(0).toString());
 
         Timer completeTimer = new Timer();
         // 15 second timeout
@@ -345,7 +345,7 @@ public class ScoutActivity extends BluetoothClientActivity {
             @Override
             public void run() {
                 if (queuedMatchesToSend.size() > 0)
-                    MessageBox("Failed to send: " + queuedMatchesToSend.size() + " matches");
+                    runOnUiThread(() -> MessageBox("Failed to send: " + queuedMatchesToSend.size() + " matches"));
                 sendAllButton.setVisibility(View.VISIBLE);
                 sendAllProgress.setVisibility(View.INVISIBLE);
                 sendingState = SendingState.WAITING;
@@ -511,12 +511,12 @@ public class ScoutActivity extends BluetoothClientActivity {
                 case Constants.MASTER_TEAMS_RECEIVED_TAG:
                     if (queuedMatchesToSend.size() > 0 && sendingState == SendingState.SENDING) {
                         Constants.Log("master received last, sending again");
-                        SendMatch(queuedMatchesToSend.get(0));
+                        BluetoothWrite(queuedMatchesToSend.get(0).toString());
                         queuedMatchesToSend.remove(0);
                     } else {
                         sendingState = SendingState.WAITING;
                         sendAllButton.setVisibility(View.VISIBLE);
-                        sendAllProgress.setVisibility(View.INVISIBLE);
+                        sendAllProgress.setVisibility(View.GONE);
                     }
                     break;
                 case Constants.SCOUTER_SCHEMA_TAG:
@@ -570,7 +570,7 @@ public class ScoutActivity extends BluetoothClientActivity {
                         try {
                             // If match was not current one, but exists, just send it right away
                             if (Integer.valueOf(message) < matches.size()) {
-                                SendMatch(matches.get(Integer.valueOf(message)));
+                                SendMatch(matches.get(Integer.valueOf(message) - 1));
                             }
                         } catch (Exception e) {
                             Constants.Log("Error processing match number request: " + message);
@@ -617,7 +617,7 @@ public class ScoutActivity extends BluetoothClientActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogTheme);
         AlertDialog dialog;
         dialog = builder
-                .setTitle("Auto submitting Soon...").setMessage("Submitting in 15 seconds")
+                .setTitle("Auto Submitting Soon...").setMessage("Submitting in 15 seconds")
                 .setPositiveButton("Submit", (dialogInterface, i) ->
                 {
                     {

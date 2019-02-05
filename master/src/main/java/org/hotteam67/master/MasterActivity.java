@@ -187,6 +187,12 @@ public class MasterActivity extends BluetoothMasterActivity {
                     }
                 });
             }
+            case R.id.menuItemRequestSendAll: {
+                Constants.OnConfirm("Request all matches? This will interrupt scouting", this, () ->
+                {
+                    WriteAllDevices(Constants.MASTER_SEND_ALL_TAG.getBytes());
+                });
+            }
         }
 
         return true;
@@ -563,22 +569,20 @@ public class MasterActivity extends BluetoothMasterActivity {
             // Save locally
             try {
                 String matchNumber = (String) json.get(Constants.MATCH_NUMBER_JSON_TAG);
-
+                String teamNumber = (String) json.get(Constants.TEAM_NUMBER_JSON_TAG);
                 if (matchNumber.equals(lastMatchNumber)) {
                     //noinspection SuspiciousMethodCalls
                     if (!lastMatchTeamNumbers.contains(json.get(Constants.TEAM_NUMBER_JSON_TAG))) {
                         matchesReceived++;
-                        lastMatchTeamNumbers.add((String) json.get(Constants.TEAM_NUMBER_JSON_TAG));
+                        lastMatchTeamNumbers.add(teamNumber);
                     }
-                    VisualLog(
-                            "Match Received: " + lastMatchNumber + " Received: " + matchesReceived + "\n");
+                    VisualLog("Received match " + matchNumber + " for team " + teamNumber);
                 } else {
                     lastMatchNumber = matchNumber;
                     matchesReceived = 1;
                     lastMatchTeamNumbers = new ArrayList<>();
-                    lastMatchTeamNumbers.add((String) json.get(Constants.TEAM_NUMBER_JSON_TAG));
-                    VisualLog(
-                            "Match Received: " + matchNumber + " Received: " + matchesReceived + "\n");
+                    lastMatchTeamNumbers.add(teamNumber);
+                    VisualLog("Received Match " + matchNumber + " | Team " + teamNumber);
                 }
             } catch (Exception e) {
                 Constants.Log(e);

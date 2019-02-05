@@ -36,7 +36,7 @@ public final class FileHandler {
         public static final String SCHEMA_FILE = "schema.json";
 
         /**
-         * The scouter's scouted + unscouted matches (unscouted are just team numbers)
+         * The scouter's locally stored data
          */
         public static final String SCOUTER_FILE = "Scouter/scouterDatabase.json";
 

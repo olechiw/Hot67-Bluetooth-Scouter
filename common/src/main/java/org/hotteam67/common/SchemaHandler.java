@@ -276,6 +276,7 @@ public final class SchemaHandler
      */
     public static void SetCurrentValues(TableLayout table, JSONObject values)
     {
+        ClearCurrentValues(table);
         for (View v : getViews(table))
         {
             try
