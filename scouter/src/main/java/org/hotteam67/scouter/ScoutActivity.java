@@ -61,7 +61,6 @@ public class ScoutActivity extends BluetoothClientActivity {
     private SendingState sendingState = SendingState.WAITING;
 
     private ImageView connectionStatus;
-    private ImageButton sendAllButton;
     private ProgressBar sendAllProgress;
 
     private EditText teamNumber;
@@ -135,13 +134,6 @@ public class ScoutActivity extends BluetoothClientActivity {
         prevMatchButton.setOnClickListener(v -> OnPreviousMatch());
 
         final Context c = this;
-        sendAllButton = findViewById(R.id.sendAllButton);
-        sendAllButton.setOnLongClickListener(v ->
-        {
-            Constants.OnConfirm(
-                    "Send All Matches?", c, this::SendAllMatches);
-            return true;
-        });
         sendAllProgress = findViewById(R.id.indeterminateBar);
 
 
@@ -313,7 +305,7 @@ public class ScoutActivity extends BluetoothClientActivity {
     /**
      * Get the team number from memory for a specific match
      *
-     * @param m the match number ot get
+     * @param m the match number to get
      * @return the team number in String format, but also an int
      */
     private String GetMatchTeamNumber(int m) {
@@ -334,23 +326,39 @@ public class ScoutActivity extends BluetoothClientActivity {
             return;
 
         sendingState = SendingState.SENDING;
-        sendAllButton.setVisibility(View.INVISIBLE);
         sendAllProgress.setVisibility(View.VISIBLE);
-        queuedMatchesToSend = new ArrayList<>(matches.subList(1, matches.size() - 1));
-        BluetoothWrite(matches.get(0).toString());
+        for (int i = 1; i < matches.size(); ++i)
+        {
+            if (!IsMatchEmpty(matches.get(i)))
+                queuedMatchesToSend.add(matches.get(i));
+        }
+        if (!IsMatchEmpty(matches.get(0))) BluetoothWrite(matches.get(0).toString());
 
         Timer completeTimer = new Timer();
         // 15 second timeout
         completeTimer.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (queuedMatchesToSend.size() > 0)
-                    runOnUiThread(() -> MessageBox("Failed to send: " + queuedMatchesToSend.size() + " matches"));
-                sendAllButton.setVisibility(View.VISIBLE);
-                sendAllProgress.setVisibility(View.INVISIBLE);
-                sendingState = SendingState.WAITING;
+                runOnUiThread(() -> {
+                    if (queuedMatchesToSend.size() > 0)
+                        MessageBox("Failed to send: " + queuedMatchesToSend.size() + " matches");
+                    sendAllProgress.setVisibility(View.INVISIBLE);
+                    sendingState = SendingState.WAITING;
+                });
             }
         }, 15000);
+    }
+
+    private boolean IsMatchEmpty(JSONObject match) {
+        try {
+            JSONObject copy = new JSONObject(match.toString());
+            copy.remove(Constants.TEAM_NUMBER_JSON_TAG);
+            copy.remove(Constants.MATCH_NUMBER_JSON_TAG);
+            return copy.length() == 0;
+        } catch (Exception e) {
+            Constants.Log(e);
+            return false;
+        }
     }
 
     /**
@@ -423,6 +431,7 @@ public class ScoutActivity extends BluetoothClientActivity {
             Constants.Log("Saving local only");
     }
 
+
     /**
      * Send a match over bluetooth
      *
@@ -452,11 +461,7 @@ public class ScoutActivity extends BluetoothClientActivity {
 
 
         // Experimenting without sanitation now that everything is JSON
-        String notesText = notes.getText().toString();//.replace(",", "");
-        /*
-        notesText = notesText.replace("\r\n", "");
-        notesText = notesText.replace("\n", "");
-        */
+        String notesText = notes.getText().toString();
         try {
             /*
             Add three values outside of schema-input fields: Team #, Match #, and Notes
@@ -515,7 +520,6 @@ public class ScoutActivity extends BluetoothClientActivity {
                         queuedMatchesToSend.remove(0);
                     } else {
                         sendingState = SendingState.WAITING;
-                        sendAllButton.setVisibility(View.VISIBLE);
                         sendAllProgress.setVisibility(View.GONE);
                     }
                     break;

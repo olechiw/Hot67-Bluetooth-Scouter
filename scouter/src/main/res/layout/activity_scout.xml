@@ -65,17 +65,6 @@
                 android:layout_gravity="start"
                 android:tint="@color/textColorActionBar"
                 android:layout_alignParentStart="true" />
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scaleX=".4"
-            android:scaleY=".4"
-            android:src="@drawable/ic_sync"
-            android:id="@+id/sendAllButton"
-            android:layout_gravity="end"
-            android:tint="@color/textColorActionBar"
-            android:background="@color/red"
-            android:layout_alignParentEnd="true" />
         <ProgressBar
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -83,7 +83,25 @@ public final class FileHandler {
 
     private static final String DIRECTORY =
             Environment.getExternalStorageDirectory().getAbsolutePath() + "/BluetoothScouter/";
+    private static final String SCOUTER_DIRECTORY = DIRECTORY + "Scouter";
+    private static final String MASTER_DIRECTORY = DIRECTORY + "Master";
+    private static final String VIEWER_DIRECTORY = DIRECTORY + "Viewer";
 
+
+    private static void MakeDirs()
+    {
+        try
+        {
+            new File(SCOUTER_DIRECTORY).mkdirs();
+            new File(MASTER_DIRECTORY).mkdirs();
+            new File(VIEWER_DIRECTORY).mkdirs();
+        }
+        catch (Exception e)
+        {
+            Constants.Log(e);
+            Constants.Log("Failed to create directories");
+        }
+    }
 
     /**
      * Get the string value of a file with its directory
@@ -137,22 +155,24 @@ public final class FileHandler {
             }
             else if (!fileObj.exists())
             {
-                new File(DIRECTORY).mkdirs();
+                MakeDirs();
                 fileObj.createNewFile();
             }
             return new FileWriter(fileObj.getAbsolutePath(), false);
         } catch (FileNotFoundException e) {
+            Constants.Log(e);
             Constants.Log("File not found");
-            new File(DIRECTORY).mkdirs();
+            MakeDirs();
 
             try {
                 new File(f).createNewFile();
                 return new FileWriter(new File(f).getAbsolutePath(), false);
             } catch (Exception ex) {
+                Constants.Log(ex);
                 return null;
             }
         } catch (Exception e) {
-            Constants.Log("Exception occured in loading reader : " + e.getMessage());
+            Constants.Log("Exception occured in loading writer : " + e.getMessage());
         }
 
         return null;
