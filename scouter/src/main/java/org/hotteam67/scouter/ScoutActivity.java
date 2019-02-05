@@ -45,8 +45,7 @@ import java.util.TimerTask;
 /**
  * The main activity for the scouter, handles UI, user input, and the bluetooth input/output
  */
-public class ScoutActivity extends BluetoothClientActivity
-{
+public class ScoutActivity extends BluetoothClientActivity {
     /**
      * Activity request to enable the bluetooth
      */
@@ -55,7 +54,10 @@ public class ScoutActivity extends BluetoothClientActivity
     /**
      * The state of sending matches for sync all
      */
-    enum SendingState { SENDING, WAITING }
+    enum SendingState {
+        SENDING, WAITING
+    }
+
     private SendingState sendingState = SendingState.WAITING;
 
     private ImageView connectionStatus;
@@ -80,11 +82,10 @@ public class ScoutActivity extends BluetoothClientActivity
     private String lastValuesBeforeChange = "";
 
     /**
-    When the activity is born
+     * When the activity is born
      */
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scout);
 
@@ -95,15 +96,12 @@ public class ScoutActivity extends BluetoothClientActivity
     /**
      * Check whether bluetooth permissions are setup, and request them if they arent
      */
-    private void CheckBluetooth()
-    {
+    private void CheckBluetooth() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-        Constants.Log("Permission granted");
+            Constants.Log("Permission granted");
             SetupAfterBluetooth();
-        }
-        else
-        {
-        Constants.Log("Permission requested!");
+        } else {
+            Constants.Log("Permission requested!");
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     REQUEST_ENABLE_PERMISSION);
@@ -113,8 +111,7 @@ public class ScoutActivity extends BluetoothClientActivity
     /**
      * Setup the user interface and threads after bluetooth has been initialized
      */
-    private void SetupAfterBluetooth()
-    {
+    private void SetupAfterBluetooth() {
         Toolbar toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
         ActionBar ab = getSupportActionBar();
@@ -140,11 +137,11 @@ public class ScoutActivity extends BluetoothClientActivity
         final Context c = this;
         sendAllButton = findViewById(R.id.sendAllButton);
         sendAllButton.setOnLongClickListener(v ->
-                {
-                    Constants.OnConfirm(
-                            "Send All Matches?", c, this::SendAllMatches);
-                    return true;
-                });
+        {
+            Constants.OnConfirm(
+                    "Send All Matches?", c, this::SendAllMatches);
+            return true;
+        });
         sendAllProgress = findViewById(R.id.indeterminateBar);
 
 
@@ -159,7 +156,7 @@ public class ScoutActivity extends BluetoothClientActivity
         matchNumber.clearFocus();
         matchNumber.setText("1");
         if (!matches.isEmpty()) {
-        Constants.Log("Loading first match!");
+            Constants.Log("Loading first match!");
             teamNumber.setText(GetMatchTeamNumber(GetDisplayedMatchNumber()));
             DisplayMatch(1);
         }
@@ -191,8 +188,7 @@ public class ScoutActivity extends BluetoothClientActivity
             if (unlockCount >= 2) {
                 teamNumber.setInputType(InputType.TYPE_CLASS_NUMBER);
                 return true;
-            }
-            else
+            } else
                 return false;
         });
         teamNumber.setInputType(InputType.TYPE_NULL);
@@ -201,8 +197,7 @@ public class ScoutActivity extends BluetoothClientActivity
     /**
      * When the next match is to be shown, save locally, send the current match, display the next one
      */
-    private void OnNextMatch()
-    {
+    private void OnNextMatch() {
         SaveCurrentMatch();
         SaveAllMatches();
         Constants.Log("Loading Next Match");
@@ -213,13 +208,11 @@ public class ScoutActivity extends BluetoothClientActivity
     /**
      * When the left button is clicked, save/send/show matches
      */
-    private void OnPreviousMatch()
-    {
+    private void OnPreviousMatch() {
         SaveCurrentMatch();
         SaveAllMatches();
-        if (GetDisplayedMatchNumber() > 1)
-        {
-        Constants.Log("Loading Previous Match");
+        if (GetDisplayedMatchNumber() > 1) {
+            Constants.Log("Loading Previous Match");
             DisplayMatch(GetDisplayedMatchNumber() - 1);
         }
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
@@ -227,10 +220,10 @@ public class ScoutActivity extends BluetoothClientActivity
 
     /**
      * Get the currently <b>displayed</b> match number, not the INDEX
+     *
      * @return match number
      */
-    private int GetDisplayedMatchNumber()
-    {
+    private int GetDisplayedMatchNumber() {
         try {
             int i = Integer.valueOf(matchNumber.getText().toString());
             if (i <= 0)
@@ -243,25 +236,26 @@ public class ScoutActivity extends BluetoothClientActivity
 
     /**
      * Show a match in the UI, changing the match number text
+     *
      * @param match the match number to show
      */
-    private void DisplayMatch(int match)
-    {
+    private void DisplayMatch(int match) {
         DisplayMatch(match, true);
     }
 
     /**
      * Show a match in the UI
-     * @param match the match number to show
+     *
+     * @param match           the match number to show
      * @param changeMatchText whether to change matchNumber textview's value, set to false if this
      *                        was triggered by the user editing the text
      */
-    private void DisplayMatch(int match, boolean changeMatchText)
-    {
+    private void DisplayMatch(int match, boolean changeMatchText) {
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
 
         if (matches.size() >= match) // Currently existing match
         {
+            SchemaHandler.ClearCurrentValues(inputTable);
             try {
                 // Load the match and display it
                 JSONObject val = matches.get(match - 1);
@@ -270,7 +264,6 @@ public class ScoutActivity extends BluetoothClientActivity
             } catch (Exception e) {
                 Constants.Log(e);
                 Constants.Log("Offending match: " + matches.get(match - 1));
-                SchemaHandler.ClearCurrentValues(inputTable);
             }
 
             teamNumber.setText(GetMatchTeamNumber(match));
@@ -300,19 +293,18 @@ public class ScoutActivity extends BluetoothClientActivity
 
     /**
      * Load the value of the notes from memory for given match number
+     *
      * @param matchNumber the match number to get notes for
      * @return the string value of the notes key, or "" if none are found/failure occurs
      */
-    private String GetNotes(int matchNumber)
-    {
+    private String GetNotes(int matchNumber) {
         if (matches.size() > matchNumber)
-            try
-            {
+            try {
                 JSONObject match = matches.get(matchNumber);
-                if (match != null && match.has(Constants.NOTES_JSON_TAG)) return match.getString(Constants.NOTES_JSON_TAG);
+                if (match != null && match.has(Constants.NOTES_JSON_TAG))
+                    return match.getString(Constants.NOTES_JSON_TAG);
                 else return "";
-            } catch (Exception e)
-            {
+            } catch (Exception e) {
                 Constants.Log(e);
             }
         return "";
@@ -320,18 +312,15 @@ public class ScoutActivity extends BluetoothClientActivity
 
     /**
      * Get the team number from memory for a specific match
+     *
      * @param m the match number ot get
      * @return the team number in String format, but also an int
      */
-    private String GetMatchTeamNumber(int m)
-    {
-        try
-        {
+    private String GetMatchTeamNumber(int m) {
+        try {
             return matches.get(m - 1)
                     .getString(Constants.TEAM_NUMBER_JSON_TAG);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Constants.Log(e);
             return "0";
         }
@@ -340,8 +329,7 @@ public class ScoutActivity extends BluetoothClientActivity
     /**
      * Begin syncing all matches to the server, queuing them all and sending one
      */
-    private void SendAllMatches()
-    {
+    private void SendAllMatches() {
         if (matches.size() < 1 || sendingState == SendingState.SENDING)
             return;
 
@@ -368,13 +356,13 @@ public class ScoutActivity extends BluetoothClientActivity
     /**
      * Save all matches locally
      */
-    private void SaveAllMatches()
-    {
+    private void SaveAllMatches() {
         // Store all matches locally
         StringBuilder output = new StringBuilder();
         int i = 1;
-        for (JSONObject s : matches)
-        {
+        List<JSONObject> local = matches;
+        local.size();
+        for (JSONObject s : matches) {
             output.append(s.toString());
             if (i < matches.size())
                 output.append("\n");
@@ -386,23 +374,22 @@ public class ScoutActivity extends BluetoothClientActivity
     /**
      * Save the current match locally and also send it, not saving duplicates
      */
-    private void SaveCurrentMatch() { SaveMatch(GetCurrentInputValues(), false, false); }
+    private void SaveCurrentMatch() {
+        SaveMatch(GetCurrentInputValues(), false, false);
+    }
 
     /**
      * Save the current match locally
-     * @param localOnly whether to send the match or just save it locally
+     *
+     * @param localOnly      whether to send the match or just save it locally
      * @param saveDuplicates whether to save even if the value has not been detected as changed
      */
-    private void SaveMatch(JSONObject match, boolean localOnly, boolean saveDuplicates)
-    {
+    private void SaveMatch(JSONObject match, boolean localOnly, boolean saveDuplicates) {
         int matchNumber = -1;
 
-        try
-        {
-            matchNumber  = Integer.valueOf((String)match.get(Constants.MATCH_NUMBER_JSON_TAG));
-        }
-        catch (Exception e)
-        {
+        try {
+            matchNumber = Integer.valueOf((String) match.get(Constants.MATCH_NUMBER_JSON_TAG));
+        } catch (Exception e) {
             Constants.Log(e);
             Constants.Log("Attempted to get match number of match in SaveMatch()");
         }
@@ -412,64 +399,55 @@ public class ScoutActivity extends BluetoothClientActivity
             Constants.Log("Nothing changed, not saving: " + GetCurrentInputValues());
             return;
         }
-        if (matchNumber < 0)
-        {
+        if (matchNumber < 0) {
             Constants.Log("Invalid Match Number in SaveMatch(): " + matchNumber);
             return;
         }
 
         // Existing match
-        if (matchNumber <= matches.size())
-        {
+        if (matchNumber <= matches.size()) {
             matches.set(matchNumber - 1, GetCurrentInputValues());
         }
         // New match when we are on the last match or there are no matches yet
-        else if (matchNumber + 1 == matches.size() || matches.size() == 0)
-        {
+        else if (matchNumber + 1 == matches.size() || matches.size() == 0) {
             matches.add(match);
         }
         // Too large of a match number
-        else
-        {
+        else {
             return;
         }
         // Write to bluetooth, after potentially saving match. Make sure actual match is there
-        if (!localOnly && matches.size() >= matchNumber && matches.get(matchNumber - 1) != null)
-        {
+        if (!localOnly && matches.size() >= matchNumber && matches.get(matchNumber - 1) != null) {
             SendMatch(matches.get(matchNumber - 1));
-        }
-        else
+        } else
             Constants.Log("Saving local only");
     }
 
     /**
      * Send a match over bluetooth
+     *
      * @param match completed JSON object to send
      */
-    private void SendMatch(JSONObject match)
-    {
+    private void SendMatch(JSONObject match) {
         // If currently doing send all don't allow any other activity
         if (sendingState == SendingState.SENDING || match == null) return;
 
-        try
-        {
+        try {
             // Send the match over bluetooth
             BluetoothWrite(match.toString());
-        Constants.Log("Output JSON: " + match);
-        }
-        catch (Exception e)
-        {
-        Constants.Log("Failure to send json match: " + match);
+            Constants.Log("Output JSON: " + match);
+        } catch (Exception e) {
+            Constants.Log("Failure to send json match: " + match);
             Constants.Log(e);
         }
     }
 
     /**
      * Get the current values of user input
+     *
      * @return a JSON Object with values, notes, and team/match number
      */
-    private JSONObject GetCurrentInputValues()
-    {
+    private JSONObject GetCurrentInputValues() {
         JSONObject currentValues = SchemaHandler.GetCurrentValues(inputTable);
 
 
@@ -479,8 +457,7 @@ public class ScoutActivity extends BluetoothClientActivity
         notesText = notesText.replace("\r\n", "");
         notesText = notesText.replace("\n", "");
         */
-        try
-        {
+        try {
             /*
             Add three values outside of schema-input fields: Team #, Match #, and Notes
              */
@@ -488,9 +465,7 @@ public class ScoutActivity extends BluetoothClientActivity
             currentValues.put(Constants.TEAM_NUMBER_JSON_TAG, teamNumber.getText().toString());
             currentValues.put(Constants.MATCH_NUMBER_JSON_TAG, matchNumber.getText().toString());
             return currentValues;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Constants.Log(e);
             return null;
         }
@@ -499,40 +474,33 @@ public class ScoutActivity extends BluetoothClientActivity
     /**
      * Load matches from the file into memory (Array<JSONObject> matches)
      */
-    private void LoadMatches()
-    {
-        try
-        {
+    private void LoadMatches() {
+        try {
             BufferedReader r = FileHandler.GetReader(FileHandler.Files.SCOUTER_FILE);
             String line = null;
-            if (r != null)
-            {
+            if (r != null) {
                 line = r.readLine();
             }
-            while (line != null)
-            {
+            while (line != null) {
                 matches.add(new JSONObject(line));
                 line = r.readLine();
             }
-            if (r != null)
-            {
+            if (r != null) {
                 r.close();
             }
-        }
-        catch (Exception e)
-        {
-        Constants.Log("Failed to load contents of matches database: " + e.getMessage());
+        } catch (Exception e) {
+            Constants.Log("Failed to load contents of matches database: " + e.getMessage());
             Constants.Log(e);
         }
     }
 
     /**
      * Process given bluetooth input
+     *
      * @param msg the message sent to the main thread from a bluetooth thread
      *            Found in BluetoothClientActivity
      */
-    private synchronized void ProcessBluetoothInput(Message msg)
-    {
+    private synchronized void ProcessBluetoothInput(Message msg) {
         try {
             final String message =
                     Constants.getScouterInputWithoutTag((String) msg.obj);
@@ -541,14 +509,11 @@ public class ScoutActivity extends BluetoothClientActivity
 
             switch (tag) {
                 case Constants.SERVER_TEAMS_RECEIVED_TAG:
-                    if (queuedMatchesToSend.size() > 0 && sendingState == SendingState.SENDING)
-                    {
-                    Constants.Log("Server received last, sending again");
+                    if (queuedMatchesToSend.size() > 0 && sendingState == SendingState.SENDING) {
+                        Constants.Log("Server received last, sending again");
                         SendMatch(queuedMatchesToSend.get(0));
                         queuedMatchesToSend.remove(0);
-                    }
-                    else
-                    {
+                    } else {
                         sendingState = SendingState.WAITING;
                         sendAllButton.setVisibility(View.VISIBLE);
                         sendAllProgress.setVisibility(View.INVISIBLE);
@@ -576,20 +541,15 @@ public class ScoutActivity extends BluetoothClientActivity
                         matches = new ArrayList<>();
                         String[] teamNumbers = message.split(",");
                         // Create a json object for each of the CSV teams
-                        for (int i = 0;i < teamNumbers.length; ++i)
-                        {
-                            try
-                            {
-                                if (teamNumbers[i] != null && !teamNumbers[i].trim().isEmpty())
-                                {
+                        for (int i = 0; i < teamNumbers.length; ++i) {
+                            try {
+                                if (teamNumbers[i] != null && !teamNumbers[i].trim().isEmpty()) {
                                     JSONObject matchObject = new JSONObject();
                                     matchObject.put(Constants.TEAM_NUMBER_JSON_TAG, teamNumbers[i]);
-                                    matchObject.put(Constants.MATCH_NUMBER_JSON_TAG, String.valueOf(i - 1));
+                                    matchObject.put(Constants.MATCH_NUMBER_JSON_TAG, String.valueOf(i + 1));
                                     matches.add(matchObject);
                                 }
-                            }
-                            catch (Exception e)
-                            {
+                            } catch (Exception e) {
                                 Constants.Log(e);
                             }
                         }
@@ -606,18 +566,13 @@ public class ScoutActivity extends BluetoothClientActivity
                     // If the match is still open show a countdown before sending
                     if (String.valueOf(GetDisplayedMatchNumber()).equals(message))
                         SubmitCountDown();
-                    else
-                    {
-                        try
-                        {
+                    else {
+                        try {
                             // If match was not current one, but exists, just send it right away
-                            if (Integer.valueOf(message) < matches.size())
-                            {
+                            if (Integer.valueOf(message) < matches.size()) {
                                 SendMatch(matches.get(Integer.valueOf(message)));
                             }
-                        }
-                        catch (Exception e)
-                        {
+                        } catch (Exception e) {
                             Constants.Log("Error processing match number request: " + message);
                             Constants.Log(e);
                         }
@@ -627,24 +582,21 @@ public class ScoutActivity extends BluetoothClientActivity
                     SendAllMatches();
                     break;
                 default:
-                Constants.Log("Received unknown tag: " + tag);
+                    Constants.Log("Received unknown tag: " + tag);
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Constants.Log(e);
         }
     }
 
     /**
      * Overriden from BluetoothClientActivity
+     *
      * @param msg the message sent to the thread
      */
     @Override
-    protected synchronized void handle(Message msg)
-    {
-        switch (msg.what)
-        {
+    protected synchronized void handle(Message msg) {
+        switch (msg.what) {
             case MessageTypes.MESSAGE_INPUT: // Input received through bluetooth
                 ProcessBluetoothInput(msg);
                 break;
@@ -661,45 +613,41 @@ public class ScoutActivity extends BluetoothClientActivity
     /**
      * Count down for 15 seconds and then submit the current match, unless the dialog is canceled
      */
-    private void SubmitCountDown()
-    {
+    private void SubmitCountDown() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogTheme);
         AlertDialog dialog;
         dialog = builder
                 .setTitle("Auto submitting Soon...").setMessage("Submitting in 15 seconds")
                 .setPositiveButton("Submit", (dialogInterface, i) ->
-        {
-            {
-                // Submit
-                SaveMatch(GetCurrentInputValues(), false, true);
-                OnNextMatch();
-                dialogInterface.dismiss();
-            }
-        }).setNegativeButton("Cancel", (dialogInterface, i) ->
-        {
-            // Cancelled
-        }).create();
+                {
+                    {
+                        // Submit
+                        SaveMatch(GetCurrentInputValues(), false, true);
+                        OnNextMatch();
+                        dialogInterface.dismiss();
+                    }
+                }).setNegativeButton("Cancel", (dialogInterface, i) ->
+                {
+                    // Cancelled
+                }).create();
         dialog.show();
 
         // Start a countdown timer
-        new CountDownTimer(16000, 1000)
-        {
+        new CountDownTimer(16000, 1000) {
             int time = 16;
+
             @Override
-            public void onTick(long l)
-            {
+            public void onTick(long l) {
                 time -= 1;
                 // Change dialog text every tick
-                ((TextView)dialog.findViewById(android.R.id.message))
+                ((TextView) dialog.findViewById(android.R.id.message))
                         .setText("Submitting in " + time + " seconds!");
             }
 
             @Override
-            public void onFinish()
-            {
+            public void onFinish() {
                 // Dialog has not disappeared/been canceled
-                if (dialog.isShowing())
-                {
+                if (dialog.isShowing()) {
                     // Submit
                     SaveMatch(GetCurrentInputValues(), false, true);
                     OnNextMatch();
@@ -711,12 +659,12 @@ public class ScoutActivity extends BluetoothClientActivity
 
     /**
      * Trigger a confirmation box to prevent accidental home button click
+     *
      * @param item the android item that was selected
      * @return true if consumed. uses
      */
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
+    public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 Constants.OnConfirm("Are you sure you want to quit?", this, this::finish);
@@ -728,13 +676,13 @@ public class ScoutActivity extends BluetoothClientActivity
 
     /**
      * Trigger a confirmation box to prevent certain disconnects - back button
+     *
      * @param keyCode the keycode, only checks for the back button
-     * @param event the event data
+     * @param event   the event data
      * @return true if the event was consumed
      */
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
         // Confirm when the back button is pressed
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
             Constants.OnConfirm("Are you sure you want to quit?", this, this::finish);
@@ -744,22 +692,18 @@ public class ScoutActivity extends BluetoothClientActivity
 
     /**
      * Run setup after bluetooth once bluetooth is setup
-     * @param requestCode the permissions request code assigned when it ran
-     * @param permissions the permissions requested list
+     *
+     * @param requestCode  the permissions request code assigned when it ran
+     * @param permissions  the permissions requested list
      * @param grantResults the results of the granted permissions
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
-        if (requestCode == REQUEST_ENABLE_PERMISSION)
-        {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-            {
-            Constants.Log("Permission granted");
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_ENABLE_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Constants.Log("Permission granted");
                 SetupAfterBluetooth();
-            }
-            else
-            {
+            } else {
                 CheckBluetooth();
             }
         }
