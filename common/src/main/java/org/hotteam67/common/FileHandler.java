@@ -26,12 +26,12 @@ public final class FileHandler {
     public static class Files {
 
         /**
-         * Server scouted matches database
+         * Master scouted matches database
          */
-        public static final String SERVER_FILE = "Server/serverDatabase.json";
+        public static final String MASTER_DATABASE = "Master/masterDatabase.json";
 
         /**
-         * Server/scouter input schema
+         * Master/scouter input schema
          */
         public static final String SCHEMA_FILE = "schema.json";
 
@@ -41,9 +41,9 @@ public final class FileHandler {
         public static final String SCOUTER_FILE = "Scouter/scouterDatabase.json";
 
         /**
-         * The match schedule downloaded on the server, all unscouted
+         * The match schedule downloaded on the master, all unscouted
          */
-        public static final String MATCHES_FILE = "Server/serverMatches.csv";
+        public static final String MASTER_MATCHES_FILE = "Master/matches.csv";
 
         /**
          * The viewer's team names JSON file containing numbers keyed to the team nicknames from TBA

@@ -34,7 +34,7 @@ public class FireBaseHandler {
 
     /**
      * Constructor takes the parameters for the FireBase database
-     * @param url the url of the FireBase server to use as a starting point
+     * @param url the url of the FireBase master to use as a starting point
      * @param event the event name, represents a json endpoint where everything is put/retrieved
      * @param apiKey the api key to use with the database
      */

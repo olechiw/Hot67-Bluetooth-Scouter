@@ -83,7 +83,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/submitButton"
         android:lines="50"
-        android:hint="Server Log"
+        android:hint="master Log"
         android:clickable="false"
         android:cursorVisible="false"
         android:focusable="false"
@@ -92,6 +92,6 @@
         android:textColorHint="#FFFFFF"
         android:backgroundTint="#FFFFFF"
         app:backgroundTint="#FFFFFF"
-        android:id="@+id/serverLog"/>
+        android:id="@+id/masterLog"/>
 
 </android.widget.RelativeLayout>

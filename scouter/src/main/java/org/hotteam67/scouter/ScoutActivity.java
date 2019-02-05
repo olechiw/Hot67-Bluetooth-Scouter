@@ -71,7 +71,7 @@ public class ScoutActivity extends BluetoothClientActivity {
     private int unlockCount = 0;
 
     /**
-     * The matches that are queued to be sent to the server for sync all, send one more every time
+     * The matches that are queued to be sent to the master for sync all, send one more every time
      */
     private List<JSONObject> queuedMatchesToSend = new ArrayList<>();
 
@@ -327,7 +327,7 @@ public class ScoutActivity extends BluetoothClientActivity {
     }
 
     /**
-     * Begin syncing all matches to the server, queuing them all and sending one
+     * Begin syncing all matches to the master, queuing them all and sending one
      */
     private void SendAllMatches() {
         if (matches.size() < 1 || sendingState == SendingState.SENDING)
@@ -508,9 +508,9 @@ public class ScoutActivity extends BluetoothClientActivity {
                     Constants.getScouterInputTag((String) msg.obj);
 
             switch (tag) {
-                case Constants.SERVER_TEAMS_RECEIVED_TAG:
+                case Constants.MASTER_TEAMS_RECEIVED_TAG:
                     if (queuedMatchesToSend.size() > 0 && sendingState == SendingState.SENDING) {
-                        Constants.Log("Server received last, sending again");
+                        Constants.Log("master received last, sending again");
                         SendMatch(queuedMatchesToSend.get(0));
                         queuedMatchesToSend.remove(0);
                     } else {
@@ -558,11 +558,11 @@ public class ScoutActivity extends BluetoothClientActivity {
                         SaveAllMatches();
                     });
                     break;
-                case Constants.SERVER_MESSAGE_TAG:
-                    //Shows the message received from the server
+                case Constants.MASTER_MESSAGE_TAG:
+                    //Shows the message received from the master
                     MessageBox(message);
                     break;
-                case Constants.SERVER_SUBMIT_TAG:
+                case Constants.MASTER_SUBMIT_TAG:
                     // If the match is still open show a countdown before sending
                     if (String.valueOf(GetDisplayedMatchNumber()).equals(message))
                         SubmitCountDown();
@@ -578,7 +578,7 @@ public class ScoutActivity extends BluetoothClientActivity {
                         }
                     }
                     break;
-                case Constants.SERVER_SEND_ALL_TAG:
+                case Constants.MASTER_SEND_ALL_TAG:
                     SendAllMatches();
                     break;
                 default:

@@ -47,28 +47,28 @@ public class Constants
      */
     public static final String SCOUTER_SCHEMA_TAG =         ":SCHEMA:,,";
     /**
-     * No data, just that the server has received the last sent team from the scouter, for sync-all
+     * No data, just that the master has received the last sent team from the scouter, for sync-all
      */
-    public static final String SERVER_TEAMS_RECEIVED_TAG =  ":HEARD:,,,";
+    public static final String MASTER_TEAMS_RECEIVED_TAG =  ":HEARD:,,,";
     /**
      * A message sent to the scouter with text info to be displayed to scouters
      */
-    public static final String SERVER_MESSAGE_TAG =         ":MESSAGE,,";
+    public static final String MASTER_MESSAGE_TAG =         ":MESSAGE,,";
     /**
-     * A prompt from the server to the scouter to submit a specific match
+     * A prompt from the master to the scouter to submit a specific match
      */
-    public static final String SERVER_SUBMIT_TAG =          ":SUBMIT,,,";
+    public static final String MASTER_SUBMIT_TAG =          ":SUBMIT,,,";
     /**
-     * A prompt from the server to the scouter to sync all of its matches
+     * A prompt from the master to the scouter to sync all of its matches
      */
-    public static final String SERVER_SEND_ALL_TAG =         ":SYNCALL,,";
+    public static final String MASTER_SEND_ALL_TAG =         ":SYNCALL,,";
     /**
      * Activity request code for the rawDataActivity, which is used to get the results such as
      * displaying a specific match in the calculated table view
      */
     public static final int RawDataRequestCode = 1;
     /**
-     * Activity request code for enabling permissions in the server/scouter app
+     * Activity request code for enabling permissions in the master/scouter app
      */
     public static final int REQUEST_ENABLE_PERMISSION = 3;
     /**

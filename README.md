@@ -5,6 +5,6 @@ and a wireless LTE network to scout teams, load them into json, and update the r
 ### app
 viewer application with (currently hardcoded) calculated values, graphs, etc.
 ### scouter
-the client application, use six of these in tandem with server to collect data
-### server
+the client application, use six of these in tandem with master to collect data
+### master
 app for consolidating the data into one place and uploading it over 4G or whatever

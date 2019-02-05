@@ -13,7 +13,7 @@ import android.view.View;
 
 /**
  * Simple preferences activity, loads preferences from xml and saves them to shared preferences
- * to be accessed in ServerActivity
+ * to be accessed in masterActivity
  */
 public class PreferencesActivity extends AppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener

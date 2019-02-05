@@ -40,7 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Server activity, handles the connections to all of the devices and input
+ * master activity, handles the connections to all of the devices and input
  */
 public class MasterActivity extends BluetoothMasterActivity {
 
@@ -60,7 +60,7 @@ public class MasterActivity extends BluetoothMasterActivity {
     private JSONObject jsonDatabase;
 
     /**
-     * Show a messagebox on the Server
+     * Show a messagebox on the master
      *
      * @param text the text to display in the message box
      */
@@ -79,7 +79,7 @@ public class MasterActivity extends BluetoothMasterActivity {
     }
 
     private Button connectButton;
-    private EditText serverLogText;
+    private EditText masterLogText;
 
     /**
      * Setup UI and the handler for communicating with bluetooth threads
@@ -90,7 +90,7 @@ public class MasterActivity extends BluetoothMasterActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_server);
+        setContentView(R.layout.activity_master);
         SetHandler(new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -111,7 +111,7 @@ public class MasterActivity extends BluetoothMasterActivity {
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_server, menu);
+        getMenuInflater().inflate(R.menu.menu_master, menu);
         return true;
     }
 
@@ -181,7 +181,7 @@ public class MasterActivity extends BluetoothMasterActivity {
                 {
                     jsonDatabase = new JSONObject();
                     try {
-                        FileHandler.Write(FileHandler.Files.SERVER_FILE, "");
+                        FileHandler.Write(FileHandler.Files.MASTER_DATABASE, "");
                     } catch (Exception e) {
                         Constants.Log(e);
                     }
@@ -201,7 +201,7 @@ public class MasterActivity extends BluetoothMasterActivity {
                 Constants.OnConfirm("Disconnect all existing devices?",
                         this, this::Connect));
 
-        serverLogText = findViewById(R.id.serverLog);
+        masterLogText = findViewById(R.id.masterLog);
 
         Toolbar toolbar = findViewById(R.id.toolBar);
         setSupportActionBar(toolbar);
@@ -238,12 +238,12 @@ public class MasterActivity extends BluetoothMasterActivity {
 
         findViewById(R.id.messageButton)
                 .setOnClickListener(view -> GetString("Enter Message:", "",
-                        input -> WriteAllDevices((Constants.SERVER_MESSAGE_TAG + input).getBytes())));
+                        input -> WriteAllDevices((Constants.MASTER_MESSAGE_TAG + input).getBytes())));
 
         findViewById(R.id.submitButton)
                 .setOnClickListener(view ->
                         GetString("Get Match Number", lastMatchNumber, (input) ->
-                                WriteAllDevices((Constants.SERVER_SUBMIT_TAG + input).getBytes())));
+                                WriteAllDevices((Constants.MASTER_SUBMIT_TAG + input).getBytes())));
 
         findViewById(R.id.syncButton)
                 .setOnClickListener(view -> Constants.OnConfirm("Sync All Matches?",
@@ -282,7 +282,7 @@ public class MasterActivity extends BluetoothMasterActivity {
                             }
                             MessageBox("Downloaded Matches: " +
                                     matchesBuilder.toString().split("\n").length);
-                            FileHandler.Write(FileHandler.Files.MATCHES_FILE, matchesBuilder.toString());
+                            FileHandler.Write(FileHandler.Files.MASTER_MATCHES_FILE, matchesBuilder.toString());
                         } catch (Exception e) {
                             Constants.Log(e);
                         }
@@ -317,7 +317,7 @@ public class MasterActivity extends BluetoothMasterActivity {
                 List<String> matches =
                         new ArrayList<>(
                                 Arrays.asList(
-                                        FileHandler.LoadContents(FileHandler.Files.MATCHES_FILE)
+                                        FileHandler.LoadContents(FileHandler.Files.MASTER_MATCHES_FILE)
                                                 .split("\n")
                                 )
                         );
@@ -412,7 +412,7 @@ public class MasterActivity extends BluetoothMasterActivity {
 
     // Log to the end user about things like connected and disconnected devices
     private void VisualLog(String text) {
-        serverLogText.append(currentLog + ": " + text + "\n");
+        masterLogText.append(currentLog + ": " + text + "\n");
         currentLog++;
     }
 
@@ -436,7 +436,7 @@ public class MasterActivity extends BluetoothMasterActivity {
                 // Send a "message received" in the form of a match tag
                 try {
                     // Send on the connected thread
-                    WriteDevice(Constants.SERVER_TEAMS_RECEIVED_TAG.getBytes(), id - 1);
+                    WriteDevice(Constants.MASTER_TEAMS_RECEIVED_TAG.getBytes(), id - 1);
                 } catch (IndexOutOfBoundsException e) {
                     Constants.Log(e);
                     Constants.Log("Failed to find connected thread: " + id + " was it disposed?");
@@ -485,7 +485,7 @@ public class MasterActivity extends BluetoothMasterActivity {
      * Load the local database into the json object in memory, or handle exceptions
      */
     private void loadJsonDatabase() {
-        String fileContents = FileHandler.LoadContents(FileHandler.Files.SERVER_FILE);
+        String fileContents = FileHandler.LoadContents(FileHandler.Files.MASTER_DATABASE);
         if (fileContents.trim().isEmpty()) {
             jsonDatabase = new JSONObject();
         } else {
@@ -501,7 +501,7 @@ public class MasterActivity extends BluetoothMasterActivity {
      * Save the JSON object from memory to disk
      */
     private void saveJsonDatabase() {
-        FileHandler.Write(FileHandler.Files.SERVER_FILE, jsonDatabase.toString());
+        FileHandler.Write(FileHandler.Files.MASTER_DATABASE, jsonDatabase.toString());
     }
 
     /**

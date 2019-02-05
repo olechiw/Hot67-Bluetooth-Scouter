@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * The subclass for the server activity, handles bluetooth input/output and communication with main
+ * The subclass for the master activity, handles bluetooth input/output and communication with main
  * thread
  */
 public abstract class BluetoothMasterActivity extends AppCompatActivity
@@ -40,7 +40,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
     }
 
     /**
-     * Number of allowed devices to be connected to the server, bluetooth will max at 7
+     * Number of allowed devices to be connected to the master, bluetooth will max at 7
      */
     private static final int allowedDevices = 7;
 
