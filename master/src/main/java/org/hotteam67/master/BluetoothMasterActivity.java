@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -146,6 +147,8 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
             pairedNames.add(name);
         }
 
+        Collections.sort(pairedNames);
+
         PromptChoice(this, "Red Devices", pairedNames, redDevices ->
         {
             List<String> remainingNames = new ArrayList<>();
@@ -194,8 +197,8 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
      */
     private synchronized void disconnect(ConnectedThread thread)
     {
-        thread.close();
         thread.interrupt();
+        thread.close();
         connectedThreads.remove(thread);
     }
 
@@ -465,7 +468,9 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
                     break;
                 }
             }
+            if (Thread.currentThread().isInterrupted()) return;
             Constants.Log("Connected Thread Ended!!!");
+            close();
             disconnect(this);
             MSG(Messages.MESSAGE_DISCONNECTED);
         }
