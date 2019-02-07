@@ -1,13 +1,11 @@
 package org.hotteam67.firebaseviewer.data;
 
 import android.util.Log;
-
 import com.annimon.stream.Stream;
+import org.hotteam67.common.Constants;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.RowHeaderModel;
-
-import org.hotteam67.common.Constants;
 import org.json.JSONObject;
 
 import java.io.Serializable;
@@ -20,7 +18,8 @@ import java.util.List;
  * Class to run calculations of a given type with given raw data.
  */
 
-class DataCalculator implements Serializable {
+class DataCalculator implements Serializable
+{
     /**
      * The input raw data table
      */
@@ -56,17 +55,18 @@ class DataCalculator implements Serializable {
 
     /**
      * Constructor, will actually run the calculations
-     * @param rawData the rawData to run calculations on. Will use the row headers for each calculated row,
-     *                calculating an average/max/min based on all raw rows with that header
+     *
+     * @param rawData           the rawData to run calculations on. Will use the row headers for each calculated row,
+     *                          calculating an average/max/min based on all raw rows with that header
      * @param calculatedColumns A list of string names of columns that will be in the final table
-     * @param columnIndices A list of string names of columns corresponding to calculatedColumns to
-     *                      run calculations on. Must be a column name found in raw data. For example
-     *                      "T. Scale" in calculatedColumns is the same index as "Teleop Scale"
-     *                      in columnIndices
-     * @param teamRanks JSON object of the team ranks to add as a column
-     * @param teamNames JSON object of the team names, stored for later retrieval when working with
-     *                  the calculated data
-     * @param calculationType the type of calculation to do, Max/Min/Avg
+     * @param columnIndices     A list of string names of columns corresponding to calculatedColumns to
+     *                          run calculations on. Must be a column name found in raw data. For example
+     *                          "T. Scale" in calculatedColumns is the same index as "Teleop Scale"
+     *                          in columnIndices
+     * @param teamRanks         JSON object of the team ranks to add as a column
+     * @param teamNames         JSON object of the team names, stored for later retrieval when working with
+     *                          the calculated data
+     * @param calculationType   the type of calculation to do, Max/Min/Avg
      */
     DataCalculator(DataTable rawData, List<String> calculatedColumns,
                    List<String> columnIndices,
@@ -80,7 +80,8 @@ class DataCalculator implements Serializable {
         calculatedColumnIndices = new ArrayList<>();
         for (int i = 0; i < calculatedColumns.size(); ++i)
         {
-            try {
+            try
+            {
                 if (columnsNames.contains(columnIndices.get(i)))
                     calculatedColumnIndices.add(columnsNames.indexOf(columnIndices.get(i)));
                 else
@@ -99,6 +100,7 @@ class DataCalculator implements Serializable {
 
     /**
      * Setup the calculated columns and actually run the calculations here
+     *
      * @param calculatedColumns list of the calculated column names to use
      */
     private void SetupCalculatedColumns(List<String> calculatedColumns)
@@ -128,13 +130,15 @@ class DataCalculator implements Serializable {
         int i = 0;
         for (RowHeaderModel row : rawRowHeaders)
         {
-            try {
+            try
+            {
                 String teamNumber = row.getData();
                 // Already seen, add to existing list for team
                 if (teamRows.containsKey(teamNumber))
                     teamRows.get(teamNumber).add(rawRows.get(i));
-                // Newly seen team, make a new list of matches for them
-                else {
+                    // Newly seen team, make a new list of matches for them
+                else
+                {
                     teamNumbers.add(teamNumber);
                     List<List<CellModel>> rows = new ArrayList<>();
                     rows.add(rawRows.get(i));
@@ -160,7 +164,8 @@ class DataCalculator implements Serializable {
             List<CellModel> row = new ArrayList<>();
             for (int column : calculatedColumnIndices)
             {
-                if (column == -1) {
+                if (column == -1)
+                {
                     row.add(new CellModel("0_0", "N/A", teamNumber));
                     continue;
                 }
@@ -190,11 +195,12 @@ class DataCalculator implements Serializable {
             current_row++;
         }
 
-        for (int r = 0; r < calcCells.size(); ++r )
+        for (int r = 0; r < calcCells.size(); ++r)
         {
             String team = calcCells.get(r).get(0).getTeamNumber();
-            try {
-                String teamRank = (String)  new JSONObject(teamRanksJson).get(team);
+            try
+            {
+                String teamRank = (String) new JSONObject(teamRanksJson).get(team);
                 calcCells.get(r).add(0,
                         new CellModel("0_0", teamRank, team));
             }
@@ -212,9 +218,11 @@ class DataCalculator implements Serializable {
 
         List<String> extraTeams = new ArrayList<>();
         // Do N/A Teams
-        try {
+        try
+        {
             Iterator<?> teamsIterator = new JSONObject(teamNamesJson).keys();
-            while (teamsIterator.hasNext()) {
+            while (teamsIterator.hasNext())
+            {
                 String s = (String) teamsIterator.next();
                 if (!teamNumbers.contains(s)) extraTeams.add(s);
             }
@@ -244,6 +252,7 @@ class DataCalculator implements Serializable {
 
     /**
      * Get the resultant calculated table
+     *
      * @return a DataTable object with the headers and data populated
      */
     DataTable GetTable()
@@ -253,9 +262,10 @@ class DataCalculator implements Serializable {
 
     /**
      * Run a calculation on the given data set, and return the value
-     * @param columnName the name of the column
+     *
+     * @param columnName   the name of the column
      * @param columnValues the values for the column
-     * @param calculation the type of calculation to run
+     * @param calculation  the type of calculation to run
      * @return a double representing your final value
      */
     private static double doCalculatedColumn(String columnName, List<String> columnValues,
@@ -268,7 +278,8 @@ class DataCalculator implements Serializable {
                 try
                 {
                     double d = 0;
-                    for (String s : columnValues) {
+                    for (String s : columnValues)
+                    {
                         //Log.e("FirebaseScouter", "Averaging : " + s);
                         d += ConvertToDouble(s);
                     }
@@ -288,7 +299,8 @@ class DataCalculator implements Serializable {
                 try
                 {
                     double d = 0;
-                    for (String s : columnValues) {
+                    for (String s : columnValues)
+                    {
                         if (ConvertToDouble(s) > d)
                             d = ConvertToDouble(s);
                     }
@@ -323,13 +335,16 @@ class DataCalculator implements Serializable {
 
     /**
      * Safely converts a string to a double
+     *
      * @param s the input string to convert
      * @return a double that may be 0 if something failed
      */
     private static double ConvertToDouble(String s)
     {
-        try {
-            switch (s) {
+        try
+        {
+            switch (s)
+            {
                 case "true":
                     return 1;
                 case "false":

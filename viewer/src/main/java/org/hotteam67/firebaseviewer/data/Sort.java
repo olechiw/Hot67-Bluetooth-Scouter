@@ -11,9 +11,11 @@ import java.util.List;
  * Sort class containing one sort function that copies a data table into a sorted state
  */
 
-public final class Sort {
+public final class Sort
+{
     /**
      * Sort by the DataTable row header, bubble sort so very slow
+     *
      * @param input the input table to be sorted
      * @return a copy of the table sorted by its row headers
      */
@@ -27,7 +29,8 @@ public final class Sort {
         while (changed)
         {
             changed = false;
-            try {
+            try
+            {
                 for (int i = 0; i < cells.size(); ++i)
                 {
                     List<CellModel> row = cells.get(i);

@@ -5,36 +5,30 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
-import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ProgressBar;
-import android.widget.Spinner;
-
+import android.widget.*;
 import com.evrencoskun.tableview.TableView;
 import com.evrencoskun.tableview.sort.SortState;
+import org.hotteam67.common.Constants;
+import org.hotteam67.common.DarkNumberPicker;
+import org.hotteam67.common.InterceptAllLayout;
+import org.hotteam67.common.TBAHandler;
 import org.hotteam67.firebaseviewer.data.DataModel;
 import org.hotteam67.firebaseviewer.data.MultiFilter;
 import org.hotteam67.firebaseviewer.tableview.MainTableAdapter;
 import org.hotteam67.firebaseviewer.tableview.MainTableViewListener;
 import org.hotteam67.firebaseviewer.tableview.MultiFilterTableView;
-
-import org.hotteam67.common.Constants;
-import org.hotteam67.common.DarkNumberPicker;
-import org.hotteam67.common.InterceptAllLayout;
-import org.hotteam67.common.TBAHandler;
 
 import java.util.List;
 
@@ -45,7 +39,8 @@ import java.util.List;
  * from disk. Links to the other two activities and uses their results. Basically everything is put
  * together here.
  */
-public class ViewerActivity extends AppCompatActivity {
+public class ViewerActivity extends AppCompatActivity
+{
 
     private MultiFilterTableView averagesTable;
     private MultiFilter averagesFilter;
@@ -65,9 +60,10 @@ public class ViewerActivity extends AppCompatActivity {
 
     /**
      * Result for the raw data activity, to show a specific match if requested
+     *
      * @param requestCode the key for the activity, should make sure it matches RawDataActivity
-     * @param resultCode the result, to be checked for having a match number
-     * @param data the other data attached to the intent
+     * @param resultCode  the result, to be checked for having a match number
+     * @param data        the other data attached to the intent
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
@@ -95,6 +91,7 @@ public class ViewerActivity extends AppCompatActivity {
     /**
      * Construct the user interface, populate the calculated data if local values are found, and bind
      * event handlers
+     *
      * @param savedInstanceState ignored
      */
     @Override
@@ -147,20 +144,24 @@ public class ViewerActivity extends AppCompatActivity {
         teamsGroupInput = findViewById(R.id.teamsGroupInput);
         teamsGroupInput.setOnValueChangedListener(this::UpdateTeamsGroup);
         teamsGroupType = findViewById(R.id.teamsGroupType);
-        teamsGroupType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        teamsGroupType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
                 UpdateTeamsGroup();
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+            public void onNothingSelected(AdapterView<?> parent)
+            {
 
             }
         });
 
         teamsGroupButton = findViewById(R.id.teamsGroupButton);
-        teamsGroupButton.setOnClickListener(v -> {
+        teamsGroupButton.setOnClickListener(v ->
+        {
             if (teamsGroupView.getVisibility() == View.GONE)
                 expand(teamsGroupView);
             else
@@ -188,8 +189,8 @@ public class ViewerActivity extends AppCompatActivity {
         RefreshConnectionProperties();
 
         if (ContextCompat.checkSelfPermission(
-                        this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        == PackageManager.PERMISSION_GRANTED)
+                this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED)
         {
             LoadLocal();
         }
@@ -207,14 +208,15 @@ public class ViewerActivity extends AppCompatActivity {
      */
     private void RemoveAlliances()
     {
-        MainTableAdapter adapter1 = (MainTableAdapter)averagesTable.getAdapter();
-        MainTableAdapter adapter2 = (MainTableAdapter)maximumsTable.getAdapter();
+        MainTableAdapter adapter1 = (MainTableAdapter) averagesTable.getAdapter();
+        MainTableAdapter adapter2 = (MainTableAdapter) maximumsTable.getAdapter();
         adapter1.clearAllianceHighlights();
         adapter2.clearAllianceHighlights();
     }
 
     /**
      * Setup the tableview with its adapter and the event listener
+     *
      * @param v the view to be setup
      */
     private void setupTableView(TableView v)
@@ -226,9 +228,11 @@ public class ViewerActivity extends AppCompatActivity {
 
     /**
      * Do the expand animation on a view. Shamelessly copied From Stack Overflow
+     *
      * @param v the view to expand (also set to visible)
      */
-    private static void expand(final View v) {
+    private static void expand(final View v)
+    {
         v.measure(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         final int targetHeight = v.getMeasuredHeight();
 
@@ -238,51 +242,60 @@ public class ViewerActivity extends AppCompatActivity {
         Animation a = new Animation()
         {
             @Override
-            protected void applyTransformation(float interpolatedTime, Transformation t) {
+            protected void applyTransformation(float interpolatedTime, Transformation t)
+            {
                 v.getLayoutParams().height = interpolatedTime == 1
                         ? ViewGroup.LayoutParams.WRAP_CONTENT
-                        : (int)(targetHeight * interpolatedTime);
+                        : (int) (targetHeight * interpolatedTime);
                 v.requestLayout();
             }
 
             @Override
-            public boolean willChangeBounds() {
+            public boolean willChangeBounds()
+            {
                 return true;
             }
         };
 
         // 1dp/ms
-        a.setDuration((int)(targetHeight / v.getContext().getResources().getDisplayMetrics().density));
+        a.setDuration((int) (targetHeight / v.getContext().getResources().getDisplayMetrics().density));
         v.startAnimation(a);
     }
 
     /**
      * Do the collapse animation on a view. Shamelessly copied from StackOverflow
+     *
      * @param v the view to collapse (also set invisible)
      */
-    private static void collapse(final View v) {
+    private static void collapse(final View v)
+    {
         final int initialHeight = v.getMeasuredHeight();
 
         Animation a = new Animation()
         {
             @Override
-            protected void applyTransformation(float interpolatedTime, Transformation t) {
-                if(interpolatedTime == 1){
+            protected void applyTransformation(float interpolatedTime, Transformation t)
+            {
+                if (interpolatedTime == 1)
+                {
                     v.setVisibility(View.GONE);
-                }else{
-                    v.getLayoutParams().height = initialHeight - (int)(initialHeight * interpolatedTime);
+                }
+                else
+                {
+                    v.getLayoutParams().height = initialHeight - (int) (initialHeight * interpolatedTime);
                     v.requestLayout();
                 }
             }
 
             @Override
-            public boolean willChangeBounds() {
+            public boolean willChangeBounds()
+            {
                 return true;
             }
         };
 
         // 1dp/ms
-        a.setDuration((int)(initialHeight / v.getContext().getResources().getDisplayMetrics().density));
+        a.setDuration((int) (initialHeight / v.getContext().getResources().getDisplayMetrics().density));
         v.startAnimation(a);
     }
 
@@ -302,7 +315,8 @@ public class ViewerActivity extends AppCompatActivity {
             @Override
             public void OnCompleteProgress()
             {
-                runOnUiThread(() -> {
+                runOnUiThread(() ->
+                {
                     EndProgressAnimation();
                     if (averagesTable != null && maximumsTable != null && DataModel.GetAverages() != null && DataModel.GetMaximums() != null)
                     {
@@ -322,8 +336,10 @@ public class ViewerActivity extends AppCompatActivity {
      */
     private void UpdateUINetwork()
     {
-        DataModel.RefreshTable(() -> runOnUiThread(() -> {
-            if (averagesTable != null && maximumsTable != null && DataModel.GetAverages() != null && DataModel.GetMaximums() != null) {
+        DataModel.RefreshTable(() -> runOnUiThread(() ->
+        {
+            if (averagesTable != null && maximumsTable != null && DataModel.GetAverages() != null && DataModel.GetMaximums() != null)
+            {
                 ((MainTableAdapter) averagesTable.getAdapter()).setAllItems(DataModel.GetAverages());
                 ((MainTableAdapter) maximumsTable.getAdapter()).setAllItems(DataModel.GetMaximums());
                 UpdateUI();
@@ -363,15 +379,16 @@ public class ViewerActivity extends AppCompatActivity {
     private void UpdateTeamsGroup()
     {
         int id = teamsGroupInput.getValue();
-        MainTableAdapter adapter1 = (MainTableAdapter)averagesTable.getAdapter();
-        MainTableAdapter adapter2 = (MainTableAdapter)maximumsTable.getAdapter();
+        MainTableAdapter adapter1 = (MainTableAdapter) averagesTable.getAdapter();
+        MainTableAdapter adapter2 = (MainTableAdapter) maximumsTable.getAdapter();
         adapter1.clearAllianceHighlights();
         adapter2.clearAllianceHighlights();
         switch (teamsGroupType.getSelectedItem().toString())
         {
             case Constants.ViewerTeamsGroupTypes.TEAM:
             {
-                if (id != 0) {
+                if (id != 0)
+                {
                     RemoveAllFilters();
                     Filter(Constants.TEAM_NUMBER_COLUMN, String.valueOf(id), true);
                     teamsGroupButton.setText("Team: " + id);
@@ -455,8 +472,9 @@ public class ViewerActivity extends AppCompatActivity {
 
     /**
      * Add a filter to both tables
+     *
      * @param column the column index to filter on
-     * @param s the value to look for
+     * @param s      the value to look for
      */
     private synchronized void Filter(int column, String s)
     {
@@ -465,8 +483,9 @@ public class ViewerActivity extends AppCompatActivity {
 
     /**
      * Add a filter to both tables, with a boolean to check whether to doContains or not
-     * @param column the column index
-     * @param s the string to filter on
+     *
+     * @param column     the column index
+     * @param s          the string to filter on
      * @param doContains whether to doContains - whether to use .contains() or .equals()
      */
     private synchronized void Filter(int column, String s, boolean doContains)
@@ -477,13 +496,14 @@ public class ViewerActivity extends AppCompatActivity {
 
     /**
      * When the calculation button is pressed - show loading and recalculate everything
+     *
      * @param v the calculation button view
      */
     private synchronized void OnCalculationButton(View v)
     {
 
 
-        ((Button)v).setText((((Button) v).getText().toString().equals("MAX")) ?
+        ((Button) v).setText((((Button) v).getText().toString().equals("MAX")) ?
                 "AVG" : "MAX");
 
         View active = GetActiveTable();
@@ -496,6 +516,7 @@ public class ViewerActivity extends AppCompatActivity {
 
     /**
      * Get the active table, either averages or maximums, as these are cycled between
+     *
      * @return the active TableView
      */
     private synchronized TableView GetActiveTable()
@@ -505,6 +526,7 @@ public class ViewerActivity extends AppCompatActivity {
 
     /**
      * Get the inactive table, either averages or maximums, as these are cycled between
+     *
      * @return the inactive TableView
      */
     private synchronized TableView GetInactiveTable()
@@ -523,14 +545,16 @@ public class ViewerActivity extends AppCompatActivity {
 
     /**
      * When disk permissions are requested, check whether they are granted and we can load locally
-     * @param requestCode the request code, which should be linked to request enable permissions
-     * @param permissions the permissions that were requested
+     *
+     * @param requestCode  the request code, which should be linked to request enable permissions
+     * @param permissions  the permissions that were requested
      * @param grantResults the results for requested permissions
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
     {
-        if (requestCode == Constants.REQUEST_ENABLE_PERMISSION) {
+        if (requestCode == Constants.REQUEST_ENABLE_PERMISSION)
+        {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
             {
                 LoadLocal();
@@ -540,6 +564,7 @@ public class ViewerActivity extends AppCompatActivity {
 
     /**
      * Get the preferences values for connection properties like Firebase url
+     *
      * @return the connection properties, in order of appearance in XML
      */
     private String[] GetConnectionProperties()

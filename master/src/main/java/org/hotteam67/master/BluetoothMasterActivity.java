@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ListView;
-
 import org.hotteam67.common.Constants;
 
 import java.io.IOException;
@@ -65,6 +64,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
 
     /**
      * Public function to configure the handler
+     *
      * @param h the handler to use for sending messages to the main thread
      */
     void SetHandler(Handler h)
@@ -74,9 +74,13 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
 
     /**
      * Send a specific message from Messages
+     *
      * @param msg the message to send
      */
-    private synchronized void MSG(int msg) { m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget(); }
+    private synchronized void MSG(int msg)
+    {
+        m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget();
+    }
 
     /**
      * Instance of the thread actively connecting to the devices
@@ -86,12 +90,14 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
     /**
      * Connect thread, which will cycle through available devices connecting to each one
      */
-    private class ConnectThread extends Thread {
+    private class ConnectThread extends Thread
+    {
         private final List<BluetoothDevice> devices;
         private final List<BluetoothSocket> sockets;
 
         /**
          * Constructor, turns devices into sockets with uuid
+         *
          * @param devices the devices to try to connect to
          */
         ConnectThread(List<BluetoothDevice> devices)
@@ -107,9 +113,10 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
                 connectionSocket = null;
                 try
                 {
-                Constants.Log("Getting Connection");
+                    Constants.Log("Getting Connection");
                     connectionSocket = device.createRfcommSocketToServiceRecord(Constants.uuid);
-                } catch (java.io.IOException e)
+                }
+                catch (java.io.IOException e)
                 {
                     Log.e("[Bluetooth]", "Failed to connect to socket", e);
                 }
@@ -130,22 +137,24 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
                     // Send the message to UI thread we are connecting to device i
                     m_handler.obtainMessage(Messages.MESSAGE_CONNECTING, 0, 0,
                             devices.get(sockets.indexOf(connectionSocket)).getName()).sendToTarget();
-                Constants.Log("Connecting to socket");
+                    Constants.Log("Connecting to socket");
                     connectionSocket.connect();
                     connectSocket(connectionSocket);
-                } catch (java.io.IOException e)
+                }
+                catch (java.io.IOException e)
                 {
                     try
                     {
                         // MSG(Messages.MESSAGE_CONNECTION_FAILED);
                         connectionSocket.close();
-                    } catch (java.io.IOException e2)
+                    }
+                    catch (java.io.IOException e2)
                     {
                         Constants.Log(e2);
                     }
                 }
             }
-        Constants.Log("Connect thread ended!");
+            Constants.Log("Connect thread ended!");
         }
     }
 
@@ -161,16 +170,17 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
             if (connectedThreads.size() > 0)
                 disconnect(connectedThreads.get(0));
         }
-    Constants.Log("Connecting");
+        Constants.Log("Connecting");
 
-        if (bluetoothFailed) {
-        Constants.Log("Failed to connect, bluetooth setup was unsuccessful");
+        if (bluetoothFailed)
+        {
+            Constants.Log("Failed to connect, bluetooth setup was unsuccessful");
             return;
         }
 
         Set<BluetoothDevice> pairedDevices = m_bluetoothAdapter.getBondedDevices();
 
-        List<String> pairedNames =  new ArrayList<>();
+        List<String> pairedNames = new ArrayList<>();
         for (BluetoothDevice device : pairedDevices)
         {
             String name = device.getName();
@@ -202,9 +212,10 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
 
     /**
      * Prompt the user for selections, up to 3, from given options
-     * @param context the parent context
-     * @param title the title for the multiple choice prompt
-     * @param options the options for the user
+     *
+     * @param context    the parent context
+     * @param title      the title for the multiple choice prompt
+     * @param options    the options for the user
      * @param onComplete OnCompleteEvent takes an array of strings containing the selected options
      */
     private static void PromptChoice(Context context, String title, List<String> options, Constants.OnCompleteEvent<List<String>> onComplete)
@@ -242,6 +253,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
 
     /**
      * Create a connected thread for a given socket, to read/write to from/to it
+     *
      * @param connection the socket for the connected device
      */
     private void connectSocket(BluetoothSocket connection)
@@ -249,7 +261,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
 
         if (connectedThreads.size() < allowedDevices)
         {
-        Constants.Log("Received a connection, adding a new thread: " + connectedThreads.size());
+            Constants.Log("Received a connection, adding a new thread: " + connectedThreads.size());
             ConnectedThread thread = new ConnectedThread(connection);
             thread.setId(connectedThreads.size() + 1);
             thread.start();
@@ -284,10 +296,14 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
         private byte[] buffer;
         private int id;
 
-        private void setId(int i ) { id = i; }
+        private void setId(int i)
+        {
+            id = i;
+        }
 
         /**
          * Constructor with the sockets
+         *
          * @param socket the socket to connect
          */
         ConnectedThread(BluetoothSocket socket)
@@ -319,17 +335,20 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
             {
                 InputStream stream;
                 InputStream tmpIn = null;
-                try {
-                Constants.Log("Loading input stream");
+                try
+                {
+                    Constants.Log("Loading input stream");
                     tmpIn = connectedSocket.getInputStream();
-                } catch (IOException e) {
+                }
+                catch (IOException e)
+                {
                     Log.e("[Bluetooth]", "Error occurred when creating input stream", e);
                 }
                 stream = tmpIn;
 
                 if (stream == null) break;
 
-            Constants.Log("Reading stream");
+                Constants.Log("Reading stream");
                 if (!read(stream))
                 {
                     break;
@@ -340,13 +359,14 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
                     break;
                 }
             }
-        Constants.Log("Connected Thread Ended!!!");
+            Constants.Log("Connected Thread Ended!!!");
             disconnect(this);
             MSG(Messages.MESSAGE_DISCONNECTED);
         }
 
         /**
          * Read from given input stream
+         *
          * @param stream stream to read
          * @return whether the input was successfully obtained
          */
@@ -359,7 +379,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
                 numBytes = stream.read(buffer);
                 String s = new String(buffer, StandardCharsets.UTF_8).substring(0, numBytes).replace("\0", "");
 
-            Constants.Log("String Received: " + s);
+                Constants.Log("String Received: " + s);
 
                 m_handler.obtainMessage(Messages.MESSAGE_INPUT, numBytes, id, new String(buffer, StandardCharsets.UTF_8).substring(0, numBytes).replace("\0", "")).sendToTarget();
                 return true;
@@ -373,18 +393,22 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
 
         /**
          * Write to the connected socket
+         *
          * @param bytes the byte array to write to the thread
          */
         void write(byte[] bytes)
         {
-        Constants.Log("Writing: " + new String(bytes));
-        Constants.Log("Bytes Length: " + bytes.length);
+            Constants.Log("Writing: " + new String(bytes));
+            Constants.Log("Bytes Length: " + bytes.length);
             OutputStream stream;
 
             OutputStream tmpOut = null;
-            try {
+            try
+            {
                 tmpOut = connectedSocket.getOutputStream();
-            } catch (IOException e) {
+            }
+            catch (IOException e)
+            {
                 Log.e("[Bluetooth]", "Error occurred when creating output stream", e);
             }
             stream = tmpOut;
@@ -397,7 +421,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
 
             try
             {
-            Constants.Log("Writing bytes to outstream");
+                Constants.Log("Writing bytes to outstream");
                 stream.write(bytes);
             }
             catch (Exception e)
@@ -410,13 +434,15 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
 
     /**
      * Write to all connected devices
+     *
      * @param bytes byte array to send
      * @return returns the number of devices written to
      */
     synchronized int WriteAllDevices(byte[] bytes)
     {
         // Send to each device
-        for (ConnectedThread device : connectedThreads) {
+        for (ConnectedThread device : connectedThreads)
+        {
             device.write(bytes);
         }
         return connectedThreads.size();
@@ -424,6 +450,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
 
     /**
      * Write to a specific thread
+     *
      * @param bytes the byte array to send
      * @param index the index in connectedThreads to write to
      * @return the number of threads
@@ -437,6 +464,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
 
     /**
      * Get the number of connectedThreads right now
+     *
      * @return number of threads
      */
     synchronized int GetDevices()
@@ -446,20 +474,23 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
 
     /**
      * Setup the bluetooth adapter or handle the issue + flag bluetoothFailed if it does not succeed
+     *
      * @param oncomplete the onComplete runnable to run once bluetooth is setup/permissions are gained
      */
     synchronized void setupBluetooth(Runnable oncomplete)
     {
-    Constants.Log("Getting adapter");
+        Constants.Log("Getting adapter");
         m_bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
 
-        if (m_bluetoothAdapter == null) {
-        Constants.Log("Bluetooth not detected");
+        if (m_bluetoothAdapter == null)
+        {
+            Constants.Log("Bluetooth not detected");
             bluetoothFailed = true;
         }
 
-        if (!bluetoothFailed && !m_bluetoothAdapter.isEnabled()) {
+        if (!bluetoothFailed && !m_bluetoothAdapter.isEnabled())
+        {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, REQUEST_BLUETOOTH);
         }
@@ -472,15 +503,16 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
 
     /**
      * Activity result for when bluetooth is enabled by the user
+     *
      * @param requestCode code from when the activity was run
-     * @param resultCode the result of the activity
-     * @param data any extra data attached to the activity's end
+     * @param resultCode  the result of the activity
+     * @param data        any extra data attached to the activity's end
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
 
-        if (requestCode==REQUEST_BLUETOOTH)
+        if (requestCode == REQUEST_BLUETOOTH)
         {
             bluetoothFailed = (resultCode != RESULT_OK);
         }
@@ -493,7 +525,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
     public void onDestroy()
     {
         super.onDestroy();
-    Constants.Log("Destroying application threads");
+        Constants.Log("Destroying application threads");
         if (bluetoothFailed)
             return;
         for (ConnectedThread thread : connectedThreads)

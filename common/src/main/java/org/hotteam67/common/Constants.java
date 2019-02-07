@@ -28,7 +28,8 @@ public class Constants
     /**
      * Types of "teams group" filtering found in the dropdown
      */
-    public static final class ViewerTeamsGroupTypes {
+    public static final class ViewerTeamsGroupTypes
+    {
         public static final String MATCH = "Qualification Match";
         public static final String ALLIANCE = "Alliance Number";
         public static final String TEAM = "Team Number";
@@ -41,27 +42,27 @@ public class Constants
     /**
      * Match schedule sent to scouter
      */
-    public static final String SCOUTER_TEAMS_TAG =          ":TEAM:,,,,";
+    public static final String SCOUTER_TEAMS_TAG = ":TEAM:,,,,";
     /**
      * Schema sent to the scouter
      */
-    public static final String SCOUTER_SCHEMA_TAG =         ":SCHEMA:,,";
+    public static final String SCOUTER_SCHEMA_TAG = ":SCHEMA:,,";
     /**
      * No data, just that the master has received the last sent team from the scouter, for sync-all
      */
-    public static final String MASTER_TEAMS_RECEIVED_TAG =  ":HEARD:,,,";
+    public static final String MASTER_TEAMS_RECEIVED_TAG = ":HEARD:,,,";
     /**
      * A message sent to the scouter with text info to be displayed to scouters
      */
-    public static final String MASTER_MESSAGE_TAG =         ":MESSAGE,,";
+    public static final String MASTER_MESSAGE_TAG = ":MESSAGE,,";
     /**
      * A prompt from the master to the scouter to submit a specific match
      */
-    public static final String MASTER_SUBMIT_TAG =          ":SUBMIT,,,";
+    public static final String MASTER_SUBMIT_TAG = ":SUBMIT,,,";
     /**
      * A prompt from the master to the scouter to sync all of its matches
      */
-    public static final String MASTER_SEND_ALL_TAG =         ":SYNCALL,,";
+    public static final String MASTER_SEND_ALL_TAG = ":SYNCALL,,";
     /**
      * Activity request code for the rawDataActivity, which is used to get the results such as
      * displaying a specific match in the calculated table view
@@ -96,6 +97,7 @@ public class Constants
 
     /**
      * Get the tag from a bluetooth input
+     *
      * @param input the original message
      * @return the value of the prefixed tag in the original message
      */
@@ -106,6 +108,7 @@ public class Constants
 
     /**
      * Get everything but the tag from bluetooth input
+     *
      * @param input the original message
      * @return the value of the message without its type tag
      */
@@ -120,11 +123,11 @@ public class Constants
     public static final class InputTypes
     {
 
-        public static final int TYPE_HEADER =   1;
-        public static final int TYPE_BOOLEAN =  2;
-        public static final int TYPE_INTEGER =  3;
+        public static final int TYPE_HEADER = 1;
+        public static final int TYPE_BOOLEAN = 2;
+        public static final int TYPE_INTEGER = 3;
         public static final int TYPE_MULTI = 5;
-        static final int TYPE_STRING =   4;
+        static final int TYPE_STRING = 4;
     }
 
     /**
@@ -161,9 +164,10 @@ public class Constants
 
     /**
      * Show a dialog and run an effect if the user chooses to confirm
+     *
      * @param message the message to prompt the user if they are sure
      * @param context the parent context
-     * @param effect the event handler for what happens after confirmation
+     * @param effect  the event handler for what happens after confirmation
      */
     public static void OnConfirm(String message, Context context, final Runnable effect)
     {
@@ -177,11 +181,13 @@ public class Constants
 
     /**
      * Round a given value to a given precision
-     * @param value value
+     *
+     * @param value     value
      * @param precision precision (int)
      * @return The rounded value
      */
-    public static double Round (double value, int precision) {
+    public static double Round(double value, int precision)
+    {
         int scale = (int) Math.pow(10, precision);
         return (double) Math.round(value * scale) / scale;
     }
@@ -192,6 +198,7 @@ public class Constants
     /**
      * An oncomplete interface that consumes an input, used over java.function.Consumer for
      * backwards compatibility
+     *
      * @param <type> the type that will be consumed
      */
     public interface OnCompleteEvent<type>

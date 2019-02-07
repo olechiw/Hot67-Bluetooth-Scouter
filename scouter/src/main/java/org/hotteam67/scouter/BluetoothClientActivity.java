@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-
 import org.hotteam67.common.Constants;
 
 import java.io.IOException;
@@ -23,7 +22,8 @@ import java.nio.charset.StandardCharsets;
  * A bluetooth client that listens for a connection from the master device and sends its inputs to
  * the main thread
  */
-public abstract class BluetoothClientActivity extends AppCompatActivity {
+public abstract class BluetoothClientActivity extends AppCompatActivity
+{
 
 
     /**
@@ -39,7 +39,10 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
     /**
      * Send a specific message, from the MessageTypes list, to the main thread
      */
-    private synchronized void MSG(int msg) { m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget(); }
+    private synchronized void MSG(int msg)
+    {
+        m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget();
+    }
 
     /**
      * The multi-thread handler for passing messages about bluetooth connection
@@ -56,12 +59,15 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
 
     /**
      * The constructor
+     *
      * @param savedInstanceState potential previous instance, ignored
      */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
-        m_handler = new Handler() {
+        m_handler = new Handler()
+        {
             @Override
             public void handleMessage(Message msg)
             {
@@ -75,11 +81,13 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
 
     /**
      * Show a messagebox with the given text
+     *
      * @param text text to display in the messagebox
      */
     void MessageBox(String text)
     {
-        try {
+        try
+        {
             AlertDialog.Builder dlg = new AlertDialog.Builder(this);
             dlg.setTitle("");
             dlg.setMessage(text);
@@ -154,14 +162,16 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
             try
             {
                 connectionSocket.close();
-            } catch (IOException e)
+            }
+            catch (IOException e)
             {
                 // Already closed, probably
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Constants.Log(e);
             }
-        Constants.Log("Accept Thread Ended!");
+            Constants.Log("Accept Thread Ended!");
         }
     }
 
@@ -181,6 +191,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
 
         /**
          * Constructor
+         *
          * @param socket takes the socket of an already connected device
          */
         ConnectedThread(BluetoothSocket socket)
@@ -213,16 +224,19 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
             {
                 InputStream stream;
                 InputStream tmpIn = null;
-                try {
-                Constants.Log("Loading input stream");
+                try
+                {
+                    Constants.Log("Loading input stream");
                     tmpIn = connectedSocket.getInputStream();
-                } catch (IOException e) {
+                }
+                catch (IOException e)
+                {
                     Log.e("[Bluetooth]", "Error occurred when creating input stream", e);
                 }
                 stream = tmpIn;
                 if (stream == null) break;
 
-            Constants.Log("Reading stream");
+                Constants.Log("Reading stream");
                 if (!read(stream))
                 {
                     break;
@@ -233,12 +247,13 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
                     break;
                 }
             }
-        Constants.Log("Connected Thread Ended!!!");
+            Constants.Log("Connected Thread Ended!!!");
             disconnect();
         }
 
         /**
          * read a thread
+         *
          * @param stream the input stream from the connected socket
          * @return boolean whether the connection is broken
          */
@@ -250,7 +265,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
             {
                 numBytes = stream.read(buffer);
 
-            Constants.Log("Reading Bytes of Length:" + numBytes);
+                Constants.Log("Reading Bytes of Length:" + numBytes);
 
                 m_handler.obtainMessage(MessageTypes.MESSAGE_INPUT, numBytes, -1, new String(buffer, StandardCharsets.UTF_8).substring(0, numBytes).replace("\0", "")).sendToTarget();
                 return true;
@@ -265,18 +280,22 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
 
         /**
          * Write output to the connected socket
+         *
          * @param bytes the bytes to send into the stream
          */
         void write(byte[] bytes)
         {
-        Constants.Log("Writing: " + new String(bytes));
-        Constants.Log("Bytes Length: " + bytes.length);
+            Constants.Log("Writing: " + new String(bytes));
+            Constants.Log("Bytes Length: " + bytes.length);
             OutputStream stream;
 
             OutputStream tmpOut = null;
-            try {
+            try
+            {
                 tmpOut = connectedSocket.getOutputStream();
-            } catch (IOException e) {
+            }
+            catch (IOException e)
+            {
                 Log.e("[Bluetooth]", "Error occurred when creating output stream", e);
             }
             stream = tmpOut;
@@ -289,7 +308,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
 
             try
             {
-            Constants.Log("Writing bytes to outstream");
+                Constants.Log("Writing bytes to outstream");
                 stream.write(bytes);
             }
             catch (Exception e)
@@ -305,16 +324,18 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
      */
     private synchronized void setupBluetooth()
     {
-    Constants.Log("Getting adapter");
+        Constants.Log("Getting adapter");
         m_bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
 
-        if (m_bluetoothAdapter == null) {
-        Constants.Log("Bluetooth not detected");
+        if (m_bluetoothAdapter == null)
+        {
+            Constants.Log("Bluetooth not detected");
             bluetoothFailed = true;
         }
 
-        if (!bluetoothFailed && !m_bluetoothAdapter.isEnabled()) {
+        if (!bluetoothFailed && !m_bluetoothAdapter.isEnabled())
+        {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBtIntent, 1);
         }
@@ -329,22 +350,23 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
 
-            if (requestCode==1)
-            {
-                bluetoothFailed = resultCode != RESULT_OK;
-                setupBluetooth();
-            }
+        if (requestCode == 1)
+        {
+            bluetoothFailed = resultCode != RESULT_OK;
+            setupBluetooth();
+        }
     }
 
     /**
      * Get a connected socket from the acceptThread and start a connected thread.
+     *
      * @param socket the newly connected device
      */
     private synchronized void connectSocket(BluetoothSocket socket)
     {
         if (!Destroyed())
         {
-        Constants.Log("Storing socket in connected devices");
+            Constants.Log("Storing socket in connected devices");
             connectedThread = new ConnectedThread(socket);
             connectedThread.start();
             MSG(MessageTypes.MESSAGE_CONNECTED);
@@ -353,17 +375,19 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
 
     /**
      * Write a string to the connected bluetooth device
+     *
      * @param text text to send
      */
     synchronized void BluetoothWrite(String text)
     {
-    Constants.Log("EVENT: send() " + text);
-        try {
+        Constants.Log("EVENT: send() " + text);
+        try
+        {
             connectedThread.write(text.getBytes());
         }
         catch (Exception e)
         {
-        Constants.Log("Failed to write: Exception: " + e.getMessage());
+            Constants.Log("Failed to write: Exception: " + e.getMessage());
             Constants.Log(e);
         }
     }
@@ -371,6 +395,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
     /**
      * Function meant to be overrided, will handle all of the bluetooth input, runs on the main
      * thread
+     *
      * @param msg the message sent to the thread
      */
     void handle(Message msg)
@@ -382,8 +407,16 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
      * Whether the activity is cleaned up
      */
     private boolean ISDESTROYED = false;
-    private synchronized boolean Destroyed() { return ISDESTROYED; }
-    private synchronized void SetDestroyed() { ISDESTROYED = true; }
+
+    private synchronized boolean Destroyed()
+    {
+        return ISDESTROYED;
+    }
+
+    private synchronized void SetDestroyed()
+    {
+        ISDESTROYED = true;
+    }
 
 
     /**
@@ -393,11 +426,12 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
     public void onDestroy()
     {
         super.onDestroy();
-    Constants.Log("Destroying application threads");
+        Constants.Log("Destroying application threads");
         SetDestroyed();
         if (bluetoothFailed)
             return;
-        if (connectedThread != null) {
+        if (connectedThread != null)
+        {
             connectedThread.close();
             connectedThread.interrupt();
         }

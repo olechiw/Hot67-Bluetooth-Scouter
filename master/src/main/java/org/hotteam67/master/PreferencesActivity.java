@@ -20,6 +20,7 @@ public class PreferencesActivity extends AppCompatActivity
 
     /**
      * Makes the back button work
+     *
      * @param item the android item selected, only checks if it is home
      * @return true, the event was consumed
      */
@@ -36,6 +37,7 @@ public class PreferencesActivity extends AppCompatActivity
 
     /**
      * Constructor adds a back button and loads simple UI
+     *
      * @param savedInstanceState saved state is ignored
      */
     @Override
@@ -109,8 +111,9 @@ public class PreferencesActivity extends AppCompatActivity
 
     /**
      * Set the summary on change, for ease of use with edittext
+     *
      * @param sharedPreferences the preferences shared between activities in the app
-     * @param key the key for the pref that changed
+     * @param key               the key for the pref that changed
      */
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                           String key)

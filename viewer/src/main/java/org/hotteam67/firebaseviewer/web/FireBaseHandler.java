@@ -3,6 +3,9 @@ package org.hotteam67.firebaseviewer.web;
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.util.Log;
+import org.hotteam67.common.Constants;
+import org.hotteam67.common.OnDownloadResultListener;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -12,17 +15,14 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.hotteam67.common.Constants;
-import org.hotteam67.common.OnDownloadResultListener;
-import org.json.JSONObject;
-
 
 /**
  * Class for getting data from FireBase on a separate network thread, and informing the main thread
  * when its done
  */
 
-public class FireBaseHandler {
+public class FireBaseHandler
+{
 
     private final String fireBaseEvent;
     private final String fireBaseUrl;
@@ -34,8 +34,9 @@ public class FireBaseHandler {
 
     /**
      * Constructor takes the parameters for the FireBase database
-     * @param url the url of the FireBase master to use as a starting point
-     * @param event the event name, represents a json endpoint where everything is put/retrieved
+     *
+     * @param url    the url of the FireBase master to use as a starting point
+     * @param event  the event name, represents a json endpoint where everything is put/retrieved
      * @param apiKey the api key to use with the database
      */
     public FireBaseHandler(String url, String event, String apiKey)
@@ -47,6 +48,7 @@ public class FireBaseHandler {
 
     /**
      * Download the entire event for the given connection
+     *
      * @param completeEvent a HashMap<HashMap<string, string>> is the final format. This is easier
      *                      to turn into a standard table
      */
@@ -61,7 +63,8 @@ public class FireBaseHandler {
      * is done
      */
     @SuppressLint("StaticFieldLeak")
-    class RetrieveFireBaseTask extends AsyncTask<Void, Void, String> {
+    class RetrieveFireBaseTask extends AsyncTask<Void, Void, String>
+    {
         protected String doInBackground(Void... nothing)
         {
             try
@@ -73,7 +76,8 @@ public class FireBaseHandler {
                 conn.setRequestMethod("GET");
 
                 Log.d("HotTeam67", "Response code: " + conn.getResponseCode());
-                if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) { // 200
+                if (conn.getResponseCode() == HttpURLConnection.HTTP_OK)
+                { // 200
 
                     InputStream responseStream = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(responseStream));
@@ -101,6 +105,7 @@ public class FireBaseHandler {
             }
             return "";
         }
+
         protected void onPostExecute(String result)
         {
             DoLoad(result);
@@ -110,13 +115,15 @@ public class FireBaseHandler {
 
     /**
      * Turn the downloaded JSON object into a HashMap in memory
+     *
      * @param json the input json from FireBase
      */
     private void DoLoad(String json)
     {
         try
         {
-            if (json == null || json.trim().isEmpty()) {
+            if (json == null || json.trim().isEmpty())
+            {
                 fireBaseCompleteEvent.onFail();
                 return;
             }
@@ -158,7 +165,8 @@ public class FireBaseHandler {
      */
     private void DoFinish()
     {
-        try {
+        try
+        {
             fireBaseCompleteEvent.onComplete(getResult());
         }
         catch (Exception e)
@@ -170,6 +178,7 @@ public class FireBaseHandler {
 
     /**
      * Get the result of the FireBase download
+     *
      * @return hashhmap of hashmaps of strings, basically the json but in memory as an easier to
      * iterate over object
      */

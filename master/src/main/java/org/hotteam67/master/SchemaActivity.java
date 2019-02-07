@@ -14,12 +14,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ScrollView;
-import android.widget.TableLayout;
-
+import android.widget.*;
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.SchemaHandler;
@@ -32,7 +27,8 @@ import java.util.List;
 /**
  * Activity for designing the schema, loads the current one, allows edits, and then saves it again
  */
-public class SchemaActivity extends AppCompatActivity {
+public class SchemaActivity extends AppCompatActivity
+{
     /**
      * The schema that is currently being used, both in memory and displayed in the UI
      */
@@ -40,6 +36,7 @@ public class SchemaActivity extends AppCompatActivity {
 
     /**
      * When a menu item is selected
+     *
      * @param item the item selected, from the xml menu
      * @return whether it was consumed
      */
@@ -69,13 +66,16 @@ public class SchemaActivity extends AppCompatActivity {
 
     /**
      * Confirmation box on back button key down
+     *
      * @param keyCode the physical keycode that was pressed
-     * @param event the event data
+     * @param event   the event data
      * @return super.onKeyDown(keyCode, event); will determine whether to consume key
      */
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if ((keyCode == KeyEvent.KEYCODE_BACK))
+        {
             android.util.Log.d(this.getClass().getName(), "back button pressed");
             doConfirmEnd();
         }
@@ -92,6 +92,7 @@ public class SchemaActivity extends AppCompatActivity {
 
     /**
      * Load the menu from R.menu.menu_schema
+     *
      * @param menu the menu object to populate
      * @return true, menu was consumed
      */
@@ -104,11 +105,13 @@ public class SchemaActivity extends AppCompatActivity {
 
     /**
      * Constructor, sets up the UI and displays the current schema
+     *
      * @param savedInstanceState saved instance state - ignored
      */
     @SuppressLint("ClickableViewAccessibility")
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schema);
 
@@ -143,11 +146,11 @@ public class SchemaActivity extends AppCompatActivity {
         numberButton = findViewById(R.id.numberButton);
         numberButton.setOnClickListener(view ->
                 GetString("Value Label: ", tag ->
-                                GetString("Maximum:", maximum ->
-                                {
-                                    schema.put(createJSON(Constants.InputTypes.TYPE_INTEGER, tag, maximum));
-                                    SchemaHandler.Setup(tableLayout, schema, c);
-                                })));
+                        GetString("Maximum:", maximum ->
+                        {
+                            schema.put(createJSON(Constants.InputTypes.TYPE_INTEGER, tag, maximum));
+                            SchemaHandler.Setup(tableLayout, schema, c);
+                        })));
 
         booleanButton = findViewById(R.id.booleanButton);
         booleanButton.setOnClickListener(view -> GetString("Value Label:", input ->
@@ -172,12 +175,12 @@ public class SchemaActivity extends AppCompatActivity {
         multiChoiceButton = findViewById(R.id.multiChoiceButton);
         multiChoiceButton.setOnClickListener(view ->
                 GetString("Multi Choice Name", label ->
-                        GetMultiChoiceInput(new ArrayList<>(), choices -> {
-                                schema.put(createJSON(Constants.InputTypes.TYPE_MULTI, label,
-                                        choices.toArray(new String[0])));
-                                SchemaHandler.Setup(tableLayout, schema, c);
+                        GetMultiChoiceInput(new ArrayList<>(), choices ->
+                        {
+                            schema.put(createJSON(Constants.InputTypes.TYPE_MULTI, label,
+                                    choices.toArray(new String[0])));
+                            SchemaHandler.Setup(tableLayout, schema, c);
                         })));
-
 
 
         SchemaHandler.Setup(tableLayout, schema, this);
@@ -197,12 +200,14 @@ public class SchemaActivity extends AppCompatActivity {
     /**
      * Runs over and over prompting the user for more input to populate a list of choices available
      * for a multiple choice element of the schema
-     * @param input the current input, as this will be run recursively
+     *
+     * @param input      the current input, as this will be run recursively
      * @param onComplete to run once the user finishes inputting, passed through all of the calls
      */
     private void GetMultiChoiceInput(List<String> input, onMultiComplete onComplete)
     {
-        GetString("Input another choice or choose ok to complete", x -> {
+        GetString("Input another choice or choose ok to complete", x ->
+        {
             if (x.trim().isEmpty()) onComplete.Complete(input);
             else
             {
@@ -214,8 +219,9 @@ public class SchemaActivity extends AppCompatActivity {
 
     /**
      * Create a JSON object given the attributes
-     * @param type the integer schema type
-     * @param tag the label/tag for the schema item
+     *
+     * @param type   the integer schema type
+     * @param tag    the label/tag for the schema item
      * @param extras the extras, such as max/min or the choices for a multi choice
      * @return a JSONObject constructed with all of the given attributes
      */
@@ -253,17 +259,21 @@ public class SchemaActivity extends AppCompatActivity {
 
     /**
      * Prompt the user for a string with a given prompt, and run an oncomplete event
-     * @param prompt the prompt for the user input
+     *
+     * @param prompt  the prompt for the user input
      * @param onInput event for when/if the user selects ok and has provided a string
      */
     private void GetString(final String prompt, final Constants.StringInputEvent onInput)
     {
-        InputFilter filter = new InputFilter() {
+        InputFilter filter = new InputFilter()
+        {
             @Override
-            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend)
+            {
                 boolean keepOriginal = true;
                 StringBuilder sb = new StringBuilder(end - start);
-                for (int i = start; i < end; i++) {
+                for (int i = start; i < end; i++)
+                {
                     char c = source.charAt(i);
                     if (isCharAllowed(c)) // put your condition here
                         sb.append(c);
@@ -272,25 +282,30 @@ public class SchemaActivity extends AppCompatActivity {
                 }
                 if (keepOriginal)
                     return null;
-                else {
-                    if (source instanceof Spanned) {
+                else
+                {
+                    if (source instanceof Spanned)
+                    {
                         SpannableString sp = new SpannableString(sb);
                         TextUtils.copySpansFrom((Spanned) source, start, sb.length(), null, sp, 0);
                         return sp;
-                    } else {
+                    }
+                    else
+                    {
                         return sb;
                     }
                 }
             }
 
-            private boolean isCharAllowed(char c) {
+            private boolean isCharAllowed(char c)
+            {
                 return Character.isLetterOrDigit(c) || Character.isSpaceChar(c);
             }
         };
 
-        final AlertDialog.Builder builder =  new AlertDialog.Builder(this, R.style.AlertDialogTheme);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogTheme);
         final EditText view = new EditText(this);
-        view.setFilters(new InputFilter[] { filter });
+        view.setFilters(new InputFilter[]{filter});
         builder.setView(view).setTitle(prompt).setPositiveButton("Ok", (dialogInterface, i) ->
                 onInput.Run(view.getText().toString())).setNegativeButton("Cancel", (dialogInterface, i) ->
         {

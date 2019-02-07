@@ -2,17 +2,15 @@ package org.hotteam67.firebaseviewer;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
-
 import com.evrencoskun.tableview.TableView;
 import com.evrencoskun.tableview.sort.SortState;
-
 import org.hotteam67.common.Constants;
 import org.hotteam67.firebaseviewer.data.DataTable;
 import org.hotteam67.firebaseviewer.tableview.MainTableAdapter;
@@ -22,7 +20,8 @@ import org.hotteam67.firebaseviewer.tableview.MainTableViewListener;
  * Activity for displaying the raw data selected for a match, and potentially returning a selected
  * match number to filter by
  */
-public class RawDataActivity extends AppCompatActivity {
+public class RawDataActivity extends AppCompatActivity
+{
 
     /**
      * The attribute for the intent extra containing raw data to display (the actual matches)
@@ -45,10 +44,12 @@ public class RawDataActivity extends AppCompatActivity {
     /**
      * Constructor, create the title out of team number and team name, and load the raw data from the
      * intent
+     *
      * @param savedInstanceState ignored
      */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_raw_data);
 
@@ -86,9 +87,12 @@ public class RawDataActivity extends AppCompatActivity {
         }
 
 
-        try {
-            if (dataTable != null) {
-                if (!(dataTable.GetCells().size() > 0)) {
+        try
+        {
+            if (dataTable != null)
+            {
+                if (!(dataTable.GetCells().size() > 0))
+                {
                     Log.e("FirebaseScouter", "No input raw data found");
                     return;
                 }
@@ -111,9 +115,11 @@ public class RawDataActivity extends AppCompatActivity {
     /**
      * If there is a match number selected, this is called and ends the activity after giving it
      * the match number as a result
+     *
      * @param matchNumber the match number to attach to the intent
      */
-    public void doEndWithMatchNumber(int matchNumber) {
+    public void doEndWithMatchNumber(int matchNumber)
+    {
         if (matchNumber == -1) return;
         Intent result = new Intent();
         result.putExtra("Match Number", matchNumber);

@@ -4,13 +4,11 @@ import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
-
 import org.hotteam67.common.Constants;
-import org.hotteam67.firebaseviewer.web.FireBaseHandler;
-
 import org.hotteam67.common.FileHandler;
 import org.hotteam67.common.OnDownloadResultListener;
 import org.hotteam67.common.TBAHandler;
+import org.hotteam67.firebaseviewer.web.FireBaseHandler;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ public class DataModel
     /*
     Firebase-loaded data
      */
-    private static  DataTable maximums;
+    private static DataTable maximums;
     private static DataTable averages;
     private static DataTable rawData;
 
@@ -68,7 +66,8 @@ public class DataModel
     /**
      * Setup all of the downloaded data given connection properties, and trigger the progEvent based
      * on completion or failure
-     * @param conn the connection properties, order of occurrence in XML
+     *
+     * @param conn      the connection properties, order of occurrence in XML
      * @param progEvent the event to trigger on completion/failure
      */
     public static void Setup(String[] conn,
@@ -83,6 +82,7 @@ public class DataModel
 
     /**
      * Get the table for calculated averages
+     *
      * @return the DataTable in memory for already calculated averages
      */
     public static synchronized DataTable GetAverages()
@@ -92,6 +92,7 @@ public class DataModel
 
     /**
      * Get the table for calcultaed maximums
+     *
      * @return the DataTable in memory for already calculated maximums
      */
     public static synchronized DataTable GetMaximums()
@@ -101,6 +102,7 @@ public class DataModel
 
     /**
      * Get the teamNumberNames JSON object
+     *
      * @return JSON object with the keys as team numbers and values as team names
      */
     public static JSONObject GetTeamsNumbersNames()
@@ -110,6 +112,7 @@ public class DataModel
 
     /**
      * Get the raw data table, with rows of matches and values containing individual match performance
+     *
      * @return DataTable with one row for each match for each team, so ((# matches) * 6)
      */
     public static DataTable GetRawData()
@@ -153,23 +156,26 @@ public class DataModel
                 {
                     try
                     {
-                        averages = (DataTable)FileHandler.DeSerialize(FileHandler.Files.AVERAGES_CACHE);
-                    } catch (Exception e)
+                        averages = (DataTable) FileHandler.DeSerialize(FileHandler.Files.AVERAGES_CACHE);
+                    }
+                    catch (Exception e)
                     {
                         Constants.Log(e);
                     }
                     try
                     {
-                        maximums = (DataTable)FileHandler.DeSerialize(FileHandler.Files.MAXIMUMS_CACHE);
-                    } catch (Exception e)
+                        maximums = (DataTable) FileHandler.DeSerialize(FileHandler.Files.MAXIMUMS_CACHE);
+                    }
+                    catch (Exception e)
                     {
                         Constants.Log(e);
                     }
 
                     try
                     {
-                        rawData = (DataTable)FileHandler.DeSerialize(FileHandler.Files.RAW_CACHE);
-                    } catch (Exception e)
+                        rawData = (DataTable) FileHandler.DeSerialize(FileHandler.Files.RAW_CACHE);
+                    }
+                    catch (Exception e)
                     {
                         Constants.Log(e);
                     }
@@ -195,6 +201,7 @@ public class DataModel
 
     /**
      * Download all of the firebase/tba data based on connection properties, and save it to database
+     *
      * @param onCompleteEvent event to run when the tables are populated
      */
     public static void RefreshTable(Runnable onCompleteEvent)
@@ -219,16 +226,19 @@ public class DataModel
                 databaseUrl, eventName, apiKey);
 
         // Null child to get all raw data
-        model.Download(new OnDownloadResultListener<HashMap<String, Object>>() {
+        model.Download(new OnDownloadResultListener<HashMap<String, Object>>()
+        {
             @Override
-            public void onComplete(HashMap<String, Object> stringObjectHashMap) {
+            public void onComplete(HashMap<String, Object> stringObjectHashMap)
+            {
                 rawData = new DataTable(model.getResult(), ColumnSchema.CalculatedColumnsRawNames(), ColumnSchema.SumColumns());
 
                 RunCalculations(onCompleteEvent);
             }
 
             @Override
-            public void onFail() {
+            public void onFail()
+            {
                 dataLoadEvent.OnCompleteProgress();
             }
         });
@@ -236,15 +246,18 @@ public class DataModel
 
     /**
      * Re-run calculations with the currently loaded raw data
+     *
      * @param onComplete event to run when the calculations are complete, as they are done in a
      *                   seperate thread
      */
     private static void RunCalculations(Runnable onComplete)
     {
         // Runs
-        @SuppressLint("StaticFieldLeak") AsyncTask averagesTask = new AsyncTask() {
+        @SuppressLint("StaticFieldLeak") AsyncTask averagesTask = new AsyncTask()
+        {
             @Override
-            protected Object doInBackground(Object[] objects) {
+            protected Object doInBackground(Object[] objects)
+            {
                 DataCalculator avg = new DataCalculator(
                         rawData,
                         ColumnSchema.CalculatedColumns(),
@@ -258,9 +271,11 @@ public class DataModel
                 return null;
             }
         };
-        @SuppressLint("StaticFieldLeak") AsyncTask maximumsTask = new AsyncTask() {
+        @SuppressLint("StaticFieldLeak") AsyncTask maximumsTask = new AsyncTask()
+        {
             @Override
-            protected Object doInBackground(Object[] objects) {
+            protected Object doInBackground(Object[] objects)
+            {
                 DataCalculator max = new DataCalculator(
                         rawData,
                         ColumnSchema.CalculatedColumns(),
@@ -280,6 +295,7 @@ public class DataModel
 
     /**
      * Set the maximums table manually
+     *
      * @param max the maximums table to replace the current one
      */
     private static synchronized void SetCalculatedDataMaximums(DataTable max)
@@ -289,6 +305,7 @@ public class DataModel
 
     /**
      * Set the averages table manually
+     *
      * @param avg the averages table to replace the current one
      */
     private static synchronized void SetCalculatedDataAverages(DataTable avg)
@@ -298,6 +315,7 @@ public class DataModel
 
     /**
      * Update the table if the thread is done and it actually exists
+     *
      * @param event event to run if the data is actually loaded, and not null
      */
     private static synchronized void UpdateIfLoaded(Runnable event)
@@ -325,17 +343,23 @@ public class DataModel
             StringBuilder s = new StringBuilder();
 
             // Call api and load into csv
-            TBAHandler.Matches(eventKey, new OnDownloadResultListener<List<TBAHandler.Match>>() {
+            TBAHandler.Matches(eventKey, new OnDownloadResultListener<List<TBAHandler.Match>>()
+            {
                 @Override
-                public void onComplete(List<TBAHandler.Match> matches) {
-                    try {
-                        for (TBAHandler.Match m : matches) {
+                public void onComplete(List<TBAHandler.Match> matches)
+                {
+                    try
+                    {
+                        for (TBAHandler.Match m : matches)
+                        {
                             List<String> redTeams = m.redTeams;
                             List<String> blueTeams = m.blueTeams;
-                            for (String t : redTeams) {
+                            for (String t : redTeams)
+                            {
                                 s.append(t).append(",");
                             }
-                            for (int t = 0; t < blueTeams.size(); ++t) {
+                            for (int t = 0; t < blueTeams.size(); ++t)
+                            {
                                 s.append(blueTeams.get(t));
                                 if (t + 1 != blueTeams.size())
                                     s.append(",");
@@ -351,39 +375,48 @@ public class DataModel
                 }
 
                 @Override
-                public void onFail() {
+                public void onFail()
+                {
                 }
 
             });
 
             // Load into json
-            try {
-                TBAHandler.TeamNames(eventKey, new OnDownloadResultListener<JSONObject>() {
-                            @Override
-                            public void onComplete(JSONObject teamNames) {
-                                FileHandler.Write(FileHandler.Files.TEAM_NAMES_FILE, teamNames.toString());
-                                teamNumbersNames = teamNames;
-                            }
+            try
+            {
+                TBAHandler.TeamNames(eventKey, new OnDownloadResultListener<JSONObject>()
+                {
+                    @Override
+                    public void onComplete(JSONObject teamNames)
+                    {
+                        FileHandler.Write(FileHandler.Files.TEAM_NAMES_FILE, teamNames.toString());
+                        teamNumbersNames = teamNames;
+                    }
 
-                            @Override
-                            public void onFail() {
-                            }
-                        });
+                    @Override
+                    public void onFail()
+                    {
+                    }
+                });
             }
             catch (Exception e)
             {
                 Constants.Log(e);
             }
-            try {
-                TBAHandler.Rankings(eventKey, new OnDownloadResultListener<JSONObject>() {
+            try
+            {
+                TBAHandler.Rankings(eventKey, new OnDownloadResultListener<JSONObject>()
+                        {
                             @Override
-                            public void onComplete(JSONObject rankings) {
+                            public void onComplete(JSONObject rankings)
+                            {
                                 FileHandler.Write(FileHandler.Files.RANKS_FILE, rankings.toString());
                                 teamNumbersRanks = rankings;
                             }
 
                             @Override
-                            public void onFail() {
+                            public void onFail()
+                            {
                             }
                         }
                 );
@@ -392,10 +425,13 @@ public class DataModel
             {
                 Constants.Log(e);
             }
-            try {
-                TBAHandler.Alliances(eventKey, new OnDownloadResultListener<List<List<String>>>() {
+            try
+            {
+                TBAHandler.Alliances(eventKey, new OnDownloadResultListener<List<List<String>>>()
+                {
                     @Override
-                    public void onComplete(List<List<String>> a) {
+                    public void onComplete(List<List<String>> a)
+                    {
                         alliances = a;
                         StringBuilder alliancesString = new StringBuilder();
                         for (List<String> alliance : alliances)
@@ -407,7 +443,8 @@ public class DataModel
                     }
 
                     @Override
-                    public void onFail() {
+                    public void onFail()
+                    {
                     }
 
                 });
@@ -475,7 +512,8 @@ public class DataModel
             }
         }
 
-        try {
+        try
+        {
             teamNumbersNames = new JSONObject(FileHandler.LoadContents(FileHandler.Files.TEAM_NAMES_FILE));
         }
         catch (Exception e)
@@ -514,6 +552,7 @@ public class DataModel
 
     /**
      * Get the teams for a given alliance number
+     *
      * @param seatNumber the alliance seat to get teams for
      * @return list of team names
      */
@@ -532,6 +571,7 @@ public class DataModel
 
     /**
      * Get the match, with both alliances, for a given match number
+     *
      * @param matchNumber the match number to get teams for
      * @return the TBAHandler.Match object, populated or potentially null if something failed
      */
@@ -561,6 +601,7 @@ public class DataModel
     public interface DataLoadEvent
     {
         void OnBeginProgress();
+
         void OnCompleteProgress();
     }
 }

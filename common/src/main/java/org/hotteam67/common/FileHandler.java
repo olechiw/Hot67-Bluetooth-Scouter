@@ -1,29 +1,21 @@
 package org.hotteam67.common;
 
 import android.os.Environment;
-import android.util.Log;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 
 
 /**
  * Static class providing all of the functions and files
  */
 
-public final class FileHandler {
+public final class FileHandler
+{
     /**
      * List of file names used by various programs
      */
-    public static class Files {
+    public static class Files
+    {
 
         /**
          * Master scouted matches database
@@ -109,7 +101,8 @@ public final class FileHandler {
      * @param file filename
      * @return file path
      */
-    private static String file(String file) {
+    private static String file(String file)
+    {
         return DIRECTORY + file;
     }
 
@@ -119,20 +112,29 @@ public final class FileHandler {
      * @param FILE the file without directory
      * @return the reader for the file
      */
-    public static BufferedReader GetReader(String FILE) {
-        try {
+    public static BufferedReader GetReader(String FILE)
+    {
+        try
+        {
             return new BufferedReader(new FileReader(file(FILE)));
-        } catch (FileNotFoundException e) {
+        }
+        catch (FileNotFoundException e)
+        {
             Constants.Log("File not found: " + file(FILE));
             new File(DIRECTORY).mkdirs();
 
-            try {
+            try
+            {
                 new File(file(FILE)).createNewFile();
                 return new BufferedReader(new FileReader(file(FILE)));
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 return null;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             Constants.Log(e);
         }
 
@@ -145,11 +147,14 @@ public final class FileHandler {
      * @param FILE the file without its directory
      * @return the writer for the file
      */
-    private static FileWriter GetWriter(String FILE) {
+    private static FileWriter GetWriter(String FILE)
+    {
         String f = file(FILE);
-        try {
+        try
+        {
             File fileObj = new File(f);
-            if (fileObj.isDirectory()) {
+            if (fileObj.isDirectory())
+            {
                 fileObj.delete();
                 fileObj.createNewFile();
             }
@@ -159,19 +164,26 @@ public final class FileHandler {
                 fileObj.createNewFile();
             }
             return new FileWriter(fileObj.getAbsolutePath(), false);
-        } catch (FileNotFoundException e) {
+        }
+        catch (FileNotFoundException e)
+        {
             Constants.Log(e);
             Constants.Log("File not found");
             MakeDirs();
 
-            try {
+            try
+            {
                 new File(f).createNewFile();
                 return new FileWriter(new File(f).getAbsolutePath(), false);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Constants.Log(ex);
                 return null;
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             Constants.Log("Exception occured in loading writer : " + e.getMessage());
         }
 
@@ -184,17 +196,22 @@ public final class FileHandler {
      * @param file the file to open, without directory
      * @return the contents of the file
      */
-    public static String LoadContents(String file) {
+    public static String LoadContents(String file)
+    {
         StringBuilder content = new StringBuilder();
         BufferedReader r = GetReader(file);
         if (r == null) return "";
-        try {
+        try
+        {
             String line = r.readLine();
-            while (line != null) {
+            while (line != null)
+            {
                 content.append(line).append("\n");
                 line = r.readLine();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             Constants.Log(e);
         }
 
@@ -207,14 +224,19 @@ public final class FileHandler {
      * @param FILE the file to write to, without directory
      * @param s    the value to write to the file
      */
-    public static void Write(String FILE, String s) {
-        try {
+    public static void Write(String FILE, String s)
+    {
+        try
+        {
             FileWriter w = GetWriter(FILE);
-            if (w != null) {
+            if (w != null)
+            {
                 w.write(s);
                 w.close();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             Constants.Log("Failed to write: " + s + ": " + e.getMessage());
             Constants.Log(e);
         }
@@ -226,13 +248,17 @@ public final class FileHandler {
      * @param o    the object to write
      * @param file the file to write to, without directory
      */
-    public static void Serialize(Serializable o, String file) {
-        try {
+    public static void Serialize(Serializable o, String file)
+    {
+        try
+        {
             FileOutputStream fileOutputStream = new FileOutputStream(file(file));
             ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
             outputStream.writeObject(o);
             outputStream.close();
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             Constants.Log(e);
         }
     }
@@ -243,8 +269,10 @@ public final class FileHandler {
      * @param file the file to load from, without directory
      * @return the serialized object
      */
-    public static Serializable DeSerialize(String file) {
-        try {
+    public static Serializable DeSerialize(String file)
+    {
+        try
+        {
             FileInputStream fileInputStream = new FileInputStream(file(file));
             ObjectInputStream inputStream = new ObjectInputStream(fileInputStream);
             Object returnObject = inputStream.readObject();
@@ -252,7 +280,9 @@ public final class FileHandler {
             inputStream.close();
 
             return (Serializable) returnObject;
-        } catch (Exception e) {
+        }
+        catch (Exception e)
+        {
             Constants.Log(e);
             return null;
         }

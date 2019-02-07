@@ -2,8 +2,6 @@ package org.hotteam67.common;
 
 import android.os.AsyncTask;
 import android.util.Log;
-
-import org.hotteam67.common.Constants;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -21,18 +19,21 @@ import java.util.List;
  * Handler for The Blue Alliance Web API
  */
 
-public class TBAHandler {
+public class TBAHandler
+{
 
     /**
      * A class that will retrieve the contents of the url and pass them back as a string with an
      * onCompleteEvent
      */
-    static class RetrieveUrl extends AsyncTask<String, Void, String> {
+    static class RetrieveUrl extends AsyncTask<String, Void, String>
+    {
 
         final OnDownloadResultListener<String> onCompleteEvent;
 
         /**
          * Constructor
+         *
          * @param event the event to be called once the URL has been retreieved
          */
         RetrieveUrl(OnDownloadResultListener<String> event)
@@ -42,6 +43,7 @@ public class TBAHandler {
 
         /**
          * The thread to download from the url
+         *
          * @param input the url
          * @return the results of the download
          */
@@ -54,7 +56,8 @@ public class TBAHandler {
                 conn.setRequestMethod("GET");
 
                 Log.d("HotTeam67", "Response code: " + conn.getResponseCode());
-                if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) { // 200
+                if (conn.getResponseCode() == HttpURLConnection.HTTP_OK)
+                { // 200
 
                     InputStream responseStream = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(responseStream));
@@ -100,7 +103,8 @@ public class TBAHandler {
 
     /**
      * Get the rankings of an event to return as a JSONObject
-     * @param eventCode the blue alliance event code, including year
+     *
+     * @param eventCode   the blue alliance event code, including year
      * @param returnEvent event that consumes a JSONObject - [teamNumber, teamRank]
      */
     public static void Rankings(String eventCode, OnDownloadResultListener<JSONObject> returnEvent)
@@ -110,9 +114,11 @@ public class TBAHandler {
         url += Constants.TBA.EVENT + eventCode + Constants.TBA.TEAMS + Constants.TBA.STATUSES + Constants.AUTH_TOKEN;
         Log.d("HotTeam67", "Pulling data from url: " + url);
 
-        RetrieveUrl retrieveUrl = new RetrieveUrl(new OnDownloadResultListener<String>() {
+        RetrieveUrl retrieveUrl = new RetrieveUrl(new OnDownloadResultListener<String>()
+        {
             @Override
-            public void onComplete(String result) {
+            public void onComplete(String result)
+            {
                 JSONObject resultObject;
                 JSONObject returnObject = new JSONObject();
                 try
@@ -123,12 +129,16 @@ public class TBAHandler {
                     while (keys.hasNext())
                     {
                         String team = (String) keys.next();
-                        try {
+                        try
+                        {
                             JSONObject statusObject = (JSONObject) resultObject.get(team);
 
-                            if (statusObject == null) {
+                            if (statusObject == null)
+                            {
                                 returnObject.put(team.replace("frc", ""), "");
-                            } else {
+                            }
+                            else
+                            {
                                 JSONObject quals = (JSONObject) statusObject.get("qual");
                                 JSONObject ranking = (JSONObject) quals.get("ranking");
                                 String value = String.valueOf(ranking.get("rank"));
@@ -152,15 +162,18 @@ public class TBAHandler {
             }
 
             @Override
-            public void onFail() {
+            public void onFail()
+            {
                 returnEvent.onFail();
             }
-        }); retrieveUrl.execute(url);
+        });
+        retrieveUrl.execute(url);
     }
 
     /**
      * Get the qualification match schedule for an event
-     * @param eventCode the blue alliance event code, including year
+     *
+     * @param eventCode   the blue alliance event code, including year
      * @param returnEvent consumes a list of matches with red and blue teams
      */
     public static void Matches(String eventCode, final OnDownloadResultListener<List<Match>> returnEvent)
@@ -170,15 +183,19 @@ public class TBAHandler {
         url += Constants.TBA.EVENT + eventCode + Constants.TBA.MATCHES + Constants.AUTH_TOKEN;
         Log.d("HotTeam67", "Pulling data from url: " + url);
 
-        RetrieveUrl retrieveUrl = new RetrieveUrl(new OnDownloadResultListener<String>() {
+        RetrieveUrl retrieveUrl = new RetrieveUrl(new OnDownloadResultListener<String>()
+        {
             @Override
-            public void onComplete(String result) {
+            public void onComplete(String result)
+            {
 
-                try {
+                try
+                {
                     JSONArray resultArray = new JSONArray(result);
                     List<Match> matches = new ArrayList<>();
 
-                    for (int i = 0; i < resultArray.length(); ++i) {
+                    for (int i = 0; i < resultArray.length(); ++i)
+                    {
                         JSONObject matchObject = resultArray.getJSONObject(i);
                         Match match = new Match();
 
@@ -201,22 +218,27 @@ public class TBAHandler {
                     }
                     matches.removeAll(Collections.singleton(null));
                     returnEvent.onComplete(matches);
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Constants.Log(e);
                     returnEvent.onFail();
                 }
             }
 
             @Override
-            public void onFail() {
+            public void onFail()
+            {
                 returnEvent.onFail();
             }
-        }); retrieveUrl.execute(url);
+        });
+        retrieveUrl.execute(url);
     }
 
     /**
      * Get the team names of each team for an event
-     * @param eventCode the blue alliance event code, including year
+     *
+     * @param eventCode   the blue alliance event code, including year
      * @param returnEvent consumes team number as key team name as value
      */
     public static void TeamNames(String eventCode, OnDownloadResultListener<JSONObject> returnEvent)
@@ -226,35 +248,44 @@ public class TBAHandler {
         url += Constants.TBA.EVENT + eventCode + Constants.TBA.TEAMS + Constants.AUTH_TOKEN;
         Log.d("HotTeam67", "Pulling data from url: " + url);
 
-        RetrieveUrl retrieveUrl = new RetrieveUrl(new OnDownloadResultListener<String>() {
+        RetrieveUrl retrieveUrl = new RetrieveUrl(new OnDownloadResultListener<String>()
+        {
             @Override
-            public void onComplete(String result) {
+            public void onComplete(String result)
+            {
                 JSONArray resultArray;
                 JSONObject returnObject = new JSONObject();
-                try {
+                try
+                {
                     resultArray = new JSONArray(result);
 
-                    for (int i = 0; i < resultArray.length(); ++i) {
+                    for (int i = 0; i < resultArray.length(); ++i)
+                    {
                         JSONObject team = resultArray.getJSONObject(i);
                         returnObject.put(String.valueOf(team.get("team_number")), team.get("nickname"));
                     }
                     returnEvent.onComplete(returnObject);
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     returnEvent.onFail();
                     Constants.Log(e);
                 }
             }
+
             @Override
             public void onFail()
             {
                 returnEvent.onFail();
             }
-        }); retrieveUrl.execute(url);
+        });
+        retrieveUrl.execute(url);
     }
 
     /**
      * Get the alliances of teams for eliminations at an event
-     * @param eventCode the blue alliance event code, including year
+     *
+     * @param eventCode   the blue alliance event code, including year
      * @param returnEvent list of list of string team numbers, from highest to lowest rank
      */
     public static void Alliances(String eventCode, OnDownloadResultListener<List<List<String>>> returnEvent)
@@ -263,27 +294,34 @@ public class TBAHandler {
 
         url += Constants.TBA.EVENT + eventCode + Constants.TBA.ALLIANCES + Constants.AUTH_TOKEN;
 
-        RetrieveUrl retrieveUrl = new RetrieveUrl(new OnDownloadResultListener<String>() {
+        RetrieveUrl retrieveUrl = new RetrieveUrl(new OnDownloadResultListener<String>()
+        {
             @Override
-            public void onComplete(String result) {
+            public void onComplete(String result)
+            {
                 JSONArray resultArray;
                 List<List<String>> alliances = new ArrayList<>();
-                try {
+                try
+                {
                     resultArray = new JSONArray(result);
-                    for (int i = 0; i < resultArray.length(); ++i) {
+                    for (int i = 0; i < resultArray.length(); ++i)
+                    {
                         JSONObject alliance = resultArray.getJSONObject(i);
                         if (!alliance.has("picks"))
                             continue;
 
                         JSONArray picks = alliance.getJSONArray("picks");
                         List<String> currentAlliance = new ArrayList<>();
-                        for (int t = 0; t < picks.length(); ++t) {
+                        for (int t = 0; t < picks.length(); ++t)
+                        {
                             currentAlliance.add(picks.getString(t).replace("frc", ""));
                         }
                         alliances.add(currentAlliance);
                     }
                     returnEvent.onComplete(alliances);
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     Constants.Log(e);
                     returnEvent.onFail();
                 }
@@ -294,6 +332,7 @@ public class TBAHandler {
             {
                 returnEvent.onFail();
             }
-        }); retrieveUrl.execute(url);
+        });
+        retrieveUrl.execute(url);
     }
 }

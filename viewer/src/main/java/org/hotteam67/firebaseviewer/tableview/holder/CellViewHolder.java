@@ -5,9 +5,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import com.evrencoskun.tableview.adapter.recyclerview.holder.AbstractViewHolder;
-
 import org.hotteam67.common.Constants;
 import org.hotteam67.firebaseviewer.R;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
@@ -16,7 +14,8 @@ import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
  * The CellViewHolder that is populated by CellModels. Uses the alliance to set its background color,
  * or otherwise handles selected/unselected colors
  */
-public class CellViewHolder extends AbstractViewHolder {
+public class CellViewHolder extends AbstractViewHolder
+{
     private final TextView cellTextView;
     private final LinearLayout cellContainer;
     private CellModel cell;
@@ -24,9 +23,11 @@ public class CellViewHolder extends AbstractViewHolder {
 
     /**
      * Constructor, takes the view that will be used.
+     *
      * @param itemView The view, this is inflated in mainTableAdapter
      */
-    public CellViewHolder(View itemView) {
+    public CellViewHolder(View itemView)
+    {
         super(itemView);
         cellTextView = itemView.findViewById(R.id.cell_data);
         cellContainer = itemView.findViewById(R.id.cell_container);
@@ -34,9 +35,11 @@ public class CellViewHolder extends AbstractViewHolder {
 
     /**
      * Set the CellModel, updating the values, colors, and layout params
+     *
      * @param cellModel the cellModel to populate the view with
      */
-    public void setCellModel(CellModel cellModel, int yPosition) {
+    public void setCellModel(CellModel cellModel, int yPosition)
+    {
         this.yPosition = yPosition;
 
         cell = cellModel;
@@ -58,10 +61,12 @@ public class CellViewHolder extends AbstractViewHolder {
     /**
      * Event handler for selection/un-selection, to change the colors of the view. Ignored if there
      * is an alliance set
+     *
      * @param selectionState either selected or unselected
      */
     @Override
-    public void setSelected(SelectionState selectionState) {
+    public void setSelected(SelectionState selectionState)
+    {
         super.setSelected(selectionState);
 
         // Alliance colors
@@ -72,12 +77,15 @@ public class CellViewHolder extends AbstractViewHolder {
         }
 
         // Normal colors
-        if (selectionState == SelectionState.SELECTED) {
+        if (selectionState == SelectionState.SELECTED)
+        {
             cellTextView.setTextColor(ContextCompat.getColor(cellTextView.getContext(), R.color
                     .selected_text_color));
             cellTextView.setBackgroundColor(ContextCompat.getColor(cellTextView.getContext(), R.color
                     .selected_background_color));
-        } else {
+        }
+        else
+        {
             int nBackgroundColorId;
             if (yPosition != -1 && yPosition % 2 == 0)
                 nBackgroundColorId = R.color.unselected_background_color;
@@ -91,8 +99,10 @@ public class CellViewHolder extends AbstractViewHolder {
 
     private int alliance = Constants.ALLIANCE_NONE;
 
-    /**'
+    /**
+     * '
      * Set the view highlight based on the alliance given
+     *
      * @param alliance the alliance code from Constants
      */
     private void setAllianceHighlight(int alliance, SelectionState selectionState)
@@ -127,9 +137,11 @@ public class CellViewHolder extends AbstractViewHolder {
 
     /**
      * Get the CellModel that the view is currently populated with
+     *
      * @return CellModel assigned to the view last
      */
-    public CellModel getCellModel() {
+    public CellModel getCellModel()
+    {
         return cell;
     }
 }

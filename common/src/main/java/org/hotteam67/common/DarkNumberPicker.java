@@ -11,7 +11,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 /**
- *  A manually themed number picker that can be easily made horizontal or vertical
+ * A manually themed number picker that can be easily made horizontal or vertical
  */
 
 public class DarkNumberPicker extends LinearLayout
@@ -36,6 +36,7 @@ public class DarkNumberPicker extends LinearLayout
 
 
     private Runnable valueChangedListener;
+
     public void setOnValueChangedListener(Runnable r)
     {
         valueChangedListener = r;
@@ -58,7 +59,9 @@ public class DarkNumberPicker extends LinearLayout
             try
             {
                 i = Integer.valueOf(source.toString());
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 return String.valueOf(minimum);
             }
 
@@ -75,29 +78,35 @@ public class DarkNumberPicker extends LinearLayout
                 return String.valueOf(maximum);
             }
         };
-        mainText.setFilters(new InputFilter[] { filter });
+        mainText.setFilters(new InputFilter[]{filter});
         mainText.setMinEms(2);
 
-        mainText.addTextChangedListener(new TextWatcher() {
+        mainText.addTextChangedListener(new TextWatcher()
+        {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after)
+            {
 
             }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            public void onTextChanged(CharSequence s, int start, int before, int count)
+            {
 
             }
 
             @Override
-            public void afterTextChanged(Editable s) {
+            public void afterTextChanged(Editable s)
+            {
                 if (s.toString().trim().isEmpty())
                     return;
                 int i = 0;
                 try
                 {
                     i = Integer.valueOf(String.valueOf(mainText.getText().toString()));
-                } catch (Exception e) {
+                }
+                catch (Exception e)
+                {
                     mainText.setText(String.valueOf(minimum));
                 }
 
@@ -137,6 +146,7 @@ public class DarkNumberPicker extends LinearLayout
 
     /**
      * Configure the minimum of the numberpicker
+     *
      * @param value min
      */
     public void setMinimum(int value)
@@ -146,6 +156,7 @@ public class DarkNumberPicker extends LinearLayout
 
     /**
      * Configure the maximum of the numberpicker
+     *
      * @param value max
      */
     public void setMaximum(int value)
@@ -156,6 +167,7 @@ public class DarkNumberPicker extends LinearLayout
 
     /**
      * Get the current value of the number picker
+     *
      * @return value
      */
     public int getValue()
@@ -168,6 +180,7 @@ public class DarkNumberPicker extends LinearLayout
 
     /**
      * Set the current value of the number picker
+     *
      * @param value value
      */
     public void setValue(Integer value)
@@ -178,7 +191,8 @@ public class DarkNumberPicker extends LinearLayout
             mainText.setText("0");
     }
 
-    public void setButtonTextColor(int color) {
+    public void setButtonTextColor(int color)
+    {
         upButton.setTextColor(color);
         downButton.setTextColor(color);
     }

@@ -9,7 +9,8 @@ import java.util.List;
  * Firebase
  */
 
-public class ColumnSchema {
+public class ColumnSchema
+{
     /**
      * The calculated columns desired names, in the same order as the raw names
      */
@@ -30,11 +31,12 @@ public class ColumnSchema {
         calculatedColumns.add("Assisted");
         calculatedColumns.add("A. Vault");
 
-        return  calculatedColumns;
+        return calculatedColumns;
     }
 
     /**
      * The calculated columns raw names, in the same order as the calculated names
+     *
      * @return a list of the raw names corresponding in index to the calculated
      */
     public static List<String> CalculatedColumnsRawNames()
@@ -59,6 +61,7 @@ public class ColumnSchema {
 
     /**
      * List of columns to sum, with a special class, before doing maximum/average calcs
+     *
      * @return List of sumcolumns
      */
     public static List<SumColumn> SumColumns()

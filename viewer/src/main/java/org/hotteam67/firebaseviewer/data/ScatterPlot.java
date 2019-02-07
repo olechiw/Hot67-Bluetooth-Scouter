@@ -3,17 +3,10 @@ package org.hotteam67.firebaseviewer.data;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
-
 import com.androidplot.util.PixelUtils;
-import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.StepMode;
-import com.androidplot.xy.XYGraphWidget;
-import com.androidplot.xy.XYPlot;
-import com.androidplot.xy.XYSeries;
-import org.hotteam67.firebaseviewer.ViewerActivity;
+import com.androidplot.xy.*;
 import org.hotteam67.firebaseviewer.R;
+import org.hotteam67.firebaseviewer.ViewerActivity;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -24,13 +17,15 @@ import java.util.List;
  * given context
  */
 
-public class ScatterPlot {
+public class ScatterPlot
+{
     /**
      * Display a dialog with the scatter plot. Dialog will fill the whole screen and disappear
      * on click
+     *
      * @param inputValues list of values to plot, with the index as the X axis
-     * @param c the context to create the dialog under
-     * @param title the title of the dialog
+     * @param c           the context to create the dialog under
+     * @param title       the title of the dialog
      */
     public static void Show(List<Integer> inputValues, Context c, String title)
     {
@@ -58,7 +53,7 @@ public class ScatterPlot {
         LineAndPointFormatter format =
                 new LineAndPointFormatter(Color.RED, Color.BLACK, null, null);
 
-        XYPlot newPlot = (XYPlot)((ViewerActivity)c).getLayoutInflater().inflate(R.layout.xyplot, null);
+        XYPlot newPlot = (XYPlot) ((ViewerActivity) c).getLayoutInflater().inflate(R.layout.xyplot, null);
         newPlot.setTitle(title);
 
         newPlot.setDomainBoundaries(0, BoundaryMode.FIXED, xValues.size() + 1, BoundaryMode.FIXED);

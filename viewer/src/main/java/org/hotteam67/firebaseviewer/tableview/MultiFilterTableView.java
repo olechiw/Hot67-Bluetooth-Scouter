@@ -5,7 +5,6 @@ import android.support.annotation.AttrRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-
 import com.evrencoskun.tableview.TableView;
 import com.evrencoskun.tableview.adapter.AbstractTableAdapter;
 import com.evrencoskun.tableview.adapter.AdapterDataSetChangedListener;
@@ -27,7 +26,8 @@ import java.util.List;
  * Also has a sibling functionality where it will update the filter for another given table,
  * which is used for keeping Averages and Maximums in sync
  */
-public class MultiFilterTableView extends TableView {
+public class MultiFilterTableView extends TableView
+{
 
     private CellRecyclerViewAdapter mCellRecyclerViewAdapter;
     private RowHeaderRecyclerViewAdapter mRowHeaderRecyclerViewAdapter;
@@ -39,21 +39,25 @@ public class MultiFilterTableView extends TableView {
      */
     private MultiFilterTableView sibling;
 
-    public MultiFilterTableView(@NonNull Context context) {
+    public MultiFilterTableView(@NonNull Context context)
+    {
         super(context);
     }
 
-    public MultiFilterTableView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public MultiFilterTableView(@NonNull Context context, @Nullable AttributeSet attrs)
+    {
         super(context, attrs);
     }
 
     public MultiFilterTableView(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int
-            defStyleAttr) {
+            defStyleAttr)
+    {
         super(context, attrs, defStyleAttr);
     }
 
     /**
      * Set the sibling table view to sync the filter with. One of only two changed functions
+     *
      * @param sibling the sibling table view to sync filters to
      */
     public void SetSiblingTableView(MultiFilterTableView sibling)
@@ -68,7 +72,8 @@ public class MultiFilterTableView extends TableView {
         FilterInit();
     }
 
-    private void FilterInit() {
+    private void FilterInit()
+    {
         getAdapter().addAdapterDataSetChangedListener(adapterDataSetChangedListener);
         this.mCellRecyclerViewAdapter = (CellRecyclerViewAdapter)
                 getCellRecyclerView().getAdapter();
@@ -98,20 +103,23 @@ public class MultiFilterTableView extends TableView {
     }
 
     @SuppressWarnings("unchecked")
-    public void filter(Filter filter, boolean doContains) {
+    public void filter(Filter filter, boolean doContains)
+    {
         filter(filter, doContains, false);
     }
 
     /**
      * The modified filter function
-     * @param filter the filter class to use
-     * @param doContains whether to use contains() or equals(), contains() if true
+     *
+     * @param filter      the filter class to use
+     * @param doContains  whether to use contains() or equals(), contains() if true
      * @param skipSibling whether to skip the sibling table provided, set to true if this filter update
      *                    was already triggered by a sibling, to prevent Stack Overflow
      */
     private void filter(Filter filter, boolean doContains, boolean skipSibling)
     {
-        if (originalCellDataStore == null || originalRowDataStore == null) {
+        if (originalCellDataStore == null || originalRowDataStore == null)
+        {
             return;
         }
 
@@ -120,33 +128,45 @@ public class MultiFilterTableView extends TableView {
         List<List<IFilterableModel>> filteredCellList = new ArrayList<>();
         List filteredRowList = new ArrayList<>();
 
-        if (filter.getFilterItems().isEmpty()) {
+        if (filter.getFilterItems().isEmpty())
+        {
             filteredCellList = new ArrayList<>(originalCellDataStore);
             filteredRowList = new ArrayList<>(originalRowDataStore);
-        } else {
-            for (int x = 0; x < filter.getFilterItems().size(); ++x) {
+        }
+        else
+        {
+            for (int x = 0; x < filter.getFilterItems().size(); ++x)
+            {
                 final FilterItem filterItem = filter.getFilterItems().get(x);
-                if (filterItem.getFilterType().equals(FilterType.ALL)) {
-                    for (List<IFilterableModel> itemsList : originalCellData) {
-                        for (IFilterableModel item : itemsList) {
+                if (filterItem.getFilterType().equals(FilterType.ALL))
+                {
+                    for (List<IFilterableModel> itemsList : originalCellData)
+                    {
+                        for (IFilterableModel item : itemsList)
+                        {
                             if (item
                                     .getFilterableKeyword()
                                     .toLowerCase()
                                     .equals(filterItem
                                             .getFilter()
-                                            .toLowerCase())) {
+                                            .toLowerCase()))
+                            {
                                 filteredCellList.add(itemsList);
                                 filteredRowList.add(originalRowData.get(filteredCellList.indexOf(itemsList)));
                                 break;
                             }
                         }
                     }
-                } else {
-                    for (List<IFilterableModel> itemsList : originalCellData) {
+                }
+                else
+                {
+                    for (List<IFilterableModel> itemsList : originalCellData)
+                    {
                         String s1 = itemsList.get(filterItem.getColumn()).getFilterableKeyword().toLowerCase();
                         String s2 = filterItem.getFilter().toLowerCase();
                         boolean pass = (doContains) ? s1.contains(s2) : s1.equals(s2);
-                        if (pass) {
+                        if (pass)
+                        {
                             filteredCellList.add(itemsList);
                             filteredRowList.add(originalRowData.get(originalCellData.indexOf(itemsList)));
                         }
@@ -176,17 +196,22 @@ public class MultiFilterTableView extends TableView {
 
     @SuppressWarnings("unchecked")
     private final AdapterDataSetChangedListener adapterDataSetChangedListener =
-            new AdapterDataSetChangedListener() {
+            new AdapterDataSetChangedListener()
+            {
                 @Override
-                public void onRowHeaderItemsChanged(List rowHeaderItems) {
-                    if (rowHeaderItems != null) {
+                public void onRowHeaderItemsChanged(List rowHeaderItems)
+                {
+                    if (rowHeaderItems != null)
+                    {
                         originalRowDataStore = new ArrayList<>(rowHeaderItems);
                     }
                 }
 
                 @Override
-                public void onCellItemsChanged(List cellItems) {
-                    if (cellItems != null) {
+                public void onCellItemsChanged(List cellItems)
+                {
+                    if (cellItems != null)
+                    {
                         originalCellDataStore = new ArrayList<>(cellItems);
                     }
                 }

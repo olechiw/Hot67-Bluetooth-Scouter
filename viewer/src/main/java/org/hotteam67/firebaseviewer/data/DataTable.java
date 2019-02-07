@@ -1,7 +1,6 @@
 package org.hotteam67.firebaseviewer.data;
 
 import android.util.Log;
-
 import org.hotteam67.common.Constants;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.CellModel;
 import org.hotteam67.firebaseviewer.tableview.tablemodel.ColumnHeaderModel;
@@ -18,7 +17,8 @@ import java.util.List;
  * that are barely used anymore, and the ability to provide a data HashMap to turn into a table. Data
  * is input in the format of HashMap<String, HashMap<String, String>>
  */
-public class DataTable implements Serializable {
+public class DataTable implements Serializable
+{
     private final List<ColumnHeaderModel> columnHeaderList;
     private final List<List<CellModel>> cellList;
     private final List<RowHeaderModel> rowHeaderList;
@@ -31,11 +31,12 @@ public class DataTable implements Serializable {
 
     /**
      * Constructor
-     * @param data the raw data to populate the table with, if it will be holding raw data
+     *
+     * @param data           the raw data to populate the table with, if it will be holding raw data
      * @param preferredOrder the preferred column order when parsing the raw data, contains
      *                       string names of the columns that should appear first
-     * @param sumColumns columns where the values are sums of a set of other columns in the row,
-     *                   do not actulaly exist in the data
+     * @param sumColumns     columns where the values are sums of a set of other columns in the row,
+     *                       do not actulaly exist in the data
      */
     DataTable(HashMap<String, Object> data, List<String> preferredOrder,
               List<ColumnSchema.SumColumn> sumColumns)
@@ -59,7 +60,8 @@ public class DataTable implements Serializable {
         for (HashMap.Entry<String, Object> row : data.entrySet())
         {
             // Load the row
-            try {
+            try
+            {
                 HashMap<String, String> rowMap = (HashMap<String, String>) row.getValue();
                 LoadRow(rowMap, row_id);
             }
@@ -91,8 +93,10 @@ public class DataTable implements Serializable {
                         // TeamNumber
                         rowMap.remove(TeamNumber);
                         //columnHeaderList.add(new ColumnHeaderModel(TeamNumber));
-                        for (HashMap.Entry<String, String> column : rowMap.entrySet()) {
-                            if (!preferredOrder.contains(column.getKey())) {
+                        for (HashMap.Entry<String, String> column : rowMap.entrySet())
+                        {
+                            if (!preferredOrder.contains(column.getKey()))
+                            {
                                 columnHeaderList.add(new ColumnHeaderModel(column.getKey()));
                                 preferredOrder.add(column.getKey());
                             }
@@ -115,6 +119,7 @@ public class DataTable implements Serializable {
 
     /**
      * Loda one row into the table given the rowMap and the index of the row
+     *
      * @param rowMap the map for the row to turn into a table row
      * @param yIndex the y index of the row in the array
      */
@@ -142,8 +147,10 @@ public class DataTable implements Serializable {
             int value = 0;
             for (String columnToSum : sumColumn.columnsNames)
             {
-                try {
-                    if (rowMap.keySet().contains(columnToSum)) {
+                try
+                {
+                    if (rowMap.keySet().contains(columnToSum))
+                    {
                         String columnValue = rowMap.get(columnToSum);
                         if (columnValue.equals("true") || columnValue.equals("false"))
                             value += (Boolean.valueOf(columnValue)) ? 1 : 0;
@@ -162,7 +169,8 @@ public class DataTable implements Serializable {
 
         for (ColumnHeaderModel model : columnHeaderList)
         {
-            if (!rowMap.containsKey(model.getData())) {
+            if (!rowMap.containsKey(model.getData()))
+            {
                 boolean contained = false;
                 for (ColumnSchema.SumColumn c : sumColumns)
                 {
@@ -185,7 +193,8 @@ public class DataTable implements Serializable {
         }
 
         // Last is other columns
-        for (HashMap.Entry<String, String> cell : rowMap.entrySet()) {
+        for (HashMap.Entry<String, String> cell : rowMap.entrySet())
+        {
 
             CellModel model = new CellModel("0_0", cell.getValue(), number);
             if (!preferredOrder.contains(cell.getKey()))
@@ -203,9 +212,10 @@ public class DataTable implements Serializable {
 
     /**
      * Set all of the values
+     *
      * @param columnNames the values of the column headers
-     * @param cellValues the values of each row, as a list of lists
-     * @param rowNames the row header values, a name attached to each row
+     * @param cellValues  the values of each row, as a list of lists
+     * @param rowNames    the row header values, a name attached to each row
      */
     public DataTable(List<ColumnHeaderModel> columnNames, List<List<CellModel>> cellValues, List<RowHeaderModel> rowNames)
     {
@@ -216,6 +226,7 @@ public class DataTable implements Serializable {
 
     /**
      * Old filtering system, barely used, just adds to a list of filters
+     *
      * @param term term to filter by.
      */
     public void SetTeamNumberFilter(String... term)
@@ -230,6 +241,7 @@ public class DataTable implements Serializable {
 
     /**
      * Get the columns header list
+     *
      * @return list of ColumnHeaderModel
      */
     public List<ColumnHeaderModel> GetColumns()
@@ -239,6 +251,7 @@ public class DataTable implements Serializable {
 
     /**
      * Get the columns names, not as part of the data model but as a list of strings
+     *
      * @return list of string column names
      */
     List<String> GetColumnNames()
@@ -252,6 +265,7 @@ public class DataTable implements Serializable {
 
     /**
      * Get list of list of cell models for the rows
+     *
      * @return list of list of CellModel
      */
     public List<List<CellModel>> GetCells()
@@ -260,7 +274,8 @@ public class DataTable implements Serializable {
             return cellList;
         else
         {
-            try {
+            try
+            {
                 List<RowHeaderModel> filteredRows = GetRowHeaders();
                 List<List<CellModel>> cells = new ArrayList<>();
                 if (filteredRows.size() > 0)
@@ -283,6 +298,7 @@ public class DataTable implements Serializable {
 
     /**
      * Get the Row Headers for a table
+     *
      * @return the RowHeaderModel list
      */
     public List<RowHeaderModel> GetRowHeaders()

@@ -10,7 +10,8 @@ import java.util.concurrent.Callable;
 /**
  * A layout that will intercept all of its touches based on a condition
  */
-public class InterceptAllLayout extends RelativeLayout {
+public class InterceptAllLayout extends RelativeLayout
+{
     public InterceptAllLayout(Context c)
     {
         super(c);
@@ -25,6 +26,7 @@ public class InterceptAllLayout extends RelativeLayout {
 
     /**
      * A condition for whether the touches will be intercepted
+     *
      * @param condition the condition that will be checked
      */
     public void setInterceptCondition(Callable<Boolean> condition)
@@ -36,6 +38,7 @@ public class InterceptAllLayout extends RelativeLayout {
 
     /**
      * An event to run when a touch is intercepted and the condition is met
+     *
      * @param event the event to run
      */
     public void setInterceptEvent(Runnable event)
@@ -44,8 +47,10 @@ public class InterceptAllLayout extends RelativeLayout {
     }
 
     @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        try {
+    public boolean onInterceptTouchEvent(MotionEvent ev)
+    {
+        try
+        {
             if (interceptCondition.call())
             {
                 // With this i tell my layout to consume all the touch events from its childs
@@ -53,7 +58,9 @@ public class InterceptAllLayout extends RelativeLayout {
                 return true;
             }
         }
-        catch (Exception ignored) {}
+        catch (Exception ignored)
+        {
+        }
         return false;
     }
 }
