@@ -36,18 +36,20 @@ public class MasterActivity extends BluetoothMasterActivity
 
     private static final int REQUEST_PREFERENCES = 2;
     private static final int REQUEST_ENABLE_PERMISSION = 3;
-
+    private final Context context = this;
     private String lastMatchNumber = "0";
     /**
      * List of team numbers for the last match, used to check if a match was received already
      */
     private List<String> lastMatchTeamNumbers = new ArrayList<>();
     private int matchesReceived = 0;
-
     /**
      * All of the received matches, stored in json, written/read from local database
      */
     private JSONObject jsonDatabase;
+    private Button connectButton;
+    private EditText masterLogText;
+    private int currentLog = 1;
 
     /**
      * Show a messagebox on the master
@@ -71,9 +73,6 @@ public class MasterActivity extends BluetoothMasterActivity
             Constants.Log(e);
         }
     }
-
-    private Button connectButton;
-    private EditText masterLogText;
 
     /**
      * Setup UI and the handler for communicating with bluetooth threads
@@ -170,7 +169,7 @@ public class MasterActivity extends BluetoothMasterActivity
                         // Obtain schema
                         String schema = SchemaHandler.LoadSchemaFromFile().toString();
 
-                        int devices = WriteAllDevices((Constants.SCOUTER_SCHEMA_TAG + schema).getBytes());
+                        int devices = WriteAllDevices((Constants.MASTER_SCHEMA_TAG + schema).getBytes());
                         VisualLog("Wrote schema to " + devices + " devices");
                     }
                     catch (Exception e)
@@ -200,13 +199,35 @@ public class MasterActivity extends BluetoothMasterActivity
                         Constants.Log(e);
                     }
                 });
+                break;
             }
             case R.id.menuItemRequestSendAll:
             {
-                Constants.OnConfirm("Request all matches? This will interrupt scouting", this, () ->
+                if (connectedThreads.size() == 0)
                 {
-                    WriteAllDevices(Constants.MASTER_SEND_ALL_TAG.getBytes());
-                });
+                    MessageBox("No Devices Connected!");
+                    break;
+                }
+                List<String> deviceNames = new ArrayList<>();
+                for (int i = 0; i < connectedThreads.size(); ++i)
+                {
+                    deviceNames.add(connectedThreads.get(i).Name);
+                }
+                PromptChoice(this, "Device to Sync All With", deviceNames, selection ->
+                {
+                    if (connectedThreads.size() > 0 && selection.size() > 0)
+                    {
+                        String name = deviceNames.get(0);
+                        for (int i = 0; i < connectedThreads.size(); ++i)
+                        {
+                            if (connectedThreads.get(i).Name.equals(name))
+                            {
+                                WriteDeviceAtIndex(Constants.MASTER_SEND_ALL_TAG, i);
+                            }
+                        }
+                    }
+                }, 1);
+                break;
             }
         }
 
@@ -276,7 +297,6 @@ public class MasterActivity extends BluetoothMasterActivity
                                 saveJsonObject(jsonDatabase, true)));
     }
 
-
     /**
      * Download the event matches given an event key from user input
      */
@@ -330,7 +350,6 @@ public class MasterActivity extends BluetoothMasterActivity
                 }));
     }
 
-
     /**
      * Splits all of the event schedule into six, and sends all of the teams to each device, in the
      * order they are found in the CSV match schedule file
@@ -343,12 +362,12 @@ public class MasterActivity extends BluetoothMasterActivity
             {
                 // Starting value for each piece of information is the tag.
                 List<String> deviceTeams = new ArrayList<>(Arrays.asList(
-                        Constants.SCOUTER_TEAMS_TAG,
-                        Constants.SCOUTER_TEAMS_TAG,
-                        Constants.SCOUTER_TEAMS_TAG,
-                        Constants.SCOUTER_TEAMS_TAG,
-                        Constants.SCOUTER_TEAMS_TAG,
-                        Constants.SCOUTER_TEAMS_TAG
+                        Constants.MASTER_SCHEDULE_TAG,
+                        Constants.MASTER_SCHEDULE_TAG,
+                        Constants.MASTER_SCHEDULE_TAG,
+                        Constants.MASTER_SCHEDULE_TAG,
+                        Constants.MASTER_SCHEDULE_TAG,
+                        Constants.MASTER_SCHEDULE_TAG
                 ));
 
                 List<String> matches =
@@ -387,7 +406,7 @@ public class MasterActivity extends BluetoothMasterActivity
                 int devices = 0;
                 for (int i = 0; i < deviceTeams.size(); ++i)
                 {
-                    devices = WriteDevice((deviceTeams.get(i).getBytes()), i);
+                    devices = WriteDeviceAtIndex((deviceTeams.get(i)), i);
                 }
 
 
@@ -429,7 +448,6 @@ public class MasterActivity extends BluetoothMasterActivity
         }
     }
 
-
     /**
      * When permissions are returned, check if bluetooth was enabled
      *
@@ -463,7 +481,7 @@ public class MasterActivity extends BluetoothMasterActivity
         startActivityForResult(intent, REQUEST_PREFERENCES);
     }
 
-    private int currentLog = 1;
+    // Handle an input message from one of the bluetooth threads
 
     // Log to the end user about things like connected and disconnected devices
     private void VisualLog(String text)
@@ -471,8 +489,6 @@ public class MasterActivity extends BluetoothMasterActivity
         masterLogText.append(currentLog + ": " + text + "\n");
         currentLog++;
     }
-
-    // Handle an input message from one of the bluetooth threads
 
     /**
      * Handle, the function that is attached to the handler of subclass BluetoothMasterActivity and
@@ -495,7 +511,7 @@ public class MasterActivity extends BluetoothMasterActivity
                 try
                 {
                     // Send on the connected thread
-                    WriteDevice(Constants.MASTER_TEAMS_RECEIVED_TAG.getBytes(), id - 1);
+                    WriteDeviceWithId(Constants.SCOUTER_TEAMS_RECEIVED_TAG, id);
                 }
                 catch (IndexOutOfBoundsException e)
                 {
@@ -518,7 +534,6 @@ public class MasterActivity extends BluetoothMasterActivity
                     Constants.Log("Failed to load and send input json, most likely not logged in:" + message);
                     Constants.Log(e);
                 }
-
                 break;
             case Messages.MESSAGE_CONNECTING:
                 String name = (String) msg.obj;
@@ -684,7 +699,17 @@ public class MasterActivity extends BluetoothMasterActivity
         }
     }
 
-    private final Context context = this;
+    /**
+     * Save the database when the activity ends, just in case.
+     */
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+
+
+        saveJsonDatabase();
+    }
 
     /**
      * Upload task to run that uploads the given JSONObject and handles issues
@@ -753,18 +778,5 @@ public class MasterActivity extends BluetoothMasterActivity
         {
             onCompleteEvent.run();
         }
-    }
-
-
-    /**
-     * Save the database when the activity ends, just in case.
-     */
-    @Override
-    public void onDestroy()
-    {
-        super.onDestroy();
-
-
-        saveJsonDatabase();
     }
 }

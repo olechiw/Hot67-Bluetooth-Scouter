@@ -565,7 +565,7 @@ public class ScoutActivity extends BluetoothClientActivity
 
             switch (tag)
             {
-                case Constants.MASTER_TEAMS_RECEIVED_TAG:
+                case Constants.SCOUTER_TEAMS_RECEIVED_TAG:
                     if (queuedMatchesToSend.size() > 0 && sendingState == SendingState.SENDING)
                     {
                         Constants.Log("master received last, sending again");
@@ -578,7 +578,7 @@ public class ScoutActivity extends BluetoothClientActivity
                         sendAllProgress.setVisibility(View.GONE);
                     }
                     break;
-                case Constants.SCOUTER_SCHEMA_TAG:
+                case Constants.MASTER_SCHEMA_TAG:
                     final Context c = this;
                     // Show a confirmation dialog
                     Constants.OnConfirm("Received new schema, clear local schema?", this, () ->
@@ -593,7 +593,7 @@ public class ScoutActivity extends BluetoothClientActivity
                         DisplayMatch(1);
                     });
                     break;
-                case Constants.SCOUTER_TEAMS_TAG:
+                case Constants.MASTER_SCHEDULE_TAG:
                     // Show a confirmation dialog
                     Constants.OnConfirm("Received new teams, clear local database?", this, () ->
                     {
