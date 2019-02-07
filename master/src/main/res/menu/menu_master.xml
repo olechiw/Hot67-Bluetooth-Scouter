@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/menuItemSetupSchema"
-        android:title="Setup Schema"
-        />
+            android:id="@+id/menuItemSetupSchema"
+            android:title="Setup Schema"
+    />
     <item
-        android:id="@+id/menuItemSendSchema"
-        android:title="Send Schema"/>
+            android:id="@+id/menuItemSendSchema"
+            android:title="Send Schema"/>
     <item
-        android:id="@+id/menuItemSendMatches"
-        android:title="Send Matches"/>
+            android:id="@+id/menuItemSendMatches"
+            android:title="Send Matches"/>
     <item
-        android:id="@+id/menuItemRequestSendAll"
-        android:title="Request All Matches"/>
+            android:id="@+id/menuItemRequestSendAll"
+            android:title="Request All Matches"/>
     <item
-        android:id="@+id/menuItemClearDatabase"
-        android:title="Clear Local Database"/>
+            android:id="@+id/menuItemClearDatabase"
+            android:title="Clear Local Database"/>
 </menu>

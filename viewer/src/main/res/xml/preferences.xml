@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-            <EditTextPreference
-                android:key="pref_connectionString"
-                android:title="Connection String"
-                android:summary="URL;Event Key;API Key; TBA Key"/>
+    <EditTextPreference
+            android:key="pref_connectionString"
+            android:title="Connection String"
+            android:summary="URL;Event Key;API Key; TBA Key"/>
 </PreferenceScreen>

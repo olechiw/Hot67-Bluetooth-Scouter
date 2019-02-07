@@ -19,6 +19,7 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.*;
 import org.hotteam67.common.Constants;
 import org.hotteam67.common.FileHandler;
@@ -47,7 +48,7 @@ public class ScoutActivity extends BluetoothClientActivity
     private EditText teamNumber;
     private EditText matchNumber;
     private EditText notes;
-    private int unlockCount = 0;
+
     /**
      * The matches that are queued to be sent to the master for sync all, send one more every time
      */
@@ -159,20 +160,6 @@ public class ScoutActivity extends BluetoothClientActivity
             {
 
             }
-        });
-
-        // Button locks syncing and team-number changing, three long clicks to unlock
-        Button unlockButton = findViewById(R.id.unlockButton);
-        unlockButton.setOnLongClickListener(v ->
-        {
-            unlockCount++;
-            if (unlockCount >= 2)
-            {
-                teamNumber.setInputType(InputType.TYPE_CLASS_NUMBER);
-                return true;
-            }
-            else
-                return false;
         });
         teamNumber.setInputType(InputType.TYPE_NULL);
     }
@@ -341,6 +328,10 @@ public class ScoutActivity extends BluetoothClientActivity
 
         sendingState = SendingState.SENDING;
         sendAllProgress.setVisibility(View.VISIBLE);
+
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+
         for (int i = 1; i < matches.size(); ++i)
         {
             if (!IsMatchEmpty(matches.get(i)))
@@ -359,7 +350,10 @@ public class ScoutActivity extends BluetoothClientActivity
                 {
                     if (queuedMatchesToSend.size() > 0)
                         MessageBox("Failed to send: " + queuedMatchesToSend.size() + " matches");
+
                     sendAllProgress.setVisibility(View.INVISIBLE);
+
+                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                     sendingState = SendingState.WAITING;
                 });
             }

@@ -63,7 +63,7 @@
 
     <style name="PreferenceScreen" parent="@style/AppTheme">
         <item name="android:listSeparatorTextViewStyle">@style/PreferenceListHeader</item>
-       <item name="android:windowBackground">@color/unselected_text_color</item>
+        <item name="android:windowBackground">@color/unselected_text_color</item>
         <item name="android:alertDialogTheme">@style/AlertDialogThemeViewer</item>
     </style>
 

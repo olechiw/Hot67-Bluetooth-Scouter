@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-        <EditTextPreference
-                android:key="pref_eventName"
-                android:title="Event Name"/>
-        <EditTextPreference
-                android:key="pref_databaseUrl"
-                android:title="Database Url"/>
-        <EditTextPreference
-                android:key="pref_apiKey"
-                android:title="Api Key"/>
+    <EditTextPreference
+            android:key="pref_eventName"
+            android:title="Event Name"/>
+    <EditTextPreference
+            android:key="pref_databaseUrl"
+            android:title="Database Url"/>
+    <EditTextPreference
+            android:key="pref_apiKey"
+            android:title="Api Key"/>
 </PreferenceScreen>

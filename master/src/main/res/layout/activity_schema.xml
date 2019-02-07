@@ -1,114 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.widget.RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context="org.hotteam67.master.SchemaActivity">
+                               xmlns:tools="http://schemas.android.com/tools"
+                               android:layout_width="match_parent"
+                               android:layout_height="match_parent"
+                               xmlns:app="http://schemas.android.com/apk/res-auto"
+                               tools:context="org.hotteam67.master.SchemaActivity">
     <android.support.v7.widget.Toolbar
-        android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:background="@color/colorActionBar"
-        android:minHeight="70dp"
-        android:id="@+id/toolbar"
-        app:popupTheme="@style/ActionBarOverlay">
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:background="@color/colorActionBar"
+            android:minHeight="70dp"
+            android:id="@+id/toolbar"
+            app:popupTheme="@style/ActionBarOverlay">
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Schema Setup"
-            android:textColor="#000000"
-            android:textAppearance="@style/TextAppearance.AppCompat.Headline"/>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Schema Setup"
+                android:textColor="#000000"
+                android:textAppearance="@style/TextAppearance.AppCompat.Headline"/>
         <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scaleX=".4"
-            android:scaleY=".4"
-            android:layout_gravity="end"
-            android:src="@drawable/ic_save"
-            android:id="@+id/saveButton"
-            android:background="#00000000"
-            android:tint="#000000"/>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:scaleX=".4"
+                android:scaleY=".4"
+                android:layout_gravity="end"
+                android:src="@drawable/ic_save"
+                android:id="@+id/saveButton"
+                android:background="#00000000"
+                android:tint="#000000"/>
     </android.support.v7.widget.Toolbar>
 
     <TableLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:stretchColumns="*"
-        android:id="@+id/buttonsTable"
-        android:layout_below="@+id/toolbar">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:stretchColumns="*"
+            android:id="@+id/buttonsTable"
+            android:layout_below="@+id/toolbar">
         <TableRow>
             <Button
-                android:id="@+id/booleanButton"
-                android:text="Boolean"
-                app:backgroundTint="@color/colorActionBar"
-                android:textColor="#FFFFFF"
-                android:layout_margin="5dp"/>
+                    android:id="@+id/booleanButton"
+                    android:text="Boolean"
+                    app:backgroundTint="@color/colorActionBar"
+                    android:textColor="#FFFFFF"
+                    android:layout_margin="5dp"/>
             <Button
-                android:id="@+id/multiChoiceButton"
-                android:text="Select"
-                app:backgroundTint="@color/colorActionBar"
-                android:textColor="#FFFFFF"
-                android:layout_margin="5dp"/>
+                    android:id="@+id/multiChoiceButton"
+                    android:text="Select"
+                    app:backgroundTint="@color/colorActionBar"
+                    android:textColor="#FFFFFF"
+                    android:layout_margin="5dp"/>
             <Button
-                android:id="@+id/numberButton"
-                android:text="Number"
-                app:backgroundTint="@color/colorActionBar"
-                android:textColor="#FFFFFF"
-                android:layout_margin="5dp"/>
+                    android:id="@+id/numberButton"
+                    android:text="Number"
+                    app:backgroundTint="@color/colorActionBar"
+                    android:textColor="#FFFFFF"
+                    android:layout_margin="5dp"/>
         </TableRow>
         <TableRow>
             <Button
-                android:id="@+id/headerButton"
-                android:text="Header"
-                android:layout_span="2"
-                app:backgroundTint="@color/colorActionBar"
-                android:textColor="#FFFFFF"
-                android:layout_margin="5dp"/>
+                    android:id="@+id/headerButton"
+                    android:text="Header"
+                    android:layout_span="2"
+                    app:backgroundTint="@color/colorActionBar"
+                    android:textColor="#FFFFFF"
+                    android:layout_margin="5dp"/>
             <Button
-                android:id="@+id/deleteButton"
-                android:text="Delete"
-                android:layout_span="1"
-                app:backgroundTint="@color/colorActionBar"
-                android:textColor="#FFFFFF"
-                android:layout_margin="5dp"/>
+                    android:id="@+id/deleteButton"
+                    android:text="Delete"
+                    android:layout_span="1"
+                    app:backgroundTint="@color/colorActionBar"
+                    android:textColor="#FFFFFF"
+                    android:layout_margin="5dp"/>
         </TableRow>
 
     </TableLayout>
 
     <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbarAlwaysDrawVerticalTrack="true"
-        android:layout_below="@+id/buttonsTable"
-        android:scrollbarAlwaysDrawHorizontalTrack="true"
-        android:fadeScrollbars="false"
-        android:layout_marginTop="8dp"
-        android:id="@+id/scrollView">
-        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="Match Number:"
-                android:textAppearance="@style/TextAppearance.AppCompat"/>
-            <EditText
-                android:layout_gravity="center"
-                android:layout_width="wrap_content"
-                android:inputType="number"
-                android:layout_height="wrap_content"
-                android:id="@+id/matchNumberText"
-                android:hint="Match Number"/>
-            <TableLayout
-                android:id="@+id/scoutLayout"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            android:layout_below="@+id/buttonsTable"
+            android:scrollbarAlwaysDrawHorizontalTrack="true"
+            android:fadeScrollbars="false"
+            android:layout_marginTop="8dp"
+            android:id="@+id/scrollView">
+        <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:stretchColumns="*"/>
+                android:orientation="vertical">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="Match Number:"
+                    android:textAppearance="@style/TextAppearance.AppCompat"/>
+            <EditText
+                    android:layout_gravity="center"
+                    android:layout_width="wrap_content"
+                    android:inputType="number"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/matchNumberText"
+                    android:hint="Match Number"/>
+            <TableLayout
+                    android:id="@+id/scoutLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:stretchColumns="*"/>
         </LinearLayout>
     </ScrollView>
 

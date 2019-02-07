@@ -7,28 +7,28 @@
                 android:background="@color/unselected_header_background_color">
 
     <LinearLayout
-        android:id="@+id/row_header_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center_vertical"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/row_header_textview"
+            android:id="@+id/row_header_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:ellipsize="end"
-            android:gravity="center"
-            android:maxLines="1"
-            android:textColor="@color/unselected_text_color"
-            android:textSize="@dimen/table_view_default_text_size"
-            tools:text="Row Data"/>
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+        <TextView
+                android:id="@+id/row_header_textview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:maxLines="1"
+                android:textColor="@color/unselected_text_color"
+                android:textSize="@dimen/table_view_default_text_size"
+                tools:text="Row Data"/>
 
     </LinearLayout>
 
     <View
-        android:layout_width="1px"
-        android:layout_height="match_parent"
-        android:layout_alignParentRight="true"
-        android:background="@color/separator_color"/>
+            android:layout_width="1px"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:background="@color/separator_color"/>
 </RelativeLayout>

@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-    android:id="@+id/cell_container"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="@dimen/table_view_cell_height"
-    android:background="@color/unselected_background_color"
-    android:orientation="vertical">
+        android:id="@+id/cell_container"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/table_view_cell_height"
+        android:background="@color/unselected_background_color"
+        android:orientation="vertical">
 
 
     <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/blue"
-        android:scaleType="fitXY"
-        android:id="@+id/cell_alliance"/>
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/blue"
+            android:scaleType="fitXY"
+            android:id="@+id/cell_alliance"/>
 
 </LinearLayout>

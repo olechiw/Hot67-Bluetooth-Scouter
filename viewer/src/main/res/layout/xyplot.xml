@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.androidplot.xy.XYPlot xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:padding="15dp"
-    xmlns:ap="http://schemas.android.com/apk/res-auto"
-    ap:lineLabels="left|bottom"
-    ap:lineLabelTextColorBottom="#000000"
-    ap:lineLabelTextColorLeft="#000000"
-    ap:lineLabelInsetLeft="-15dp"
-    ap:lineLabelInsetBottom="-15dp"
-    ap:title="Graph"
-    ap:titleTextSize="20dp"
-    android:background="#000000">
+                           android:layout_width="wrap_content"
+                           android:layout_height="wrap_content"
+                           android:padding="15dp"
+                           xmlns:ap="http://schemas.android.com/apk/res-auto"
+                           ap:lineLabels="left|bottom"
+                           ap:lineLabelTextColorBottom="#000000"
+                           ap:lineLabelTextColorLeft="#000000"
+                           ap:lineLabelInsetLeft="-15dp"
+                           ap:lineLabelInsetBottom="-15dp"
+                           ap:title="Graph"
+                           ap:titleTextSize="20dp"
+                           android:background="#000000">
 
 </com.androidplot.xy.XYPlot>
