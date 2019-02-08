@@ -55,7 +55,6 @@ public class ScoutActivity extends BluetoothClientActivity
     private List<JSONObject> queuedMatchesToSend = new ArrayList<>();
     private TableLayout inputTable;
     private List<JSONObject> matches = new ArrayList<>();
-    private String lastValuesBeforeChange = "";
 
     /**
      * When the activity is born
@@ -116,7 +115,6 @@ public class ScoutActivity extends BluetoothClientActivity
         nextMatchButton.setOnClickListener(v -> OnNextMatch());
         prevMatchButton.setOnClickListener(v -> OnPreviousMatch());
 
-        final Context c = this;
         sendAllProgress = findViewById(R.id.indeterminateBar);
 
 
@@ -254,7 +252,7 @@ public class ScoutActivity extends BluetoothClientActivity
         else // New match
         {
             // Save current matches (no bluetooth)
-            SaveMatch(GetCurrentInputValues(), true, false);
+            SaveMatch(GetCurrentInputValues(), true);
             SaveAllMatches();
 
             // Load the new match
@@ -269,10 +267,6 @@ public class ScoutActivity extends BluetoothClientActivity
             matchNumber.clearFocus();
             matchNumber.setText(String.valueOf(match));
         }
-
-        JSONObject currentValues = GetCurrentInputValues();
-        if (currentValues != null)
-            lastValuesBeforeChange = currentValues.toString();
     }
 
     /**
@@ -332,12 +326,12 @@ public class ScoutActivity extends BluetoothClientActivity
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
 
-        for (int i = 1; i < matches.size(); ++i)
+        for (int i = 0; i < matches.size(); ++i)
         {
             if (!IsMatchEmpty(matches.get(i)))
                 queuedMatchesToSend.add(matches.get(i));
         }
-        if (!IsMatchEmpty(matches.get(0))) BluetoothWrite(matches.get(0).toString());
+        BluetoothWrite(queuedMatchesToSend.get(0).toString());
 
         Timer completeTimer = new Timer();
         // 15 second timeout
@@ -349,7 +343,10 @@ public class ScoutActivity extends BluetoothClientActivity
                 runOnUiThread(() ->
                 {
                     if (queuedMatchesToSend.size() > 0)
+                    {
                         MessageBox("Failed to send: " + queuedMatchesToSend.size() + " matches");
+                        queuedMatchesToSend.clear();
+                    }
 
                     sendAllProgress.setVisibility(View.INVISIBLE);
 
@@ -401,16 +398,14 @@ public class ScoutActivity extends BluetoothClientActivity
      */
     private void SaveCurrentMatch()
     {
-        SaveMatch(GetCurrentInputValues(), false, false);
+        SaveMatch(GetCurrentInputValues(), false);
     }
 
     /**
      * Save the current match locally
      *
-     * @param localOnly      whether to send the match or just save it locally
-     * @param saveDuplicates whether to save even if the value has not been detected as changed
      */
-    private void SaveMatch(JSONObject match, boolean localOnly, boolean saveDuplicates)
+    private void SaveMatch(JSONObject match, boolean localOnly)
     {
         int matchNumber = -1;
 
@@ -425,9 +420,9 @@ public class ScoutActivity extends BluetoothClientActivity
         }
 
         // Check if something actually changed since the value was loaded
-        if (match == null || match.toString().equals(lastValuesBeforeChange) && !saveDuplicates)
+        if (match == null)
         {
-            Constants.Log("Nothing changed, not saving: " + GetCurrentInputValues());
+            Constants.Log("Match is null, not saving");
             return;
         }
         if (matchNumber < 0)
@@ -612,7 +607,7 @@ public class ScoutActivity extends BluetoothClientActivity
                             }
                         }
                         DisplayMatch(1);
-                        SaveMatch(matches.get(GetDisplayedMatchNumber() - 1), true, true);
+                        SaveMatch(matches.get(GetDisplayedMatchNumber() - 1), true);
                         SaveAllMatches();
                     });
                     break;
@@ -689,7 +684,7 @@ public class ScoutActivity extends BluetoothClientActivity
                 {
                     {
                         // Submit
-                        SaveMatch(GetCurrentInputValues(), false, true);
+                        SaveMatch(GetCurrentInputValues(), false);
                         OnNextMatch();
                         dialogInterface.dismiss();
                     }
@@ -720,7 +715,7 @@ public class ScoutActivity extends BluetoothClientActivity
                 if (dialog.isShowing())
                 {
                     // Submit
-                    SaveMatch(GetCurrentInputValues(), false, true);
+                    SaveMatch(GetCurrentInputValues(), false);
                     OnNextMatch();
                     dialog.dismiss();
                 }

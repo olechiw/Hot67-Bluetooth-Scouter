@@ -24,8 +24,6 @@ import java.nio.charset.StandardCharsets;
  */
 public abstract class BluetoothClientActivity extends AppCompatActivity
 {
-
-
     /**
      * Messages, for when any event happens, to be sent to the main thread
      */
@@ -39,7 +37,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity
     /**
      * Send a specific message, from the MessageTypes list, to the main thread
      */
-    private synchronized void MSG(int msg)
+    private synchronized void sendMessage(int msg)
     {
         m_handler.obtainMessage(msg, 0, -1, 0).sendToTarget();
     }
@@ -84,11 +82,12 @@ public abstract class BluetoothClientActivity extends AppCompatActivity
      *
      * @param text text to display in the messagebox
      */
+
     void MessageBox(String text)
     {
         try
         {
-            AlertDialog.Builder dlg = new AlertDialog.Builder(this);
+            AlertDialog.Builder dlg = new AlertDialog.Builder(this, R.style.AlertDialogTheme);
             dlg.setTitle("");
             dlg.setMessage(text);
             dlg.setPositiveButton("Ok", (dialog, which) -> dialog.dismiss());
@@ -155,7 +154,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity
                 if (conn != null)
                 {
                     connectSocket(conn);
-                    MSG(MessageTypes.MESSAGE_CONNECTED);
+                    sendMessage(MessageTypes.MESSAGE_CONNECTED);
                     break;
                 }
             }
@@ -273,7 +272,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity
             catch (java.io.IOException e)
             {
                 Log.d("[Bluetooth]", "Input stream disconnected", e);
-                MSG(MessageTypes.MESSAGE_DISCONNECTED);
+                sendMessage(MessageTypes.MESSAGE_DISCONNECTED);
                 return false;
             }
         }
@@ -369,7 +368,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity
             Constants.Log("Storing socket in connected devices");
             connectedThread = new ConnectedThread(socket);
             connectedThread.start();
-            MSG(MessageTypes.MESSAGE_CONNECTED);
+            sendMessage(MessageTypes.MESSAGE_CONNECTED);
         }
     }
 
