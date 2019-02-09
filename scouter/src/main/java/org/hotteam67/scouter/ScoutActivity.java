@@ -331,7 +331,11 @@ public class ScoutActivity extends BluetoothClientActivity
             if (!IsMatchEmpty(matches.get(i)))
                 queuedMatchesToSend.add(matches.get(i));
         }
-        BluetoothWrite(queuedMatchesToSend.get(0).toString());
+        if (queuedMatchesToSend.size() > 0)
+        {
+            BluetoothWrite(queuedMatchesToSend.get(0).toString());
+            queuedMatchesToSend.remove(0);
+        }
 
         Timer completeTimer = new Timer();
         // 15 second timeout

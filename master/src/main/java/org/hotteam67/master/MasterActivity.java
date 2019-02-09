@@ -38,11 +38,7 @@ public class MasterActivity extends BluetoothMasterActivity
     private static final int REQUEST_ENABLE_PERMISSION = 3;
     private final Context context = this;
     private String lastMatchNumber = "0";
-    /**
-     * List of team numbers for the last match, used to check if a match was received already
-     */
-    private List<String> lastMatchTeamNumbers = new ArrayList<>();
-    private int matchesReceived = 0;
+
     /**
      * All of the received matches, stored in json, written/read from local database
      */
@@ -511,7 +507,7 @@ public class MasterActivity extends BluetoothMasterActivity
                 try
                 {
                     // Send on the connected thread
-                    WriteDeviceWithId(Constants.SCOUTER_TEAMS_RECEIVED_TAG, id);
+                    WriteDeviceAtIndex(Constants.SCOUTER_TEAMS_RECEIVED_TAG, id);
                 }
                 catch (IndexOutOfBoundsException e)
                 {
@@ -664,24 +660,8 @@ public class MasterActivity extends BluetoothMasterActivity
             {
                 String matchNumber = (String) json.get(Constants.MATCH_NUMBER_JSON_TAG);
                 String teamNumber = (String) json.get(Constants.TEAM_NUMBER_JSON_TAG);
-                if (matchNumber.equals(lastMatchNumber))
-                {
-                    //noinspection SuspiciousMethodCalls
-                    if (!lastMatchTeamNumbers.contains(json.get(Constants.TEAM_NUMBER_JSON_TAG)))
-                    {
-                        matchesReceived++;
-                        lastMatchTeamNumbers.add(teamNumber);
-                    }
-                    VisualLog("Received match " + matchNumber + " for team " + teamNumber);
-                }
-                else
-                {
-                    lastMatchNumber = matchNumber;
-                    matchesReceived = 1;
-                    lastMatchTeamNumbers = new ArrayList<>();
-                    lastMatchTeamNumbers.add(teamNumber);
-                    VisualLog("Received Match " + matchNumber + " | Team " + teamNumber);
-                }
+                lastMatchNumber = matchNumber;
+                VisualLog("Received Match " + matchNumber + " | Team " + teamNumber);
             }
             catch (Exception e)
             {

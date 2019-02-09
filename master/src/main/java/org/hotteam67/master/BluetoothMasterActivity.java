@@ -184,7 +184,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
         {
             Constants.Log("Received a connection, adding a new thread: " + connectedThreads.size());
             ConnectedThread thread = new ConnectedThread(connection);
-            thread.setId(connectedThreads.size() + 1);
+            thread.setId(connectedThreads.size());
             thread.start();
             connectedThreads.add(thread);
             MSG(Messages.MESSAGE_CONNECTED);
@@ -200,6 +200,10 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
         thread.interrupt();
         thread.close();
         connectedThreads.remove(thread);
+        for (int i = 0; i < connectedThreads.size(); ++i)
+        {
+            connectedThreads.get(i).setId(i);
+        }
     }
 
     /**
@@ -230,12 +234,6 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
         if (connectedThreads.size() > index)
             connectedThreads.get(index).write(value.getBytes());
         return connectedThreads.size();
-    }
-
-    synchronized void WriteDeviceWithId(String value, int id)
-    {
-        for (ConnectedThread c : connectedThreads)
-            if (c.getId() == id) c.write(value.getBytes());
     }
 
     /**
