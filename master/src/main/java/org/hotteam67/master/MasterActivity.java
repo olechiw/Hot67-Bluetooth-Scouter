@@ -213,11 +213,12 @@ public class MasterActivity extends BluetoothMasterActivity
                 {
                     if (connectedThreads.size() > 0 && selection.size() > 0)
                     {
-                        String name = deviceNames.get(0);
+                        String name = selection.get(0);
                         for (int i = 0; i < connectedThreads.size(); ++i)
                         {
                             if (connectedThreads.get(i).Name.equals(name))
                             {
+                                VisualLog("Requesting all teams from: " + name);
                                 WriteDeviceAtIndex(Constants.MASTER_SEND_ALL_TAG, i);
                             }
                         }
@@ -644,8 +645,8 @@ public class MasterActivity extends BluetoothMasterActivity
             else
             {
                 String tag =
-                        json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
-                                json.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
+                        json.get(Constants.MATCH_NUMBER_JSON_TAG).toString() + "_" +
+                                json.get(Constants.TEAM_NUMBER_JSON_TAG).toString();
                 finalUrl += "/" + tag + ".json?auth=" + apiKey;
             }
 
@@ -668,8 +669,8 @@ public class MasterActivity extends BluetoothMasterActivity
                 Constants.Log(e);
             }
             String tag =
-                    json.get(Constants.TEAM_NUMBER_JSON_TAG).toString() + "_" +
-                            json.get(Constants.MATCH_NUMBER_JSON_TAG).toString();
+                    json.get(Constants.MATCH_NUMBER_JSON_TAG).toString() + "_" +
+                            json.get(Constants.TEAM_NUMBER_JSON_TAG).toString();
             jsonDatabase.put(tag, json);
             saveJsonDatabase();
         }

@@ -179,11 +179,11 @@ public class ScoutActivity extends BluetoothClientActivity
      */
     private void OnPreviousMatch()
     {
-        SaveCurrentMatch();
-        SaveAllMatches();
         if (GetDisplayedMatchNumber() > 1)
         {
             Constants.Log("Loading Previous Match");
+            SaveCurrentMatch();
+            SaveAllMatches();
             DisplayMatch(GetDisplayedMatchNumber() - 1);
         }
         ((ScrollView) findViewById(R.id.scrollView)).fullScroll(ScrollView.FOCUS_UP);
@@ -568,7 +568,8 @@ public class ScoutActivity extends BluetoothClientActivity
                     else
                     {
                         sendingState = SendingState.WAITING;
-                        sendAllProgress.setVisibility(View.GONE);
+                        sendAllProgress.setVisibility(View.INVISIBLE);
+                        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                     }
                     break;
                 case Constants.MASTER_SCHEMA_TAG:
