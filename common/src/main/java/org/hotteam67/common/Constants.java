@@ -81,6 +81,7 @@ public class Constants
      * Application UUID to look for during connection, may be configurable in future
      */
     public static final UUID uuid = UUID.fromString("1cb5d5ce-00f5-11e7-93ae-92361f002671");
+    public static final String BLUETOOTH_END_TAG = "END_BLUETOOTH_OUTPUT";
     /**
      * Authentication token for the blue alliance API
      */

@@ -165,7 +165,7 @@ public class MasterActivity extends BluetoothMasterActivity
                         // Obtain schema
                         String schema = SchemaHandler.LoadSchemaFromFile().toString();
 
-                        int devices = WriteAllDevices((Constants.MASTER_SCHEMA_TAG + schema).getBytes());
+                        int devices = WriteAllDevices(Constants.MASTER_SCHEMA_TAG + schema);
                         VisualLog("Wrote schema to " + devices + " devices");
                     }
                     catch (Exception e)
@@ -281,12 +281,12 @@ public class MasterActivity extends BluetoothMasterActivity
 
         findViewById(R.id.messageButton)
                 .setOnClickListener(view -> GetString("Enter Message:", "",
-                        input -> WriteAllDevices((Constants.MASTER_MESSAGE_TAG + input).getBytes())));
+                        input -> WriteAllDevices(Constants.MASTER_MESSAGE_TAG + input)));
 
         findViewById(R.id.submitButton)
                 .setOnClickListener(view ->
                         GetString("Get Match Number", lastMatchNumber, (input) ->
-                                WriteAllDevices((Constants.MASTER_SUBMIT_TAG + input).getBytes())));
+                                WriteAllDevices(Constants.MASTER_SUBMIT_TAG + input)));
 
         findViewById(R.id.syncButton)
                 .setOnClickListener(view -> Constants.OnConfirm("Sync All Matches?",

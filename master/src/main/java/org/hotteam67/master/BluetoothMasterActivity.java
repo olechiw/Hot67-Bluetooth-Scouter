@@ -209,15 +209,15 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
     /**
      * Write to all connected devices
      *
-     * @param bytes byte array to send
+     * @param s string to send to send
      * @return returns the number of devices written to
      */
-    synchronized int WriteAllDevices(byte[] bytes)
+    synchronized int WriteAllDevices(String s)
     {
         // Send to each device
         for (ConnectedThread device : connectedThreads)
         {
-            device.write(bytes);
+            device.write((s + Constants.BLUETOOTH_END_TAG).getBytes());
         }
         return connectedThreads.size();
     }
@@ -232,7 +232,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
     synchronized int WriteDeviceAtIndex(String value, int index)
     {
         if (connectedThreads.size() > index)
-            connectedThreads.get(index).write(value.getBytes());
+            connectedThreads.get(index).write((value + Constants.BLUETOOTH_END_TAG).getBytes());
         return connectedThreads.size();
     }
 
@@ -481,22 +481,22 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
          */
         private boolean read(InputStream stream)
         {
-            buffer = new byte[1024];
+            buffer = new byte[2048];
             int numBytes;
-            try
-            {
-                numBytes = stream.read(buffer);
-                String s = new String(buffer, StandardCharsets.UTF_8).substring(0, numBytes).replace("\0", "");
+            StringBuilder input = new StringBuilder();
+            try {
+                int totalBytes = 0;
+                while (!input.toString().endsWith(Constants.BLUETOOTH_END_TAG)) {
+                    numBytes = stream.read(buffer);
+                    totalBytes += numBytes;
+                    Constants.Log("Reading Bytes of Length:" + numBytes);
+                    input.append(new String(buffer, StandardCharsets.UTF_8).substring(0, numBytes).replace("\0", ""));
+                }
+                input.delete(input.length() - Constants.BLUETOOTH_END_TAG.length(), input.length());
 
-                Constants.Log("String Received: " + s);
-
-                m_handler.obtainMessage(Messages.MESSAGE_INPUT, numBytes, id, new String(buffer, StandardCharsets.UTF_8)
-                        .substring(0, numBytes)
-                        .replace("\0", "")).sendToTarget();
+                m_handler.obtainMessage(Messages.MESSAGE_INPUT, totalBytes, -1, input.toString()).sendToTarget();
                 return true;
-            }
-            catch (java.io.IOException e)
-            {
+            } catch (java.io.IOException e) {
                 Log.d("[Bluetooth]", "Input stream disconnected", e);
                 return false;
             }
