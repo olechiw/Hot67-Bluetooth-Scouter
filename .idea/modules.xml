@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/BluetoothScouter.iml" filepath="$PROJECT_DIR$/BluetoothScouter.iml" />
       <module fileurl="file://$PROJECT_DIR$/Hot67-Bluetooth-Scouter.iml" filepath="$PROJECT_DIR$/Hot67-Bluetooth-Scouter.iml" />
       <module fileurl="file://$PROJECT_DIR$/common/common.iml" filepath="$PROJECT_DIR$/common/common.iml" />
       <module fileurl="file://$PROJECT_DIR$/master/master.iml" filepath="$PROJECT_DIR$/master/master.iml" />

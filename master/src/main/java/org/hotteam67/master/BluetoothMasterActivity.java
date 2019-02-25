@@ -494,7 +494,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
                 }
                 input.delete(input.length() - Constants.BLUETOOTH_END_TAG.length(), input.length());
 
-                m_handler.obtainMessage(Messages.MESSAGE_INPUT, totalBytes, -1, input.toString()).sendToTarget();
+                m_handler.obtainMessage(Messages.MESSAGE_INPUT, totalBytes, id, input.toString()).sendToTarget();
                 return true;
             } catch (java.io.IOException e) {
                 Log.d("[Bluetooth]", "Input stream disconnected", e);
