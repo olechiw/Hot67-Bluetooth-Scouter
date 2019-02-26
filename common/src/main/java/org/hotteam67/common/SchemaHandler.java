@@ -129,6 +129,7 @@ public final class SchemaHandler
     {
         JSONObject output = new JSONObject();
 
+        String lastHeader = "";
         for (View v : getViews(table))
         {
             try
@@ -136,24 +137,27 @@ public final class SchemaHandler
                 String tag = v.getTag(R.string.variable_name).toString();
                 switch ((int) v.getTag(R.string.variable_type))
                 {
+                    case Constants.InputTypes.TYPE_HEADER:
+                        lastHeader = ((TextView)v).getText().toString() + " ";
+                        break;
                     case Constants.InputTypes.TYPE_INTEGER:
-                        output.put(tag,
+                        output.put(lastHeader + tag,
                                 String.valueOf(
                                         ((DarkNumberPicker) v.findViewById(R.id.numberPicker)).getValue()
                                 )
                         );
                         break;
                     case Constants.InputTypes.TYPE_BOOLEAN:
-                        output.put(tag, String.valueOf(((CheckBox) v.findViewById(R.id.checkBox1)).isChecked()));
+                        output.put(lastHeader + tag, String.valueOf(((CheckBox) v.findViewById(R.id.checkBox1)).isChecked()));
                         break;
                     case Constants.InputTypes.TYPE_STRING:
-                        output.put(tag, ((EditText) v.findViewById(R.id.editText)).getText().toString());
+                        output.put(lastHeader + tag, ((EditText) v.findViewById(R.id.editText)).getText().toString());
                         break;
                     case Constants.InputTypes.TYPE_MULTI:
                         Spinner s = v.findViewById(R.id.multiChoiceSpinner);
                         if (s.getSelectedItem() == null)
-                            output.put(tag, s.getItemAtPosition(0).toString());
-                        else output.put(tag, s.getSelectedItem().toString());
+                            output.put(lastHeader + tag, s.getItemAtPosition(0).toString());
+                        else output.put(lastHeader + tag, s.getSelectedItem().toString());
                         break;
                     default:
                         // l("Found a header of tag: " + v.getTag(R.string.variable_name));
@@ -194,10 +198,8 @@ public final class SchemaHandler
     {
         try
         {
-            BufferedReader reader = FileHandler.GetReader(FileHandler.Files.SCHEMA_FILE);
-            if (reader == null) return new JSONArray();
-            String line = reader.readLine();
-            reader.close();
+            String line = FileHandler.LoadContents(FileHandler.Files.SCHEMA_FILE);
+            line = line.trim().replace("\n", "");
             if (line != null)
             {
                 return new JSONArray(line);
@@ -275,30 +277,36 @@ public final class SchemaHandler
     public static void SetCurrentValues(TableLayout table, JSONObject values)
     {
         ClearCurrentValues(table);
+        String lastHeader = "";
         for (View v : getViews(table))
         {
             try
             {
                 String name = v.getTag(R.string.variable_name).toString();
-                if (!values.has(name)) continue;
+                int tag = (int) v.getTag(R.string.variable_type);
+                if (tag == Constants.InputTypes.TYPE_HEADER)
+                {
+                    lastHeader = ((TextView)v).getText().toString() + " ";
+                }
+                if (!values.has(lastHeader + name)) continue;
                 switch ((int) v.getTag(R.string.variable_type))
                 {
                     case Constants.InputTypes.TYPE_INTEGER:
-                        ((DarkNumberPicker) v.findViewById(R.id.numberPicker)).setValue(Integer.valueOf(values.getString(name)));
+                        ((DarkNumberPicker) v.findViewById(R.id.numberPicker)).setValue(Integer.valueOf(values.getString(lastHeader + name)));
                         // l("Loading in value: " + values.get(val));
 
                         break;
                     case Constants.InputTypes.TYPE_BOOLEAN:
-                        ((CheckBox) v.findViewById(R.id.checkBox1)).setChecked(Boolean.valueOf(values.getString(name)));
+                        ((CheckBox) v.findViewById(R.id.checkBox1)).setChecked(Boolean.valueOf(values.getString(lastHeader + name)));
                         // l("Loading in value: " + values.get(val));
                         break;
                     case Constants.InputTypes.TYPE_STRING:
-                        ((EditText) v.findViewById(R.id.editText)).setText(values.getString(name));
+                        ((EditText) v.findViewById(R.id.editText)).setText(values.getString(lastHeader + name));
                         // l("Loading in value: " + values.get(val));
                         break;
                     case Constants.InputTypes.TYPE_MULTI:
                         Spinner s = v.findViewById(R.id.multiChoiceSpinner);
-                        s.setSelection(((ArrayAdapter<String>) s.getAdapter()).getPosition(values.getString(name)));
+                        s.setSelection(((ArrayAdapter<String>) s.getAdapter()).getPosition(values.getString(lastHeader + name)));
                         break;
                 }
             }

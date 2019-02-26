@@ -352,7 +352,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
                 }
                 catch (java.io.IOException e)
                 {
-                    Log.e("[Bluetooth]", "Failed to connect to socket", e);
+                    Constants.Log("[Bluetooth]", "Failed to connect to socket", e);
                 }
                 sockets.add(connectionSocket);
             }
@@ -449,7 +449,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
                 }
                 catch (IOException e)
                 {
-                    Log.e("[Bluetooth]", "Error occurred when creating input stream", e);
+                    Constants.Log("[Bluetooth]", "Error occurred when creating input stream", e);
                 }
                 stream = tmpIn;
 
@@ -520,7 +520,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
             }
             catch (IOException e)
             {
-                Log.e("[Bluetooth]", "Error occurred when creating output stream", e);
+                Constants.Log("[Bluetooth]", "Error occurred when creating output stream", e);
             }
             stream = tmpOut;
 
@@ -537,7 +537,7 @@ public abstract class BluetoothMasterActivity extends AppCompatActivity
             }
             catch (Exception e)
             {
-                Log.e("[Bluetooth]", "Failed to send data", e);
+                Constants.Log("[Bluetooth]", "Failed to send data", e);
                 disconnect(this);
             }
         }

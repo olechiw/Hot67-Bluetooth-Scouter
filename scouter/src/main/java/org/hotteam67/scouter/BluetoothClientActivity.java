@@ -129,7 +129,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
                 try {
                     conn = connectionSocket.accept();
                 } catch (java.io.IOException e) {
-                    // Log.e("[Bluetooth]", "Socket acception failed", e);
+                    // Constants.Log("[Bluetooth]", "Socket acception failed", e);
                 }
 
                 if (conn != null) {
@@ -194,7 +194,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
                     Constants.Log("Loading input stream");
                     tmpIn = connectedSocket.getInputStream();
                 } catch (IOException e) {
-                    Log.e("[Bluetooth]", "Error occurred when creating input stream", e);
+                    Constants.Log(e);
                 }
                 stream = tmpIn;
                 if (stream == null) break;
@@ -255,7 +255,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
             try {
                 tmpOut = connectedSocket.getOutputStream();
             } catch (IOException e) {
-                Log.e("[Bluetooth]", "Error occurred when creating output stream", e);
+                Constants.Log(e);
             }
             stream = tmpOut;
 
@@ -268,7 +268,7 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
                 Constants.Log("Writing bytes to outstream");
                 stream.write(bytes);
             } catch (Exception e) {
-                Log.e("[Bluetooth]", "Failed to send data", e);
+                Constants.Log(e);
                 disconnect();
             }
         }
@@ -329,7 +329,10 @@ public abstract class BluetoothClientActivity extends AppCompatActivity {
         try {
             text += Constants.BLUETOOTH_END_TAG;
             connectedThread.write(text.getBytes());
-        } catch (Exception e) {
+        } catch (NullPointerException e) {
+            Constants.Log("Failed to write: " + e.getMessage());
+        }
+        catch (Exception e) {
             Constants.Log("Failed to write: Exception: " + e.getMessage());
             Constants.Log(e);
         }

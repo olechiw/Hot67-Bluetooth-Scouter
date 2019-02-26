@@ -172,7 +172,7 @@ public class FireBaseHandler
         catch (Exception e)
         {
             Constants.Log(e);
-            Log.e("FirebaseScouter", "Failed to call completeEvent");
+            Constants.Log("Failed to call completeEvent");
         }
     }
 

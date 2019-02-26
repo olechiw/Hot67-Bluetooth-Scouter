@@ -36,7 +36,6 @@ class DataCalculator implements Serializable
     private DataTable calculatedDataTable;
     private final String teamRanksJson;
     private final String teamNamesJson;
-    private final List<Integer> calculatedColumnIndices;
 
     /**
      * The calculation types that are available
@@ -59,17 +58,12 @@ class DataCalculator implements Serializable
      * @param rawData           the rawData to run calculations on. Will use the row headers for each calculated row,
      *                          calculating an average/max/min based on all raw rows with that header
      * @param calculatedColumns A list of string names of columns that will be in the final table
-     * @param columnIndices     A list of string names of columns corresponding to calculatedColumns to
-     *                          run calculations on. Must be a column name found in raw data. For example
-     *                          "T. Scale" in calculatedColumns is the same index as "Teleop Scale"
-     *                          in columnIndices
      * @param teamRanks         JSON object of the team ranks to add as a column
      * @param teamNames         JSON object of the team names, stored for later retrieval when working with
      *                          the calculated data
      * @param calculationType   the type of calculation to do, Max/Min/Avg
      */
-    DataCalculator(DataTable rawData, List<String> calculatedColumns,
-                   List<String> columnIndices,
+    DataCalculator(DataTable rawData, List<ColumnSchema.CalculatedColumn> calculatedColumns,
                    JSONObject teamRanks, JSONObject teamNames,
                    int calculationType)
     {
@@ -77,22 +71,6 @@ class DataCalculator implements Serializable
         teamNamesJson = teamNames.toString();
         columnsNames = rawData.GetColumnNames();
         this.teamRanksJson = teamRanks.toString();
-        calculatedColumnIndices = new ArrayList<>();
-        for (int i = 0; i < calculatedColumns.size(); ++i)
-        {
-            try
-            {
-                if (columnsNames.contains(columnIndices.get(i)))
-                    calculatedColumnIndices.add(columnsNames.indexOf(columnIndices.get(i)));
-                else
-                    calculatedColumnIndices.add(-1);
-            }
-            catch (Exception e)
-            {
-                Constants.Log(e);
-                calculatedColumnIndices.add(-1);
-            }
-        }
         this.calculationType = calculationType;
 
         SetupCalculatedColumns(calculatedColumns);
@@ -103,7 +81,7 @@ class DataCalculator implements Serializable
      *
      * @param calculatedColumns list of the calculated column names to use
      */
-    private void SetupCalculatedColumns(List<String> calculatedColumns)
+    private void SetupCalculatedColumns(List<ColumnSchema.CalculatedColumn> calculatedColumns)
     {
         List<ColumnHeaderModel> calcColumnHeaders = new ArrayList<>();
         List<List<CellModel>> calcCells = new ArrayList<>();
@@ -115,9 +93,9 @@ class DataCalculator implements Serializable
         /*
         Load calculated column names
          */
-        for (String s : calculatedColumns)
+        for (ColumnSchema.CalculatedColumn c : calculatedColumns)
         {
-            calcColumnHeaders.add(new ColumnHeaderModel(s));
+            calcColumnHeaders.add(new ColumnHeaderModel(c.Name));
         }
 
         /*
@@ -162,8 +140,9 @@ class DataCalculator implements Serializable
             List<List<CellModel>> matches = teamRows.get(teamNumber);
 
             List<CellModel> row = new ArrayList<>();
-            for (int column : calculatedColumnIndices)
+            for (ColumnSchema.CalculatedColumn c : calculatedColumns)
             {
+                int column = columnsNames.indexOf(c.RawName);
                 if (column == -1)
                 {
                     row.add(new CellModel("0_0", "N/A", teamNumber));
@@ -214,7 +193,6 @@ class DataCalculator implements Serializable
 
         // Rank and team number are the two non-calculated columns, so add them manually
         calcColumnHeaders.add(0, new ColumnHeaderModel("R"));
-        calculatedColumns.add(0, "R");
 
         List<String> extraTeams = new ArrayList<>();
         // Do N/A Teams
@@ -280,7 +258,7 @@ class DataCalculator implements Serializable
                     double d = 0;
                     for (String s : columnValues)
                     {
-                        //Log.e("FirebaseScouter", "Averaging : " + s);
+                        //Constants.Log("FirebaseScouter", "Averaging : " + s);
                         d += ConvertToDouble(s);
                     }
 
@@ -290,8 +268,7 @@ class DataCalculator implements Serializable
                 catch (Exception e)
                 {
                     Constants.Log(e);
-                    Log.e("FirebaseScouter",
-                            "Failed to do average calculation on column: " + columnName);
+                    Constants.Log("Failed to do average calculation on column: " + columnName);
                     return -1;
                 }
             }
@@ -309,8 +286,7 @@ class DataCalculator implements Serializable
                 catch (Exception e)
                 {
                     Constants.Log(e);
-                    Log.e("FirebaseScouter",
-                            "Failed to do max calculation on column: " + columnName);
+                    Constants.Log("Failed to do max calculation on column: " + columnName);
                     return -1;
                 }
             case Calculation.MINIMUM:
@@ -324,8 +300,7 @@ class DataCalculator implements Serializable
                 catch (Exception e)
                 {
                     Constants.Log(e);
-                    Log.e("FirebaseScouter",
-                            "Failed to do max calculation on column: " + columnName);
+                    Constants.Log("Failed to do max calculation on column: " + columnName);
                     return -1;
                 }
             default:

@@ -104,7 +104,7 @@ public class DataTable implements Serializable
                     }
                     else
                     {
-                        Log.e("FirebaseScouter", "Failed to get fire result for columns");
+                        Constants.Log("Failed to get fire result for columns");
                     }
                 }
                 catch (Exception e)

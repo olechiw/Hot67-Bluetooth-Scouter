@@ -231,7 +231,7 @@ public class DataModel
             @Override
             public void onComplete(HashMap<String, Object> stringObjectHashMap)
             {
-                rawData = new DataTable(model.getResult(), ColumnSchema.CalculatedColumnsRawNames(), ColumnSchema.SumColumns());
+                rawData = new DataTable(model.getResult(), ColumnSchema.PreferredOrder(), ColumnSchema.SumColumns());
 
                 RunCalculations(onCompleteEvent);
             }
@@ -261,7 +261,6 @@ public class DataModel
                 DataCalculator avg = new DataCalculator(
                         rawData,
                         ColumnSchema.CalculatedColumns(),
-                        ColumnSchema.CalculatedColumnsRawNames(),
                         teamNumbersRanks,
                         teamNumbersNames,
                         DataCalculator.Calculation.AVERAGE);
@@ -279,7 +278,6 @@ public class DataModel
                 DataCalculator max = new DataCalculator(
                         rawData,
                         ColumnSchema.CalculatedColumns(),
-                        ColumnSchema.CalculatedColumnsRawNames(),
                         teamNumbersRanks,
                         teamNumbersNames,
                         DataCalculator.Calculation.MAXIMUM);

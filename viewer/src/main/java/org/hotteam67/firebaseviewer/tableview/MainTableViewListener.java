@@ -83,7 +83,7 @@ public class MainTableViewListener implements ITableViewListener
             table = Sort.BubbleSortAscendingByRowHeader(table);
 
             // -1 to account for ranking column. HACK btw
-            String rawColumnName = ColumnSchema.CalculatedColumnsRawNames().get(column - 1);
+            String rawColumnName = ColumnSchema.CalculatedColumns().get(column - 1).RawName;
 
             // Find the x value in the raw data table
             int index = -1;

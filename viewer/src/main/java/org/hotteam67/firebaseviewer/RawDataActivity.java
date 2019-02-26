@@ -93,7 +93,7 @@ public class RawDataActivity extends AppCompatActivity
             {
                 if (!(dataTable.GetCells().size() > 0))
                 {
-                    Log.e("FirebaseScouter", "No input raw data found");
+                    Constants.Log("No input raw data found");
                     return;
                 }
 
