@@ -27,6 +27,7 @@ public class ColumnSchema {
         calculatedColumns.add(new CalculatedColumn("A. Cargo", "Auton Cargo"));
         calculatedColumns.add(new CalculatedColumn("A. Hatches", "Auton Hatch Panels"));
         calculatedColumns.add(new CalculatedColumn("End HAB", "Endgame HAB Level"));
+        calculatedColumns.add(new CalculatedColumn("Dropped Hatches", "Teleop Dropped Hatches"));
         calculatedColumns.add(new CalculatedColumn("A. Crossed", "Sandstorm Crossed The Line"));
 
         /*
@@ -43,6 +44,10 @@ public class ColumnSchema {
                 "Total Cargo", "Total Hatch Panels", "Teleop Cargo", "Teleop Hatch Panels", "Total Cargo High",
                 "Total Hatch Panels High", "Auton Cargo", "Auton Hatch Panels",
 
+                "Teleop Dropped Hatches",
+
+                "Endgame HAB Level",
+
                 "Sandstorm Cargo Cargo Ship", "Sandstorm Cargo Left Rocket Low", "Sandstorm Cargo Left Rocket Middle",
                 "Sandstorm Cargo Left Rocket High", "Sandstorm Cargo Right Rocket Low", "Sandstorm Cargo Right Rocket Middle",
                 "Sandstorm Cargo Right Rocket High",
@@ -52,12 +57,10 @@ public class ColumnSchema {
                 "Sandstorm Hatch Panels Right Rocket Low", "Sandstorm Hatch Panels Right Rocket Middle", "Sandstorm Hatch Panels Right Rocket High",
 
                 "Teleop Cargo Cargo Ship",
-                "Teleop Cargo Left Rocket Low", "Teleop Cargo Left Rocket Middle", "Teleop Cargo Left Rocket High",
-                "Teleop Cargo Right Rocket Low", "Teleop Cargo Right Rocket Middle", "Teleop Cargo Right Rocket High",
+                "Teleop Cargo Rocket Low", "Teleop Cargo Rocket Middle", "Teleop Cargo Rocket High",
 
                 "Teleop Hatch Panels Cargo Ship",
-                "Teleop Hatch Panels Left Rocket Low", "Teleop Hatch Panels Left Rocket Middle", "Teleop Hatch Panels Left Rocket High",
-                "Teleop Hatch Panels Right Rocket Low", "Teleop Hatch Panels Right Rocket Middle", "Teleop Hatch Panels Right Rocket High"));
+                "Teleop Hatch Panels Rocket Low", "Teleop Hatch Panels Rocket Middle", "Teleop Hatch Panels Rocket High"));
     }
 
     /**
@@ -71,8 +74,7 @@ public class ColumnSchema {
                 "Sandstorm Cargo Left Rocket Low", "Sandstorm Cargo Left Rocket Middle", "Sandstorm Cargo Left Rocket High",
                 "Sandstorm Cargo Right Rocket Low", "Sandstorm Cargo Right Rocket Middle", "Sandstorm Cargo Right Rocket High");
         SumColumn teleopCargo = BuildSumColumn("Teleop Cargo", "Teleop Cargo Cargo Ship",
-                "Teleop Cargo Left Rocket Low", "Teleop Cargo Left Rocket Middle", "Teleop Cargo Left Rocket High",
-                "Teleop Cargo Right Rocket Low", "Teleop Cargo Right Rocket Middle", "Teleop Cargo Right Rocket High");
+                "Teleop Cargo Rocket Low", "Teleop Cargo Rocket Middle", "Teleop Cargo Rocket High");
         SumColumn totalHighCargo = BuildSumColumn("Total Cargo High",
                 "Teleop Cargo Left Rocket High", "Teleop Cargo Right Rocket High",
                 "Auton Cargo Left Rocket High", "Auton Cargo Right Rocket High");
@@ -87,8 +89,7 @@ public class ColumnSchema {
                 "Sandstorm Hatch Panels Left Rocket Low", "Sandstorm Hatch Panels Left Rocket Middle", "Sandstorm Hatch Panels Left Rocket High",
                 "Sandstorm Hatch Panels Right Rocket Low", "Sandstorm Hatch Panels Right Rocket Middle", "Sandstorm Hatch Panels Right Rocket High");
         SumColumn teleopHatches = BuildSumColumn("Teleop Hatch Panels", "Teleop Hatch Panels Cargo Ship",
-                "Teleop Hatch Panels Left Rocket Low", "Teleop Hatch Panels Left Rocket Middle", "Teleop Hatch Panels Left Rocket High",
-                "Teleop Hatch Panels Right Rocket Low", "Teleop Hatch Panels Right Rocket Middle", "Teleop Hatch Panels Right Rocket High");
+                "Teleop Hatch Panels Rocket Low", "Teleop Hatch Panels Rocket Middle", "Teleop Hatch Panels Rocket High");
         SumColumn totalHighHatches = BuildSumColumn("Total Hatch Panels High",
                 "Teleop Hatch Panels Left Rocket High", "Teleop Hatch Panels Right Rocket High",
                 "Auton Hatch Panels Left Rocket High", "Auton Hatch Panels Right Rocket High");

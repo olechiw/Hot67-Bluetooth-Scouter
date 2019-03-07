@@ -56,7 +56,7 @@ public class DataTable implements Serializable
             return;
 
         int row_id = 0;
-        // Load rows and headers into cellmodels
+        // Load rows and headers into cell models
         for (HashMap.Entry<String, Object> row : data.entrySet())
         {
             // Load the row
