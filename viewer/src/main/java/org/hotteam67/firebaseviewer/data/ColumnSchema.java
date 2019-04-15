@@ -18,6 +18,7 @@ public class ColumnSchema {
     public static List<CalculatedColumn> CalculatedColumns() {
         List<CalculatedColumn> calculatedColumns = new ArrayList<>();
 
+        calculatedColumns.add(new CalculatedColumn("To. Pieces", "Total Game Pieces"));
         calculatedColumns.add(new CalculatedColumn("To. Cargo", "Total Cargo"));
         calculatedColumns.add(new CalculatedColumn("To. Hatches", "Total Hatch Panels"));
         calculatedColumns.add(new CalculatedColumn("Tel. Cargo", "Teleop Cargo"));
@@ -26,6 +27,7 @@ public class ColumnSchema {
         calculatedColumns.add(new CalculatedColumn("High Hatches", "Total Hatch Panels High"));
         calculatedColumns.add(new CalculatedColumn("A. Cargo", "Auton Cargo"));
         calculatedColumns.add(new CalculatedColumn("A. Hatches", "Auton Hatch Panels"));
+        calculatedColumns.add(new CalculatedColumn("Def. Time", "Endgame Defense Effective Seconds"));
         calculatedColumns.add(new CalculatedColumn("End HAB", "Endgame HAB Level"));
         calculatedColumns.add(new CalculatedColumn("Dropped Hatches", "Teleop Dropped Hatches"));
         calculatedColumns.add(new CalculatedColumn("A. Crossed", "Sandstorm Crossed The Line"));
@@ -41,11 +43,13 @@ public class ColumnSchema {
     public static List<String> PreferredOrder()
     {
         return new ArrayList<>(Arrays.asList(
+                "Total Game Pieces",
                 "Total Cargo", "Total Hatch Panels", "Teleop Cargo", "Teleop Hatch Panels", "Total Cargo High",
                 "Total Hatch Panels High", "Auton Cargo", "Auton Hatch Panels",
 
                 "Teleop Dropped Hatches",
 
+                "Endgame Defense Effective Seconds",
                 "Endgame HAB Level",
 
                 "Sandstorm Cargo Cargo Ship", "Sandstorm Cargo Left Rocket Low", "Sandstorm Cargo Left Rocket Middle",
@@ -59,8 +63,8 @@ public class ColumnSchema {
                 "Teleop Cargo Cargo Ship",
                 "Teleop Cargo Rocket Low", "Teleop Cargo Rocket Middle", "Teleop Cargo Rocket High",
 
-                "Teleop Hatch Panels Cargo Ship",
-                "Teleop Hatch Panels Rocket Low", "Teleop Hatch Panels Rocket Middle", "Teleop Hatch Panels Rocket High"));
+                "Teleop Hatches Cargo Ship",
+                "Teleop Hatches Rocket Low", "Teleop Hatches Rocket Middle", "Teleop Hatches Rocket High"));
     }
 
     /**
@@ -88,10 +92,10 @@ public class ColumnSchema {
         SumColumn autonHatches = BuildSumColumn("Auton Hatch Panels", "Sandstorm Hatch Panels Cargo Ship",
                 "Sandstorm Hatch Panels Left Rocket Low", "Sandstorm Hatch Panels Left Rocket Middle", "Sandstorm Hatch Panels Left Rocket High",
                 "Sandstorm Hatch Panels Right Rocket Low", "Sandstorm Hatch Panels Right Rocket Middle", "Sandstorm Hatch Panels Right Rocket High");
-        SumColumn teleopHatches = BuildSumColumn("Teleop Hatch Panels", "Teleop Hatch Panels Cargo Ship",
-                "Teleop Hatch Panels Rocket Low", "Teleop Hatch Panels Rocket Middle", "Teleop Hatch Panels Rocket High");
+        SumColumn teleopHatches = BuildSumColumn("Teleop Hatch Panels", "Teleop Hatches Cargo Ship",
+                "Teleop Hatches Rocket Low", "Teleop Hatches Rocket Middle", "Teleop Hatches Rocket High");
         SumColumn totalHighHatches = BuildSumColumn("Total Hatch Panels High",
-                "Teleop Hatch Panels Left Rocket High", "Teleop Hatch Panels Right Rocket High",
+                "Teleop Hatches Rocket High",
                 "Auton Hatch Panels Left Rocket High", "Auton Hatch Panels Right Rocket High");
         SumColumn totalHatches = new SumColumn();
         totalHatches.columnName = "Total Hatch Panels";
@@ -99,9 +103,15 @@ public class ColumnSchema {
         totalHatches.columnsNames.addAll(teleopHatches.columnsNames);
         totalHatches.columnsNames.addAll(autonHatches.columnsNames);
 
+        SumColumn totalGamePieces = new SumColumn();
+        totalGamePieces.columnName = "Total Game Pieces";
+        totalGamePieces.columnsNames = new ArrayList<>();
+        totalGamePieces.columnsNames.addAll(totalHatches.columnsNames);
+        totalGamePieces.columnsNames.addAll(totalCargo.columnsNames);
+
         ArrayList<SumColumn> sumColumns = new ArrayList<>();
         // No auton hatches rn
-        addAll(sumColumns, totalCargo, totalHatches, teleopCargo, teleopHatches, autonCargo, autonHatches, totalHighHatches, totalHighCargo);
+        addAll(sumColumns, totalGamePieces, totalCargo, totalHatches, teleopCargo, teleopHatches, autonCargo, autonHatches, totalHighHatches, totalHighCargo);
 
         return sumColumns;
     }

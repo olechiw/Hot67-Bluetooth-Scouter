@@ -143,6 +143,7 @@ public class ViewerActivity extends AppCompatActivity
         teamsGroupView.setVisibility(View.GONE);
         teamsGroupInput = findViewById(R.id.teamsGroupInput);
         teamsGroupInput.setOnValueChangedListener(this::UpdateTeamsGroup);
+        teamsGroupInput.setMaximum(10000);
         teamsGroupType = findViewById(R.id.teamsGroupType);
         teamsGroupType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
         {

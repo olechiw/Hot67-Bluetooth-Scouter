@@ -99,6 +99,7 @@ public class TBAHandler
     {
         public List<String> redTeams = new ArrayList<>();
         public List<String> blueTeams = new ArrayList<>();
+        public Integer Number = -1;
     }
 
     /**
@@ -214,9 +215,16 @@ public class TBAHandler
                         for (int b = 0; b < blueTeamKeys.length(); ++b)
                             match.blueTeams.add(((String) blueTeamKeys.get(b)).replace("frc", ""));
 
+                        match.Number = matchObject.getInt("match_number");
+
                         matches.add(match);
                     }
                     matches.removeAll(Collections.singleton(null));
+                    Collections.sort(matches, (x, y) -> {
+                        if (x.Number.equals(y.Number)) return 0;
+                        else return x.Number.compareTo(y.Number);
+                    });
+
                     returnEvent.onComplete(matches);
                 }
                 catch (Exception e)
